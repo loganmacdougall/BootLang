@@ -1,0 +1,7 @@
+if 1 + 2 < 3 + 4:
+  print("Math makes sense")
+elif 45 > 4 * 16:
+  i = 4 * 16
+  print("Why is", 45, "more than", i)
+else:
+  print("Achievement unlocked: How did we get here")

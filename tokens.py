@@ -30,9 +30,51 @@ class BLToken(Enum):
     COLON = 27
     COMMA = 28
     INDENT = 29
-    NEWLINE = 30
-    EOF = 31
-    SKIP = 99
+    DEDENT = 30
+    DEF = 31
+    PLUS_ASSIGN = 32
+    MINUS_ASSIGN = 33
+    STAR_ASSIGN = 34
+    SLASH_ASSIGN = 35
+    NEWLINE = 40
+    EOF = 41
+    WHITESPACE = 99
 
     def name(self):
         return self._name_
+    
+TOKEN_STRING_MAP = {
+    BLToken.ASSIGN: "=",
+    BLToken.PLUS: "+",
+    BLToken.MINUS: "-",
+    BLToken.STAR: "*",
+    BLToken.SLASH: "/",
+    BLToken.IF: "if",
+    BLToken.ELSE: "else",
+    BLToken.ELIF: "elif",
+    BLToken.WHILE: "while",
+    BLToken.FOR: "for",
+    BLToken.IN: "in",
+    BLToken.EQUAL: "==",
+    BLToken.NEQUAL: "!=",
+    BLToken.LESS_EQUAL: "<=",
+    BLToken.GREATER_EQUAL: ">=",
+    BLToken.LESS: "<=",
+    BLToken.GREATER: ">",
+    BLToken.LPAREN: "(",
+    BLToken.RPAREN: ")",
+    BLToken.LBRACK: "[",
+    BLToken.RBRACK: "]",
+    BLToken.LBRACE: "{",
+    BLToken.RBRACE: "}",
+    BLToken.COLON: ":",
+    BLToken.COMMA: ",",
+    BLToken.INDENT: "\t",
+    BLToken.DEDENT: "",
+    BLToken.DEF: "def",
+    BLToken.PLUS_ASSIGN: "+=",
+    BLToken.MINUS_ASSIGN: "-=",
+    BLToken.STAR_ASSIGN: "*=",
+    BLToken.SLASH_ASSIGN: "/=",
+    BLToken.NEWLINE: "\n",
+}
