@@ -1,0 +1,27 @@
+nums = [1, 2, 3 * 4, 5 + (6 - 7)]
+data = {"a": 1, "b": nums[2], "c": nums[1 + 2]}
+x = 10
+y = -x + 5 * 2
+
+if x < y + 3:
+  print("x smaller")
+  result = data["b"] + nums[0]
+elif x == 10 or y > 20:
+  data["c"] = 42
+  print("updated c:", data["c"])
+else:
+  print("no condition met")
+
+i = 0
+while i < len(nums):
+  nums[i] += 1
+  i = i + 1
+
+for k, v in data:
+  print(k, "->", v)
+
+def compute(val):
+  temp = val * (nums[1] + data["a"])
+  return temp / 2
+
+print(compute(nums[2]))

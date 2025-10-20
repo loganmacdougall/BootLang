@@ -12,12 +12,19 @@ _token_patterns = [
     (BLToken.WHILE, r'while'),
     (BLToken.FOR, r'for'),
     (BLToken.IN, r'in'),
+    (BLToken.BREAK, r'break'),
+    (BLToken.CONTINUE, r'continue'),
+    (BLToken.RETURN, r'return'),
+    (BLToken.AND, r'and'),
+    (BLToken.OR  , r'or'),
+    (BLToken.NOT, r'not'),
     (BLToken.STRING, r'"[^"]*"'),
     (BLToken.IDENT, r'[A-Za-z_][A-Za-z_0-9]*'),
     (BLToken.PLUS_ASSIGN, r'\+='),
     (BLToken.MINUS_ASSIGN, r'-='),
     (BLToken.STAR_ASSIGN, r'\*='),
     (BLToken.SLASH_ASSIGN, r'/='),
+    (BLToken.PERCENT_ASSIGN, r'%='),
     (BLToken.EQUAL, r'=='),
     (BLToken.NEQUAL, r'!='),
     (BLToken.LESS_EQUAL, r'<='),
@@ -26,6 +33,7 @@ _token_patterns = [
     (BLToken.MINUS, r'-'),
     (BLToken.STAR, r'\*'),
     (BLToken.SLASH, r'/'),
+    (BLToken.PERCENT, r'%'),
     (BLToken.LESS, r'<'),
     (BLToken.GREATER, r'>'),
     (BLToken.ASSIGN, r'='),
@@ -37,8 +45,10 @@ _token_patterns = [
     (BLToken.RBRACE, r'\}'),
     (BLToken.COMMA, r','),
     (BLToken.COLON, r':'),
+    (BLToken.DOT, r'\.'),
     (BLToken.NEWLINE, r'\n'),
-    (BLToken.WHITESPACE, r'[ \t]+')
+    (BLToken.WHITESPACE, r'[ \t]+'),
+    (BLToken.INVALID_TOKEN, r'.+'),
 ]
 
 _token_re = re.compile('|'.join(f'(?P<{token.name()}>{pattern})' for token, pattern in _token_patterns))
@@ -53,12 +63,22 @@ class Tokenizer():
 
     def tokenize(self):
         previous_was_newline = False
+        comment = False
         indent_stack = [0]
 
         for match in re.finditer(_token_re, self.code):
             token_name = match.lastgroup
             token = _token_map[token_name]
             value = match.group()
+
+            if token == BLToken.COMMENT:
+                comment = True
+
+            if comment and token != BLToken.NEWLINE:
+                continue
+
+            comment = False
+
             if previous_was_newline and token != BLToken.NEWLINE:
                 previous_was_newline = False
 

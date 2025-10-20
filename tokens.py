@@ -4,41 +4,52 @@ class BLToken(Enum):
     IDENT = 1
     NUMBER = 2
     STRING = 3
-    ASSIGN = 4
-    PLUS = 5
-    MINUS = 6
-    STAR = 7
-    SLASH = 8
-    IF = 9
-    ELSE = 10
-    ELIF = 11
-    WHILE = 12
-    FOR = 13
-    IN = 14
-    EQUAL = 15
-    NEQUAL = 16
-    LESS_EQUAL = 17
-    GREATER_EQUAL = 18
-    LESS = 19
-    GREATER = 20
-    LPAREN = 21
-    RPAREN = 22
-    LBRACK = 23
-    RBRACK = 24
-    LBRACE = 25
-    RBRACE = 26
-    COLON = 27
-    COMMA = 28
-    INDENT = 29
-    DEDENT = 30
-    DEF = 31
-    PLUS_ASSIGN = 32
-    MINUS_ASSIGN = 33
-    STAR_ASSIGN = 34
-    SLASH_ASSIGN = 35
-    NEWLINE = 40
-    EOF = 41
-    WHITESPACE = 99
+    INDENT = 51
+    DEDENT = 52
+    NEWLINE = 53
+    EOF = 54
+    WHITESPACE = 55
+    IF = 101
+    ELSE = 102
+    ELIF = 103
+    WHILE = 104
+    FOR = 105
+    IN = 106
+    DEF = 107
+    BREAK = 108
+    CONTINUE = 109
+    RETURN = 110
+    AND = 111
+    OR = 112
+    NOT = 113
+    LPAREN = 151
+    RPAREN = 152
+    LBRACK = 153
+    RBRACK = 154
+    LBRACE = 155
+    RBRACE = 156
+    COLON = 157
+    COMMA = 158
+    DOT = 159
+    COMMENT = 160
+    PLUS = 201
+    MINUS = 202
+    STAR = 203
+    SLASH = 204
+    PERCENT = 205
+    EQUAL = 251
+    NEQUAL = 252
+    LESS_EQUAL = 253
+    GREATER_EQUAL = 254
+    LESS = 255
+    GREATER = 256
+    ASSIGN = 301
+    PLUS_ASSIGN = 302
+    MINUS_ASSIGN = 303
+    STAR_ASSIGN = 304
+    SLASH_ASSIGN = 305
+    PERCENT_ASSIGN = 306
+    INVALID_TOKEN = 999
 
     def name(self):
         return self._name_
@@ -49,17 +60,24 @@ TOKEN_STRING_MAP = {
     BLToken.MINUS: "-",
     BLToken.STAR: "*",
     BLToken.SLASH: "/",
+    BLToken.PERCENT: "%",
     BLToken.IF: "if",
     BLToken.ELSE: "else",
     BLToken.ELIF: "elif",
     BLToken.WHILE: "while",
     BLToken.FOR: "for",
     BLToken.IN: "in",
+    BLToken.BREAK: "break",
+    BLToken.CONTINUE: "continue",
+    BLToken.RETURN: "return",
+    BLToken.AND: "and",
+    BLToken.OR: "or",
+    BLToken.NOT: "not ",
     BLToken.EQUAL: "==",
     BLToken.NEQUAL: "!=",
     BLToken.LESS_EQUAL: "<=",
     BLToken.GREATER_EQUAL: ">=",
-    BLToken.LESS: "<=",
+    BLToken.LESS: "<",
     BLToken.GREATER: ">",
     BLToken.LPAREN: "(",
     BLToken.RPAREN: ")",
@@ -69,6 +87,8 @@ TOKEN_STRING_MAP = {
     BLToken.RBRACE: "}",
     BLToken.COLON: ":",
     BLToken.COMMA: ",",
+    BLToken.DOT: ".",
+    BLToken.COMMENT: "#",
     BLToken.INDENT: "\t",
     BLToken.DEDENT: "",
     BLToken.DEF: "def",
@@ -76,5 +96,6 @@ TOKEN_STRING_MAP = {
     BLToken.MINUS_ASSIGN: "-=",
     BLToken.STAR_ASSIGN: "*=",
     BLToken.SLASH_ASSIGN: "/=",
+    BLToken.PERCENT_ASSIGN: "%=",
     BLToken.NEWLINE: "\n",
 }

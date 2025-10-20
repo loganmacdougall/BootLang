@@ -26,6 +26,36 @@ class Var(BLNode):
     
     def to_code(self, _indent = 0):
         return f"{self.name}"
+    
+@dataclass
+class SliceRange(BLNode):
+    start: BLNode
+    end: Optional[BLNode]
+    step: Optional[BLNode]
+
+    def to_code(self, _indent = 0):
+        return f"[{self.start.to_code() if self.start else ""}:{self.end.to_code() if self.end else ""}:{self.step.to_code() if self.step else ""}]"
+    
+@dataclass
+class Break(BLNode):
+    pass
+
+    def to_code(self, _indent = 0):
+        return "break"
+
+@dataclass
+class Continue(BLNode):
+    pass
+
+    def to_code(self, _indent = 0):
+        return "continue"
+    
+@dataclass
+class Return(BLNode):
+    value: Optional[BLNode]
+
+    def to_code(self, _indent = 0):
+        return f"return {self.value.to_code() if self.value else ""}"
 
 @dataclass
 class BinaryOp(BLNode):
@@ -34,7 +64,7 @@ class BinaryOp(BLNode):
     op: BLToken
     
     def to_code(self, _indent = 0):
-        return f"{self.left.to_code()} {TOKEN_STRING_MAP[self.op]} {self.right.to_code()}"
+        return f"({self.left.to_code()} {TOKEN_STRING_MAP[self.op]} {self.right.to_code()})"
 
 @dataclass
 class UnaryOp(BLNode):
@@ -42,16 +72,25 @@ class UnaryOp(BLNode):
     node: BLNode
 
     def to_code(self, _indent = 0):
-        return f"{TOKEN_STRING_MAP[self.op]}{self.node.to_code()}"
+        return f"({TOKEN_STRING_MAP[self.op]}{self.node.to_code()})"
 
 @dataclass
 class Assign(BLNode):
-    name: str
+    ident: BLNode
     value: BLNode
     op: BLToken
 
     def to_code(self, _indent = 0):
-        return f"{self.name} {TOKEN_STRING_MAP[self.op]} {self.value.to_code()}"
+        return f"{self.ident.to_code()} {TOKEN_STRING_MAP[self.op]} {self.value.to_code()}"
+
+@dataclass
+class Ternary(BLNode):
+    left: BLNode
+    right: BLNode
+    cond: BLNode
+
+    def to_code(self, _indent = 0):
+        return f"{self.left.to_code()} if {self.cond.to_code()} else {self.right.to_code()}"
 
 @dataclass
 class Block(BLNode):
@@ -68,6 +107,31 @@ class Call(BLNode):
 
     def to_code(self, _indent = 0):
         return f"{self.callee.to_code()}({", ".join(arg.to_code() for arg in self.args)})"
+    
+@dataclass
+class Slice(BLNode):
+    collection: BLNode
+    slice: SliceRange
+
+    def to_code(self, _indent=0):
+        return f"{self.collection.to_code()}{self.slice.to_code()}"
+    
+@dataclass
+class Index(BLNode):
+    collection: BLNode
+    index: BLNode
+
+    def to_code(self, _indent=0):
+        return f"{self.collection.to_code()}[{self.index.to_code()}]"
+
+@dataclass
+class FunctionDefinition(BLNode):
+    name: str
+    args: List[str]
+    block: Block
+    
+    def to_code(self, indent = 0):
+        return f"def {self.name}({", ".join(self.args)}):\n{self.block.to_code(indent+2)}"
 
 @dataclass
 class ListLiteral(BLNode):
@@ -81,7 +145,7 @@ class DictLiteral(BLNode):
     pairs: List[tuple]
 
     def to_code(self, _indent = 0):
-        return f"[{', '.join(f"{key.to_code()}:{value.to_code()}" for key, value in self.pairs)}]"
+        return f"{{{', '.join(f"{key.to_code()}:{value.to_code()}" for key, value in self.pairs)}}}"
 
 @dataclass
 class If(BLNode):
@@ -120,9 +184,9 @@ class While(BLNode):
 
 @dataclass
 class For(BLNode):
-    vars: List[Var]
+    vars: List[str]
     iterable: BLNode
     block: Block
 
     def to_code(self, indent = 0):
-        return f"for {", ".join(v.to_code() for v in self.vars)} in {self.iterable.to_code()}:\n{self.block.to_code(indent+2)}"
+        return f"for {", ".join(self.vars)} in {self.iterable.to_code()}:\n{self.block.to_code(indent+2)}"
