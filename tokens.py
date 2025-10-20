@@ -22,6 +22,8 @@ class BLToken(Enum):
     AND = 111
     OR = 112
     NOT = 113
+    TRUE = 114
+    FALSE = 115
     LPAREN = 151
     RPAREN = 152
     LBRACK = 153
@@ -73,6 +75,8 @@ TOKEN_STRING_MAP = {
     BLToken.AND: "and",
     BLToken.OR: "or",
     BLToken.NOT: "not ",
+    BLToken.TRUE: "true",
+    BLToken.FALSE: "false",
     BLToken.EQUAL: "==",
     BLToken.NEQUAL: "!=",
     BLToken.LESS_EQUAL: "<=",

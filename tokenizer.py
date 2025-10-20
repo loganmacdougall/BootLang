@@ -5,19 +5,21 @@ SPACES_IN_TAB = 2
 
 _token_patterns = [
     (BLToken.NUMBER, r'\d+(\.\d+)?'),
-    (BLToken.DEF, r'def'),
-    (BLToken.IF, r'if'),
-    (BLToken.ELSE, r'else'),
-    (BLToken.ELIF, r'elif'),
-    (BLToken.WHILE, r'while'),
-    (BLToken.FOR, r'for'),
-    (BLToken.IN, r'in'),
-    (BLToken.BREAK, r'break'),
-    (BLToken.CONTINUE, r'continue'),
-    (BLToken.RETURN, r'return'),
-    (BLToken.AND, r'and'),
-    (BLToken.OR  , r'or'),
-    (BLToken.NOT, r'not'),
+    (BLToken.DEF, r'def\b'),
+    (BLToken.IF, r'if\b'),
+    (BLToken.ELSE, r'else\b'),
+    (BLToken.ELIF, r'elif\b'),
+    (BLToken.WHILE, r'while\b'),
+    (BLToken.FOR, r'for\b'),
+    (BLToken.IN, r'in\b'),
+    (BLToken.BREAK, r'break\b'),
+    (BLToken.CONTINUE, r'continue\b'),
+    (BLToken.RETURN, r'return\b'),
+    (BLToken.AND, r'and\b'),
+    (BLToken.OR  , r'or\b'),
+    (BLToken.NOT, r'not\b'),
+    (BLToken.TRUE, r'True\b'),
+    (BLToken.FALSE, r'False\b'),
     (BLToken.STRING, r'"[^"]*"'),
     (BLToken.IDENT, r'[A-Za-z_][A-Za-z_0-9]*'),
     (BLToken.PLUS_ASSIGN, r'\+='),
@@ -68,7 +70,7 @@ class Tokenizer():
 
         for match in re.finditer(_token_re, self.code):
             token_name = match.lastgroup
-            token = _token_map[token_name]
+            token = _token_map[token_name] if token_name else BLToken.INVALID_TOKEN
             value = match.group()
 
             if token == BLToken.COMMENT:

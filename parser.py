@@ -1,6 +1,9 @@
 from ast_nodes import *
 
 WHITESPACE_TOKENS = (BLToken.NEWLINE, BLToken.INDENT, BLToken.DEDENT)
+UNESCAPE_MAP = {
+    "'": "'", "\\": "\\", "n": "\n", "r": "\r", "t": "\t", "b": "\b", "f": "\f"
+}
 
 class Parser:
     def __init__(self, tokens):
@@ -92,10 +95,10 @@ class Parser:
         node = Var(token[1])
 
         while True:
-            if self.peek() and self.peek()[0] == BLToken.LPAREN:
+            if self.peek() and self.look()[0] == BLToken.LPAREN:
                 node = self.parse_call(node)
                 continue
-            if self.peek() and self.peek()[0] == BLToken.LBRACK:
+            if self.peek() and self.look()[0] == BLToken.LBRACK:
                 node = self.parse_index_or_slice(node)
                 continue
             break
@@ -137,7 +140,7 @@ class Parser:
     
     def parse_ternary(self):
         node = self.parse_boolean_ops()
-        while self.peek() and self.peek()[0] == BLToken.IF:
+        while self.peek() and self.look()[0] == BLToken.IF:
             self.consume(BLToken.IF)
             cond = self.parse_expression()
             self.consume(BLToken.ELSE)
@@ -147,22 +150,22 @@ class Parser:
     
     def parse_boolean_ops(self):
         node = self.parse_boolean_not()
-        while self.peek() and self.peek()[0] in (BLToken.AND, BLToken.OR):
+        while self.peek() and self.look()[0] in (BLToken.AND, BLToken.OR):
             op = self.consume()[0]
             right = self.parse_boolean_not()
             node = BinaryOp(node, right, op)
         return node
     
     def parse_boolean_not(self):
-        while self.peek() and self.peek()[0] == BLToken.NOT:
+        while self.peek() and self.look()[0] == BLToken.NOT:
             self.consume(BLToken.NOT)
             right = self.parse_comparison()
-            return UnaryOp(right, BLToken.NOT)
+            return UnaryOp(BLToken.NOT, right)
         return self.parse_comparison()
 
     def parse_comparison(self):
         node = self.parse_additive()
-        while self.peek() and self.peek()[0] in (
+        while self.peek() and self.look()[0] in (
             BLToken.LESS, BLToken.GREATER, BLToken.LESS_EQUAL,
             BLToken.GREATER_EQUAL, BLToken.EQUAL, BLToken.NEQUAL
         ):
@@ -173,7 +176,7 @@ class Parser:
 
     def parse_additive(self):
         node = self.parse_multiplicative()
-        while self.peek() and self.peek()[0] in (BLToken.PLUS, BLToken.MINUS, BLToken.PERCENT):
+        while self.peek() and self.look()[0] in (BLToken.PLUS, BLToken.MINUS, BLToken.PERCENT):
             op = self.consume()[0]
             right = self.parse_multiplicative()
             node = BinaryOp(node, right, op)
@@ -181,14 +184,14 @@ class Parser:
 
     def parse_multiplicative(self):
         node = self.parse_unary()
-        while self.peek() and self.peek()[0] in (BLToken.STAR, BLToken.SLASH):
+        while self.peek() and self.look()[0] in (BLToken.STAR, BLToken.SLASH):
             op = self.consume()[0]
             right = self.parse_unary()
             node = BinaryOp(node, right, op)
         return node
 
     def parse_unary(self):
-        if self.peek() and self.peek()[0] in (BLToken.PLUS, BLToken.MINUS):
+        if self.peek() and self.look()[0] in (BLToken.PLUS, BLToken.MINUS):
             op = self.consume()[0]
             operand = self.parse_unary()
             return UnaryOp(op, operand)
@@ -206,7 +209,11 @@ class Parser:
             return Number(int(token[1]))
         elif token[0] == BLToken.STRING:
             self.consume()
-            return String(token[1][1:-1])
+            unescaped_string = self.unescape_string(token[1][1:-1])
+            return String(unescaped_string)
+        elif token[0] in (BLToken.TRUE, BLToken.FALSE):
+            self.consume()
+            return Bool(True if BLToken.TRUE else False)
         elif token[0] == BLToken.IDENT:
             return self.parse_ident()
         elif token[0] == BLToken.LPAREN:
@@ -220,6 +227,31 @@ class Parser:
             return self.parse_dict_literal()
         else:
             raise SyntaxError(f"Unexpected token: {token}")
+        
+    def unescape_string(self, s: str):
+        chars = []
+        unescape = False
+
+        i = 0
+        while i < len(s):
+            c = s[i]
+            if c != "\\" and not unescape:
+                chars.append(c)
+            elif c == "\\" and not unescape:
+                unescape = True
+            elif unescape and c in UNESCAPE_MAP:
+                chars.append(UNESCAPE_MAP[c])
+                unescape = False
+            elif unescape and c == "x":
+                hex_str = s[i+1:i+3]
+                chars.append(chr(int(hex_str, 16)))
+                i += 2
+            elif unescape and ord("0") <= ord(c) <= ord("9"):
+                octal_str = s[i+1:i+4]
+                chars.append(chr(int(octal_str, 8)))
+            i += 1
+        
+        return "".join(chars)
     
     def parse_expression_list(self, end_token):
         self.ignoreWhitespace(True)
@@ -245,7 +277,7 @@ class Parser:
         token = self.consume(BLToken.IDENT)
         vars.append(token[1])
         
-        while self.peek() and self.peek()[0] == BLToken.COMMA:
+        while self.peek() and self.look()[0] == BLToken.COMMA:
             self.consume(BLToken.COMMA)
             token = self.consume(BLToken.IDENT)
             vars.append(token[1])
@@ -295,7 +327,7 @@ class Parser:
             value = self.parse_expression()
             pairs.append((key, value))
 
-        while self.peek()[0] == BLToken.COMMA:
+        while self.look()[0] == BLToken.COMMA:
             self.consume(BLToken.COMMA)
             if self.look()[0] == BLToken.RBRACE:
                 break
@@ -340,14 +372,14 @@ class Parser:
         elif_blocks = []
         else_block = None
 
-        while self.peek() and self.peek()[0] == BLToken.ELIF:
+        while self.peek() and self.look()[0] == BLToken.ELIF:
             self.consume(BLToken.ELIF)
             elif_cond = self.parse_expression()
             self.consume(BLToken.COLON)
             elif_block = self.parse_block()
             elif_blocks.append((elif_cond, elif_block))
 
-        if self.peek() and self.peek()[0] == BLToken.ELSE:
+        if self.peek() and self.look()[0] == BLToken.ELSE:
             self.consume(BLToken.ELSE)
             self.consume(BLToken.COLON)
             else_block = self.parse_block()
@@ -366,7 +398,7 @@ class Parser:
         self.consume(BLToken.FOR)
         parentheses = False
 
-        if self.peek()[0] == BLToken.LPAREN:
+        if self.look()[0] == BLToken.LPAREN:
             self.consume(BLToken.RPAREN)
             parentheses = True
 
@@ -389,7 +421,7 @@ class Parser:
 if __name__ == "__main__":
     from tokenizer import Tokenizer
 
-    with open("samples/example12.bl", "r") as f:
+    with open("samples/example11.bl", "r") as f:
         code = f.read()
 
     tokens = list(Tokenizer(code).tokenize())

@@ -2,7 +2,8 @@ def adding(a, b):
   c = a + b
   return c
 
-if adding(4, 6) == 10:
+c = adding(4, 6)
+if c == 10:
   print("Test passed")
 else:
-  print("Test failed")
+  print("Test failed, returned",c)
