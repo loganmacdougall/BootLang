@@ -6,12 +6,13 @@ from tokens import BLToken, TOKEN_STRING_MAP
 
 @dataclass
 class BLNode:
-    pass
+    lineno: int
+    col: int
 
     def to_code(self, _indent = 0):
         return ""
     
-    def exec(self, _env: Environment):
+    def exec(self, env: Environment):
         pass
 
 @dataclass
@@ -21,7 +22,7 @@ class Number(BLNode):
     def to_code(self, _indent = 0):
         return f"{self.value}"
     
-    def exec(self, _env: Environment):
+    def exec(self, env: Environment):
         return self.value
 
 @dataclass
@@ -31,7 +32,7 @@ class String(BLNode):
     def to_code(self, _indent = 0):
         return f"\"{self.value}\""
     
-    def exec(self, _env: Environment):
+    def exec(self, env: Environment):
         return self.value
     
 @dataclass
@@ -41,7 +42,7 @@ class Bool(BLNode):
     def to_code(self, _indent = 0):
         return "True" if self.value else "False"
     
-    def exec(self, _env: Environment):
+    def exec(self, env: Environment):
         return self.value
 
 @dataclass
@@ -173,6 +174,8 @@ class Block(BLNode):
     def exec(self, env: Environment):
         result = None
         for stmt in self.statements:
+            if env.debugging():
+                env.debugger.check(stmt, env)
             result = stmt.exec(env)
             if env.get_signal() != ControlSignal.NONE:
                 break
@@ -356,7 +359,8 @@ class For(BLNode):
             items = items.items()
 
         for item in items:
-            item = list(item)
+            if type(item) != List:
+                item = [item]
             for i, value in enumerate(item):
                 env.set(self.vars[i], value)
 

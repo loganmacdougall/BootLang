@@ -7,10 +7,12 @@ class ControlSignal(Enum):
     RETURN = 4
 
 class Environment:
-    def __init__(self, parent=None, runtime=None):
+    def __init__(self, parent=None, runtime=None, debugger=None, debug=False):
         self.vars = {}
         self.parent = parent
         self.runtime = runtime or (parent.runtime if parent else None)
+        self.debugger = debugger or (parent.debugger if parent else None)
+        self.debug = debug or (parent.debug if parent else False)
         self.return_value = None
         self.signal = ControlSignal.NONE
 
@@ -30,6 +32,9 @@ class Environment:
     
     def set(self, name, value):
         self.vars[name] = value
+
+    def debugging(self):
+        return self.debug
 
     def get_signal(self):
         return self.signal

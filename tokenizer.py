@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from tokens import BLToken
 
 SPACES_IN_TAB = 2
@@ -56,6 +57,16 @@ _token_patterns = [
 _token_re = re.compile('|'.join(f'(?P<{token.name()}>{pattern})' for token, pattern in _token_patterns))
 _token_map = {token.name(): token for token, _ in _token_patterns}
 
+@dataclass
+class TokenData:
+    token: BLToken
+    string: str
+    lineno: int
+    col: int
+
+    def pos(self):
+        return [self.lineno, self.col]
+
 class Tokenizer():
     def __init__(self, code: str):
         self.code = code
@@ -67,11 +78,15 @@ class Tokenizer():
         previous_was_newline = False
         comment = False
         indent_stack = [0]
+        lineno = 1
+        line_start = 0
 
         for match in re.finditer(_token_re, self.code):
             token_name = match.lastgroup
             token = _token_map[token_name] if token_name else BLToken.INVALID_TOKEN
             value = match.group()
+
+            col = match.start() - line_start + 1
 
             if token == BLToken.COMMENT:
                 comment = True
@@ -87,33 +102,39 @@ class Tokenizer():
                 if token != BLToken.WHITESPACE:
                     while len(indent_stack) > 1:
                         indent_stack.pop()
-                        yield (BLToken.DEDENT, "")
+                        yield TokenData(BLToken.DEDENT, "", lineno, 1)
                     
-                    yield (token, value)
+                    yield TokenData(token, value, lineno, col)
                     continue
 
                 indent_count = self.count_indent(value)
                 if indent_count > indent_stack[-1]:
                     indent_stack.append(indent_count)
-                    yield (BLToken.INDENT, value)
+                    yield TokenData(BLToken.INDENT, value, lineno, col)
                 elif indent_count < indent_stack[-1]:
                     while indent_stack[-1] > indent_count:
-                        yield (BLToken.DEDENT, value)
+                        yield TokenData(BLToken.DEDENT, value, lineno, col)
                         indent_stack.pop()
                     if indent_count != indent_stack[-1]:
                         raise SyntaxError("Inconsistent dedent level")
                 continue
 
-            previous_was_newline = (token == BLToken.NEWLINE)
+            if token == BLToken.NEWLINE:
+                previous_was_newline = True
+                lineno += 1
+                line_start = match.end()
 
             if token == BLToken.WHITESPACE:
                 continue
         
-            yield (token, value)
+            yield TokenData(token, value, lineno, col)
         
         while len(indent_stack) > 1:
             indent_stack.pop()
-            yield (BLToken.DEDENT, "")
+            yield TokenData(BLToken.DEDENT, "", lineno, 1)
 
 if __name__ == "__main__":
-    print(list(Tokenizer("a\n\tb\n\t\tc\n\t\t\td\n\te").tokenize()))
+    with open("samples/example11.bl", "r") as f:
+        code = f.read()
+    
+    print(list(Tokenizer(code).tokenize()))

@@ -20,6 +20,9 @@ class FunctionValue:
             frame = CallFrame(self.name, env, node=self.body)
             runtime.push_frame(frame)
 
+        if self.closure_env.debugging():
+            self.closure_env.debugger.call_depth += 1
+
         self.body.exec(env)
 
         ret = None
@@ -29,5 +32,8 @@ class FunctionValue:
 
         if runtime:
             runtime.pop_frame()
+
+        if self.closure_env.debugging():
+            self.closure_env.debugger.call_depth -= 1
 
         return ret
