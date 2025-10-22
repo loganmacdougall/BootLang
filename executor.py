@@ -1,42 +1,57 @@
-from debugger import Debugger
 from environment import Environment
-from runtime import Runtime
+from tokenizer import Tokenizer
+from parser import Parser
 
 class Executor:
-    def __init__(self):
-        self.runtime = Runtime()
-        self.debugger = Debugger(self)
-        self.globals = Environment(runtime=self.runtime)
-        
-        self.globals.set("print", print)
-        self.globals.set("len", len)
-        self.globals.set("range", range)
+    def __init__(self):        
+        pass
+    
+    def setup_environment(self, env: Environment | None):
+        if env == None:
+            env = Environment.default()
 
-    def execute(self, node, env=None, debug=False):
-        if env is None:
-            env = self.globals
+        env.set("print", print)
+        env.set("len", len)
+        env.set("range", range)
+        env.execute_callback = self.execute_code_without_setup
 
-        env.debug = debug
-        env.debugger = self.debugger
+        return env
+    
+    def execute_code(self, node, env: Environment | None = None, debug=False):
+        env = self.setup_environment(env)
+        return self.execute_code_without_setup(node, env, debug)
 
-        return node.exec(env)
+    def execute(self, node, env: Environment | None = None, debug=False):
+        env = self.setup_environment(env)
+        return self.execute_without_setup(node, env, debug)
+
+    def execute_code_without_setup(self, code, env: Environment, debug = False):
+        tokens = list(Tokenizer(code).tokenize())
+        ast = Parser(tokens).parse()
+
+        return self.execute_without_setup(ast, env, debug=debug)
+    
+    def execute_without_setup(self, node, env: Environment, debug = False):
+        previous_debug = env.debugging()
+
+        env.enable_debugging(debug)
+        res = node.exec(env)
+        env.enable_debugging(previous_debug)
+
+        return res
 
 if __name__ == "__main__":
     import time
-    from tokenizer import Tokenizer
-    from parser import Parser
 
     with open("samples/example13.bl", "r") as f:
         code = f.read()
 
-    tokens = list(Tokenizer(code).tokenize())
-    ast = Parser(tokens).parse()
-
     executor = Executor()
-    executor.debugger.add_breakpoint(1)
+    env = Environment.default()
+    # env.debugger.add_breakpoint(1)
 
     start = time.time()
-    executor.execute(ast, debug=True)
+    executor.execute_code(code, env, debug=True)
     end = time.time()
 
     print("--------------")

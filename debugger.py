@@ -1,6 +1,4 @@
 from enum import Enum
-from tokenizer import Tokenizer
-from parser import Parser
 
 class DebugMode(Enum):
   CONTINUE = 1,
@@ -10,8 +8,7 @@ class DebugMode(Enum):
   STOP = 5
 
 class Debugger:
-  def __init__(self, executor):
-    self.executor = executor
+  def __init__(self):
     self.breakpoints = set()
     self.mode = DebugMode.CONTINUE
     self.paused = False
@@ -99,16 +96,6 @@ class Debugger:
         raise SystemExit
       elif cmd.startswith("p "):
         watch_str = cmd[2:]
-        watch_tokens = list(Tokenizer(watch_str).tokenize())
-        watch_ast = Parser(watch_tokens).parse()
-        env.debug = False
-        result = self.executor.execute(watch_ast, env, False)
-        env.debug = True
+        result = env.execute(watch_str)
 
         print(result)
-
-
-          
-
-
-

@@ -1,4 +1,6 @@
 from enum import Enum
+from debugger import Debugger
+from runtime import Runtime
 
 class ControlSignal(Enum):
     NONE = 1
@@ -7,14 +9,24 @@ class ControlSignal(Enum):
     RETURN = 4
 
 class Environment:
-    def __init__(self, parent=None, runtime=None, debugger=None, debug=False):
+    def __init__(self, parent=None, runtime=None, debugger=None, execute_callback=None, debug=False):
         self.vars = {}
         self.parent = parent
         self.runtime = runtime or (parent.runtime if parent else None)
-        self.debugger = debugger or (parent.debugger if parent else None)
+        self.debugger = debugger or (parent.debugger if parent else Debugger())
         self.debug = debug or (parent.debug if parent else False)
+        self.execute_callback = execute_callback or (parent.execute_callback if parent else None)
         self.return_value = None
         self.signal = ControlSignal.NONE
+
+    @staticmethod
+    def default():
+        return Environment(runtime=Runtime(), debugger=Debugger(), debug=False)
+    
+    def execute(self, node):
+        if self.execute_callback:
+            return self.execute_callback(node, self, False)
+        raise ValueError("Execute callback doesn't exist")
 
     def peek(self, name):
         if name in self.vars:
@@ -32,6 +44,9 @@ class Environment:
     
     def set(self, name, value):
         self.vars[name] = value
+
+    def enable_debugging(self, value: bool):
+        self.debug = value
 
     def debugging(self):
         return self.debug

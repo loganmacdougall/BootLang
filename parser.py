@@ -73,11 +73,11 @@ class Parser:
                 forward += 1
             return self.parse_expression()
         elif token.token == BLToken.BREAK:
-            self.consume(BLToken.BREAK)
-            return Break()
+            start_node = self.consume(BLToken.BREAK)
+            return Break(start_node.lineno, start_node.col)
         elif token.token == BLToken.CONTINUE:
-            self.consume(BLToken.CONTINUE)
-            return Continue()
+            start_node = self.consume(BLToken.CONTINUE)
+            return Continue(start_node.lineno, start_node.col)
         elif token.token == BLToken.IF:
             return self.parse_if()
         elif token.token == BLToken.WHILE:
@@ -291,7 +291,7 @@ class Parser:
 
     def parse_property_access(self, callee_node):
         self.consume(BLToken.DOT)
-        name = self.consume(BLToken.IDENT)[1]
+        name = self.consume(BLToken.IDENT).string
         return PropertyAccess(callee_node.lineno, callee_node.col, callee_node, name)
 
     def parse_call(self, callee_node):
