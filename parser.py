@@ -96,12 +96,16 @@ class Parser:
         node = Var(token.lineno, token.col, token.string)
 
         while True:
-            if self.peek() and self.look().token == BLToken.LPAREN:
-                node = self.parse_call(node)
-                continue
-            if self.peek() and self.look().token == BLToken.LBRACK:
-                node = self.parse_index_or_slice(node)
-                continue
+            if token := self.peek():
+                if token.token == BLToken.LPAREN:
+                    node = self.parse_call(node)
+                    continue
+                if token.token == BLToken.LBRACK:
+                    node = self.parse_index_or_slice(node)
+                    continue
+                if token.token == BLToken.DOT:
+                    node = self.parse_property_access(node)
+                    continue
             break
         return node
 
@@ -284,6 +288,11 @@ class Parser:
             vars.append(token.string)
 
         return vars
+
+    def parse_property_access(self, callee_node):
+        self.consume(BLToken.DOT)
+        name = self.consume(BLToken.IDENT)[1]
+        return PropertyAccess(callee_node.lineno, callee_node.col, callee_node, name)
 
     def parse_call(self, callee_node):
         self.consume(BLToken.LPAREN)

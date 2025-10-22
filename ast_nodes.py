@@ -179,9 +179,7 @@ class Block(BLNode):
             result = stmt.exec(env)
             if env.get_signal() != ControlSignal.NONE:
                 break
-        return result
-
-            
+        return result           
 
 @dataclass
 class Call(BLNode):
@@ -204,7 +202,6 @@ class Call(BLNode):
             return func_value(*arg_values)
         
         raise TypeError(f"Object {func_value} is not callable")
-        
     
 @dataclass
 class Slice(BLNode):
@@ -221,6 +218,23 @@ class Slice(BLNode):
         step = self.slice.step.exec(env) if self.slice.step else None
         return collection_value[slice(start, end, step)]
 
+@dataclass
+class PropertyAccess(BLNode):
+    object: BLNode
+    property: str
+
+    def to_code(self, _indent=0):
+        return f"{self.object.to_code()}.{self.property}"
+
+    def resolve_setter(self, env: Environment):
+        pass
+        # TODO
+
+    def exec(self, env: Environment):
+        pass
+        # TODO
+
+    
     
 @dataclass
 class Index(BLNode):
