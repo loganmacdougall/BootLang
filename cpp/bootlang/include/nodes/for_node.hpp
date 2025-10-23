@@ -1,0 +1,15 @@
+#pragma once
+
+#include <vector>
+#include "node.hpp"
+#include "nodes/block_node.hpp"
+
+struct ForNode : public Node {
+    std::vector<std::string> args;
+    Node iterable;
+    BlockNode block;
+
+    ForNode(uint32_t lineno, uint32_t col, std::vector<std::string> args, Node iterable, BlockNode block);
+
+    std::string toCode(int indent) const override;
+};

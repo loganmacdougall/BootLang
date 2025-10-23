@@ -1,0 +1,16 @@
+#include "nodes/return_node.hpp"
+
+ReturnNode::ReturnNode(uint32_t lineno, uint32_t col, std::optional<Node> value)
+    : Node(lineno, col, NodeType::n_RETURN), value(value) {}
+
+std::string ReturnNode::toCode(int indent) const {
+    (void)indent; 
+    std::ostringstream out;
+
+    out << "return";
+    if (value) {
+        out << ' ' << value.value().toCode(indent);
+    }
+
+    return out.str();
+}

@@ -48,7 +48,7 @@ std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
   for (auto it = begin; it != end; it++) {
     const std::smatch &match = *it;
     
-    BLToken token = BLToken::INVALID_TOKEN;
+    TokenType token = TokenType::t_INVALID_TOKEN;
     std::string text;
 
     for (size_t i = 1; i < match.size(); i++) {
@@ -59,23 +59,23 @@ std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
       }
     }
 
-    if (token == BLToken::INVALID_TOKEN) {
+    if (token == TokenType::t_INVALID_TOKEN) {
       return std::nullopt;
     }
 
     uint32_t col = static_cast<uint32_t>(match.position() - line_start + 1);
 
-    comment = token == BLToken::COMMENT || comment;
-    if (comment && token != BLToken::NEWLINE) continue;
+    comment = token == TokenType::t_COMMENT || comment;
+    if (comment && token != TokenType::t_NEWLINE) continue;
     comment = false;
 
-    if (previous_was_newline && token != BLToken::NEWLINE) {
+    if (previous_was_newline && token != TokenType::t_NEWLINE) {
       previous_was_newline = false;
 
-      if (token != BLToken::WHITESPACE) {
+      if (token != TokenType::t_WHITESPACE) {
         while (indent_stack.size() > 1) {
           indent_stack.pop_back();
-          tokens.push_back(TokenData{BLToken::DEDENT, "", lineno, 1});
+          tokens.push_back(TokenData{TokenType::t_DEDENT, "", lineno, 1});
         }
 
         tokens.push_back(TokenData{token, text, lineno, col});
@@ -85,13 +85,13 @@ std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
       uint32_t indent_count = count_indent(text);
       if (indent_count > indent_stack[indent_stack.size() - 1]) {
         indent_stack.push_back(indent_count);
-        tokens.push_back(TokenData{BLToken::INDENT, text, lineno, col});
+        tokens.push_back(TokenData{TokenType::t_INDENT, text, lineno, col});
         continue;
       } 
       
       while (indent_count < indent_stack[indent_stack.size() - 1]) {
         indent_stack.pop_back();
-        tokens.push_back(TokenData{BLToken::DEDENT, text, lineno, col});
+        tokens.push_back(TokenData{TokenType::t_DEDENT, text, lineno, col});
       }
 
       if (indent_count != indent_stack[indent_stack.size() - 1]) {
@@ -101,13 +101,13 @@ std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
       continue;
     }
 
-    if (token == BLToken::NEWLINE) {
+    if (token == TokenType::t_NEWLINE) {
       previous_was_newline = true;
       lineno += 1;
       line_start = match.position() + match.length();
     }
 
-    if (token == BLToken::WHITESPACE)
+    if (token == TokenType::t_WHITESPACE)
       continue;
 
     tokens.push_back(TokenData{token, text, lineno, col});
@@ -115,7 +115,7 @@ std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
 
   while (indent_stack.size() > 1) {
     indent_stack.pop_back();
-    tokens.push_back(TokenData{BLToken::DEDENT, "", lineno, 1});
+    tokens.push_back(TokenData{TokenType::t_DEDENT, "", lineno, 1});
   }
 
   return tokens;

@@ -10,6 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB_RECURSE BOOTLANG_SOURCES CONFIGURE_DEPENDS
     src/*.cpp
     include/*.hpp
+    src/nodes/*.cpp
+    include/nodes/*.hpp
 )
 
 # Define the library

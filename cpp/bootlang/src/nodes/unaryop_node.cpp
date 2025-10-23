@@ -1,0 +1,15 @@
+#include "nodes/unaryop_node.hpp"
+
+UnaryOpNode::UnaryOpNode(uint32_t lineno, uint32_t col, Node right, TokenType op)
+    : Node(lineno, col, NodeType::n_UNARY_OP), right(right), op(op) {}
+
+std::string UnaryOpNode::toCode(int indent) const {
+    (void)indent;
+    std::ostringstream out;
+
+    out << '(';
+    out << TokenMetadata::GetInstance().GetTokenString(op) << ' ';
+    out << right.toCode(indent) << ')';
+
+    return out.str();
+}
