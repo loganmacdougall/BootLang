@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <sstream>
+#include <memory>
 
 enum NodeType {
     n_INT,
@@ -31,6 +32,8 @@ enum NodeType {
     n_WHILE,
     n_FOR
 };
+
+typedef std::unique_ptr<class Node> NodePtr;
 
 class Node {
 public:

@@ -1,6 +1,6 @@
 #include "nodes/listliteral_node.hpp"
 
-ListLiteralNode::ListLiteralNode(uint32_t lineno, uint32_t col, std::vector<Node> elems)
+ListLiteralNode::ListLiteralNode(uint32_t lineno, uint32_t col, std::vector<NodePtr>&& elems)
 : Node(lineno, col, NodeType::n_LIST_LITERAL), elems(std::move(elems)) {}
 
 std::string ListLiteralNode::toCode(int indent) const {
@@ -10,7 +10,7 @@ std::string ListLiteralNode::toCode(int indent) const {
     out << '[';
     for (size_t i = 0; i < elems.size(); i++) {
         if (i > 0) out << ", ";
-        out << elems[i].toCode(indent);
+        out << elems[i]->toCode(indent);
     }
     out << ']';
 

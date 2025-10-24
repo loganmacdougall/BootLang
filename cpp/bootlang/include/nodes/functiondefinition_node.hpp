@@ -8,9 +8,9 @@ class FunctionDefinitionNode : public Node {
 public:
     std::string name;
     std::vector<std::string> args;
-    BlockNode block;
+    BlockNodePtr block;
 
-    FunctionDefinitionNode(uint32_t lineno, uint32_t col, std::string name, std::vector<std::string> args, BlockNode block);
+    FunctionDefinitionNode(uint32_t lineno, uint32_t col, std::string name, std::vector<std::string>&& args, BlockNodePtr&& block);
 
     std::string toCode(int indent) const override;
 };

@@ -29,7 +29,7 @@ std::string build_combined_pattern(std::vector<RegexPair> regex_pairs) {
 Tokenizer::Tokenizer(std::string code) :
   code(std::move(code)) {}
 
-std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
+  std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
   std::vector<TokenData> tokens;
   std::vector<uint32_t> indent_stack{0};
 

@@ -15,7 +15,7 @@ class Parser {
 
     public:
         Parser(Tokens tokens);
-        BlockNode parse();
+        BlockNodePtr parse();
 
     private:
         std::optional<TokenData> peek();
@@ -30,40 +30,40 @@ class Parser {
 
         TokenData consume(std::optional<TokenType> expected = std::nullopt);
 
-        BlockNode parseBlock();
-        Node parseStatement();
-        Node parseIdentifier();
+        BlockNodePtr parseBlock();
+        NodePtr parseStatement();
+        NodePtr parseIdentifier();
         
-        CallNode parseCall(Node& left);
-        Node parseIndexOrSlice(Node& left);
-        PropertyAccessNode parsePropertyAccess(Node& left);
+        std::unique_ptr<CallNode> parseCall(NodePtr&& left);
+        NodePtr parseIndexOrSlice(NodePtr&& left);
+        std::unique_ptr<PropertyAccessNode> parsePropertyAccess(NodePtr&& left);
 
-        std::vector<Node> parseExpressionList(TokenType end_token);
+        std::vector<NodePtr> parseExpressionList(TokenType end_token);
         std::vector<std::string> parseIdentifierList();
         
-        Node parseAssignmentOrExpression();
+        NodePtr parseAssignmentOrExpression();
         
-        AssignNode parseAssignment();
+        std::unique_ptr<AssignNode> parseAssignment();
         
-        Node parseExpression();
-        Node parseTernary();
-        Node parseBooleanOps();
-        Node parseBooleanNot();
-        Node parseComparison();
-        Node parseAdditive();
-        Node parseMultiplicative();
-        Node parseUnary();
-        Node parseAtom();
+        NodePtr parseExpression();
+        NodePtr parseTernary();
+        NodePtr parseBooleanOps();
+        NodePtr parseBooleanNot();
+        NodePtr parseComparison();
+        NodePtr parseAdditive();
+        NodePtr parseMultiplicative();
+        NodePtr parseUnary();
+        NodePtr parseAtom();
 
-        Node parseListLiteral();
-        Node parseDictOrSetLiteral();
+        std::unique_ptr<ListLiteralNode> parseListLiteral();
+        NodePtr parseDictOrSetLiteral();
 
-        IfNode parseIf();
-        WhileNode parseWhile();
-        ForNode parseFor();
+        std::unique_ptr<IfNode> parseIf();
+        std::unique_ptr<WhileNode> parseWhile();
+        std::unique_ptr<ForNode> parseFor();
 
-        FunctionDefinitionNode parseDef();
-        ReturnNode parseReturn();
+        std::unique_ptr<FunctionDefinitionNode> parseDef();
+        std::unique_ptr<ReturnNode> parseReturn();
 
     private:
         static inline std::set<TokenType> WHITESPACE {

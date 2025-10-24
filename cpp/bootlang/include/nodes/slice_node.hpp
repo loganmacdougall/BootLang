@@ -5,12 +5,12 @@
 
 class SliceNode : public Node {
 public:
-    Node left;
-    std::optional<Node> start;
-    std::optional<Node> end;
-    std::optional<Node> step;
+    NodePtr left;
+    std::optional<NodePtr> start;
+    std::optional<NodePtr> end;
+    std::optional<NodePtr> step;
 
-    SliceNode(uint32_t lineno, uint32_t col, Node left, std::optional<Node> start, std::optional<Node> end, std::optional<Node> step);
+    SliceNode(uint32_t lineno, uint32_t col, NodePtr&& left, std::optional<NodePtr>&& start, std::optional<NodePtr>&& end, std::optional<NodePtr>&& step);
 
     std::string toCode(int indent) const override;
 };

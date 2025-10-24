@@ -6,10 +6,10 @@
 
 class WhileNode : public Node {
 public:
-    Node cond;
-    BlockNode block;
+    NodePtr cond;
+    BlockNodePtr block;
 
-    WhileNode(uint32_t lineno, uint32_t col, Node cond, BlockNode block);
+    WhileNode(uint32_t lineno, uint32_t col, NodePtr&& cond, BlockNodePtr&& block);
 
     std::string toCode(int indent) const override;
 };

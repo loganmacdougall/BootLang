@@ -1,7 +1,7 @@
 #include "nodes/functiondefinition_node.hpp"
 
-FunctionDefinitionNode::FunctionDefinitionNode(uint32_t lineno, uint32_t col, std::string name, std::vector<std::string> args, BlockNode block)
-: Node(lineno, col, NodeType::n_FLOAT), name(name), args(std::move(args)), block(block) {}
+FunctionDefinitionNode::FunctionDefinitionNode(uint32_t lineno, uint32_t col, std::string name, std::vector<std::string>&& args, BlockNodePtr&& block)
+: Node(lineno, col, NodeType::n_FLOAT), name(name), args(std::move(args)), block(std::move(block)) {}
 
 std::string FunctionDefinitionNode::toCode(int indent) const {
     std::ostringstream out;
@@ -13,7 +13,7 @@ std::string FunctionDefinitionNode::toCode(int indent) const {
     }
     out << "):\n";
 
-    out << block.toCode(indent + 2);
+    out << block->toCode(indent + 2);
 
     return out.str();
 }

@@ -5,11 +5,11 @@
 
 class BinaryOpNode : public Node {
 public:
-    Node left;
-    Node right;
+    NodePtr left;
+    NodePtr right;
     TokenType op;
 
-    BinaryOpNode(uint32_t lineno, uint32_t col, Node left, Node right, TokenType op);
+    BinaryOpNode(uint32_t lineno, uint32_t col, NodePtr&& left, NodePtr&& right, TokenType op);
 
     std::string toCode(int indent) const override;
 };

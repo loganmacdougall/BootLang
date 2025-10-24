@@ -5,10 +5,10 @@
 
 class CallNode : public Node {
 public:
-    Node left;
-    std::vector<Node> args;
+    NodePtr left;
+    std::vector<NodePtr> args;
 
-    CallNode(uint32_t lineno, uint32_t col, Node left, std::vector<Node> args);
+    CallNode(uint32_t lineno, uint32_t col, NodePtr&& left, std::vector<NodePtr>&& args);
 
     std::string toCode(int indent) const override;
 };

@@ -5,10 +5,10 @@
 
 class UnaryOpNode : public Node {
 public:
-    Node right;
+    NodePtr right;
     TokenType op;
 
-    UnaryOpNode(uint32_t lineno, uint32_t col, Node right, TokenType op);
+    UnaryOpNode(uint32_t lineno, uint32_t col, NodePtr&& right, TokenType op);
 
     std::string toCode(int indent) const override;
 };

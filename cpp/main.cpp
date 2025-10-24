@@ -25,9 +25,9 @@ int main() {
   }
 
   Parser parser(tokens.value());
-  BlockNode ast = parser.parse();
+  BlockNodePtr ast = parser.parse();
 
-  std::cout << ast.toCode(0) << std::endl;
+  std::cout << ast->toCode(0) << std::endl;
 
   return 0;
 }

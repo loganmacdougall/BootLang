@@ -1,7 +1,7 @@
 #include "nodes/return_node.hpp"
 
-ReturnNode::ReturnNode(uint32_t lineno, uint32_t col, std::optional<Node> value)
-    : Node(lineno, col, NodeType::n_RETURN), value(value) {}
+ReturnNode::ReturnNode(uint32_t lineno, uint32_t col, std::optional<NodePtr>&& value)
+    : Node(lineno, col, NodeType::n_RETURN), value(std::move(value)) {}
 
 std::string ReturnNode::toCode(int indent) const {
     (void)indent; 
@@ -9,7 +9,7 @@ std::string ReturnNode::toCode(int indent) const {
 
     out << "return";
     if (value) {
-        out << ' ' << value.value().toCode(indent);
+        out << ' ' << value.value()->toCode(indent);
     }
 
     return out.str();
