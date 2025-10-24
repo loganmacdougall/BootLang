@@ -251,9 +251,12 @@ class Parser:
                 hex_str = s[i+1:i+3]
                 chars.append(chr(int(hex_str, 16)))
                 i += 2
+                unescape = False
             elif unescape and ord("0") <= ord(c) <= ord("9"):
-                octal_str = s[i+1:i+4]
+                octal_str = s[i:i+3]
                 chars.append(chr(int(octal_str, 8)))
+                unescape = False
+                
             i += 1
         
         return "".join(chars)
@@ -409,7 +412,7 @@ class Parser:
         parentheses = False
 
         if self.look().token == BLToken.LPAREN:
-            self.consume(BLToken.RPAREN)
+            self.consume(BLToken.LPAREN)
             parentheses = True
 
         vars = self.parse_ident_list()

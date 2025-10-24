@@ -3,7 +3,8 @@
 #include <vector>
 #include "node.hpp"
 
-struct CallNode : public Node {
+class CallNode : public Node {
+public:
     Node left;
     std::vector<Node> args;
 

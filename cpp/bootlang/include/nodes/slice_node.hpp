@@ -1,13 +1,16 @@
 #pragma once
 
+#include <optional>
 #include "node.hpp"
-#include "nodes/slicerange_node.hpp"
 
-struct SliceNode : public Node {
+class SliceNode : public Node {
+public:
     Node left;
-    SliceRangeNode slice;
+    std::optional<Node> start;
+    std::optional<Node> end;
+    std::optional<Node> step;
 
-    SliceNode(uint32_t lineno, uint32_t col, Node left, SliceRangeNode slice);
+    SliceNode(uint32_t lineno, uint32_t col, Node left, std::optional<Node> start, std::optional<Node> end, std::optional<Node> step);
 
     std::string toCode(int indent) const override;
 };

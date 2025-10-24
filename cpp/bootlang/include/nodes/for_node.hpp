@@ -4,7 +4,8 @@
 #include "node.hpp"
 #include "nodes/block_node.hpp"
 
-struct ForNode : public Node {
+class ForNode : public Node {
+public:
     std::vector<std::string> args;
     Node iterable;
     BlockNode block;

@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct VarNode : public Node {
+class VarNode : public Node {
+public:
     std::string name;
 
     VarNode(uint32_t lineno, uint32_t col, std::string name);

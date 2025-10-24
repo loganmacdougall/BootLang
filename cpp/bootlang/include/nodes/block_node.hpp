@@ -3,7 +3,8 @@
 #include <vector>
 #include "node.hpp"
 
-struct BlockNode : public Node {
+class BlockNode : public Node {
+public:
     std::vector<Node> stmts;
 
     BlockNode(uint32_t lineno, uint32_t col, std::vector<Node> stmts);

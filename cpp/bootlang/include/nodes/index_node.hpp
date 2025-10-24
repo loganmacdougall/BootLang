@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct IndexNode : public Node {
+class IndexNode : public Node {
+public:
     Node left;
     Node right;
 

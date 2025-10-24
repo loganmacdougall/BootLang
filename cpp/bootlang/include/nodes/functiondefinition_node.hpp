@@ -4,7 +4,8 @@
 #include "node.hpp"
 #include "nodes/block_node.hpp"
 
-struct FunctionDefinitionNode : public Node {
+class FunctionDefinitionNode : public Node {
+public:
     std::string name;
     std::vector<std::string> args;
     BlockNode block;

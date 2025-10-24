@@ -3,7 +3,8 @@
 #include "node.hpp"
 #include "token.hpp"
 
-struct AssignNode : public Node {
+class AssignNode : public Node {
+public:
     Node left;
     Node right;
     TokenType op;

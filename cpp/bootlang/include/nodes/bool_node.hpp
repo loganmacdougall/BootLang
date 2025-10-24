@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct BoolNode : public Node {
+class BoolNode : public Node {
+public:
     bool value;
 
     BoolNode(uint32_t lineno, uint32_t col, bool value);

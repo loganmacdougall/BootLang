@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct TernaryNode : public Node {
+class TernaryNode : public Node {
+public:
     Node left;
     Node right;
     Node cond;

@@ -3,10 +3,13 @@
 #include <vector>
 #include "node.hpp"
 
-struct DictLiteralNode : public Node {
-    std::vector<std::pair<Node, Node>> elems;
+typedef std::pair<Node, Node> DictPair;
 
-    DictLiteralNode(uint32_t lineno, uint32_t col, std::vector<std::pair<Node, Node>> elems);
+class DictLiteralNode : public Node {
+public:
+    std::vector<DictPair> elems;
+
+    DictLiteralNode(uint32_t lineno, uint32_t col, std::vector<DictPair> elems);
 
     std::string toCode(int indent) const override;
 };

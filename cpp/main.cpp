@@ -1,6 +1,7 @@
 #include <iostream>
 #include "token.hpp"
 #include "tokenizer.hpp"
+#include "parser.hpp"
 
 std::string code = ""
 "a = 1\n"
@@ -23,12 +24,10 @@ int main() {
     return 0;
   }
 
-  std::cout << "-- TOKENS START --" << std::endl;
-  for (const auto &token_data : tokens.value()) {
-    std::string token_name = TokenMetadata::GetInstance().GetTokenName(token_data.token);
-    std::cout << "[" << token_name << "] ";
-  }
-  std::cout << std::endl << "--  TOKENS END  --" << std::endl;
+  Parser parser(tokens.value());
+  BlockNode ast = parser.parse();
+
+  std::cout << ast.toCode(0) << std::endl;
 
   return 0;
 }

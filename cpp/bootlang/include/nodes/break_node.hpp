@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct BreakNode : public Node {
+class BreakNode : public Node {
+public:
     BreakNode(uint32_t lineno, uint32_t col);
 
     std::string toCode(int indent) const override;

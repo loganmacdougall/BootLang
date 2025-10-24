@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct IntNode : public Node {
+class IntNode : public Node {
+public:
     long value;
 
     IntNode(uint32_t lineno, uint32_t col, long value);

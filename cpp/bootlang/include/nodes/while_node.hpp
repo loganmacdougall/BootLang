@@ -4,7 +4,8 @@
 #include "node.hpp"
 #include "nodes/block_node.hpp"
 
-struct WhileNode : public Node {
+class WhileNode : public Node {
+public:
     Node cond;
     BlockNode block;
 

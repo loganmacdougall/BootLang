@@ -2,7 +2,8 @@
 
 #include "node.hpp"
 
-struct ContinueNode : public Node {
+class ContinueNode : public Node {
+public:
     ContinueNode(uint32_t lineno, uint32_t col);
 
     std::string toCode(int indent) const override;

@@ -1,6 +1,6 @@
 #include "nodes/if_node.hpp"
 
-IfNode::IfNode(uint32_t lineno, uint32_t col, CondBlock if_block, std::vector<CondBlock> elif_blocks, std::optional<CondBlock> else_block)
+IfNode::IfNode(uint32_t lineno, uint32_t col, CondBlock if_block, std::vector<CondBlock> elif_blocks, std::optional<BlockNode> else_block)
 : Node(lineno, col, NodeType::n_IF), if_block(if_block), elif_blocks(std::move(elif_blocks)), else_block(else_block) {}
 
 std::string IfNode::toCode(int indent) const {
@@ -19,9 +19,9 @@ std::string IfNode::toCode(int indent) const {
     }
 
     if (else_block) {
-        CondBlock cond_block = else_block.value();
-        out << indent_string << "else " << cond_block.first.toCode(indent) << ":\n";
-        out << cond_block.second.toCode(indent + 2);
+        BlockNode block = else_block.value();
+        out << indent_string << "else:\n";
+        out << block.toCode(indent + 2);
     }
 
     return out.str();

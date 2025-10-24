@@ -26,12 +26,14 @@ enum NodeType {
     n_FUNCTION_DEFINITION,
     n_LIST_LITERAL,
     n_DICT_LITERAL,
+    n_SET_LITERAL,
     n_IF,
     n_WHILE,
     n_FOR
 };
 
-struct Node {
+class Node {
+public:
     uint32_t lineno;
     uint32_t col;
     NodeType nodetype;

@@ -3,7 +3,8 @@
 #include "node.hpp"
 #include "token.hpp"
 
-struct UnaryOpNode : public Node {
+class UnaryOpNode : public Node {
+public:
     Node right;
     TokenType op;
 

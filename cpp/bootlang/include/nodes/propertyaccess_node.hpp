@@ -3,7 +3,8 @@
 #include <string>
 #include "node.hpp"
 
-struct PropertyAccessNode : public Node {
+class PropertyAccessNode : public Node {
+public:
     Node left;
     std::string property;
 
