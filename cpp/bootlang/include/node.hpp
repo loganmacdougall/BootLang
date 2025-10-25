@@ -28,6 +28,7 @@ enum NodeType {
     n_LIST_LITERAL,
     n_DICT_LITERAL,
     n_SET_LITERAL,
+    n_TUPLE_LITERAL,
     n_IF,
     n_WHILE,
     n_FOR

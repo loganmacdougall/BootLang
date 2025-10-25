@@ -41,11 +41,13 @@ class Parser {
         std::vector<NodePtr> parseExpressionList(TokenType end_token);
         std::vector<std::string> parseIdentifierList();
         
+        NodePtr parseIdentifierOrTuple();
         NodePtr parseAssignmentOrExpression();
         
         std::unique_ptr<AssignNode> parseAssignment();
         
         NodePtr parseExpression();
+        NodePtr parseTupleExpression();
         NodePtr parseTernary();
         NodePtr parseBooleanOps();
         NodePtr parseBooleanNot();

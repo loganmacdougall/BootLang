@@ -21,6 +21,7 @@
 #include "nodes/slice_node.hpp"
 #include "nodes/string_node.hpp"
 #include "nodes/ternary_node.hpp"
+#include "nodes/tupleliteral_node.hpp"
 #include "nodes/unaryop_node.hpp"
 #include "nodes/var_node.hpp"
 #include "nodes/while_node.hpp"

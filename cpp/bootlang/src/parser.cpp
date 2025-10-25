@@ -96,6 +96,7 @@ NodePtr Parser::parseStatement() {
 
     switch (token.token) {
         case t_IDENT:
+        case t_LPAREN:
             return parseAssignmentOrExpression();
         case t_BREAK:
             start_token = consume();
@@ -119,8 +120,18 @@ NodePtr Parser::parseStatement() {
 }
 
 NodePtr Parser::parseIdentifier() {
-    TokenData token = consume(optType(TokenType::t_IDENT));
-    NodePtr node = std::make_unique<VarNode>(VarNode(token.lineno, token.col, token.text));
+    NodePtr node;
+    TokenData token;
+    
+    if (look().token == TokenType::t_LPAREN) {
+        token = consume(optType(TokenType::t_LPAREN));
+        node = parseIdentifierOrTuple();
+        token = consume(optType(TokenType::t_RPAREN));
+    } else {
+        token = consume(optType(TokenType::t_IDENT));
+        node = std::make_unique<VarNode>(VarNode(token.lineno, token.col, token.text));
+    }
+
 
     while (true) {
         token = look();
@@ -227,6 +238,25 @@ std::vector<std::string> Parser::parseIdentifierList() {
     return ids;
 }
 
+NodePtr Parser::parseIdentifierOrTuple() {
+    NodePtr first = parseIdentifier();
+    if (more() && look().token == TokenType::t_COMMA) {
+        std::vector<NodePtr> elems;
+        elems.push_back(std::move(first));
+        
+        while (more() && look().token == TokenType::t_COMMA) {
+            consume(optType(TokenType::t_COMMA));
+            NodePtr elem = parseIdentifier();
+            elems.push_back(std::move(elem));
+        }
+
+        return std::make_unique<TupleLiteralNode>(TupleLiteralNode(
+            elems[0]->lineno, elems[0]->col, std::move(elems)));
+    } else {
+        return first;
+    }
+}
+
 NodePtr Parser::parseAssignmentOrExpression() {
     static std::set<TokenType> ASSIGNMENT_OPERATORS {
         TokenType::t_ASSIGN, TokenType::t_PLUS_ASSIGN,
@@ -260,7 +290,7 @@ NodePtr Parser::parseAssignmentOrExpression() {
 }
 
 std::unique_ptr<AssignNode> Parser::parseAssignment() {
-    NodePtr left = parseIdentifier();
+    NodePtr left = parseIdentifierOrTuple();
     TokenType op = consume().token;
     NodePtr right = parseExpression();
 
@@ -268,7 +298,25 @@ std::unique_ptr<AssignNode> Parser::parseAssignment() {
 }
 
 NodePtr Parser::parseExpression() {
-    return parseTernary();
+    return parseTupleExpression();
+}
+
+NodePtr Parser::parseTupleExpression() {
+    NodePtr first = parseTernary();
+    if (more() && look().token == TokenType::t_COMMA) {
+        std::vector<NodePtr> elems;
+        elems.push_back(std::move(first));
+        
+        while (more() && look().token == TokenType::t_COMMA) {
+            consume(optType(TokenType::t_COMMA));
+            NodePtr elem = parseTernary();
+            elems.push_back(std::move(elem));
+        }
+
+        return std::make_unique<TupleLiteralNode>(TupleLiteralNode(
+            elems[0]->lineno, elems[0]->col, std::move(elems)));
+    }
+    return first;
 }
 
 NodePtr Parser::parseTernary() {
