@@ -45,7 +45,7 @@ void Parser::passAllWhitespace() {
     }
 }
 
-TokenData Parser::consume(std::optional<TokenType> expected) {
+TokenData Parser::consume(std::optional<Token::Type> expected) {
     TokenData token = look();
     if (expected && token.token != expected.value()) {
         std::string expected_string = TokenMetadata::GetInstance().GetTokenName(expected.value());
@@ -62,8 +62,8 @@ BlockNodePtr Parser::parse() {
     while (more()) {
         TokenData token = look();
 
-        if (token.token == TokenType::t_NEWLINE) {
-            consume(TokenType::t_NEWLINE);
+        if (token.token == Token::Type::NEWLINE) {
+            consume(Token::Type::NEWLINE);
             continue;
         }
 
@@ -74,19 +74,19 @@ BlockNodePtr Parser::parse() {
 }
 
 BlockNodePtr Parser::parseBlock() {
-    consume(optType(TokenType::t_NEWLINE));
-    TokenData start_token = consume(optType(TokenType::t_INDENT));
+    consume(optType(Token::Type::NEWLINE));
+    TokenData start_token = consume(optType(Token::Type::INDENT));
 
     std::vector<NodePtr> stmts;
-    while (more() && look().token != TokenType::t_DEDENT) {
-        if (look().token == TokenType::t_NEWLINE) {
-            consume(optType(TokenType::t_NEWLINE));
+    while (more() && look().token != Token::Type::DEDENT) {
+        if (look().token == Token::Type::NEWLINE) {
+            consume(optType(Token::Type::NEWLINE));
             continue;
         }
         stmts.push_back(parseStatement());
     }
 
-    consume(optType(TokenType::t_DEDENT));
+    consume(optType(Token::Type::DEDENT));
     return std::make_unique<BlockNode>(BlockNode(start_token.lineno, start_token.col, std::move(stmts)));
 }
 
@@ -95,24 +95,24 @@ NodePtr Parser::parseStatement() {
     TokenData start_token;
 
     switch (token.token) {
-        case t_IDENT:
-        case t_LPAREN:
+        case Token::Type::IDENT:
+        case Token::Type::LPAREN:
             return parseAssignmentOrExpression();
-        case t_BREAK:
+        case Token::Type::BREAK:
             start_token = consume();
             return std::make_unique<BreakNode>(BreakNode(start_token.lineno, start_token.col));
-        case t_CONTINUE:
+        case Token::Type::CONTINUE:
             start_token = consume();
             return std::make_unique<ContinueNode>(ContinueNode(start_token.lineno, start_token.col));
-        case t_RETURN:
+        case Token::Type::RETURN:
             return parseReturn();
-        case t_IF:
+        case Token::Type::IF:
             return parseIf();
-        case t_WHILE:
+        case Token::Type::WHILE:
             return parseWhile();
-        case t_FOR:
+        case Token::Type::FOR:
             return parseFor();
-        case t_DEF:
+        case Token::Type::DEF:
             return parseDef();
         default:
             return parseExpression();
@@ -123,23 +123,23 @@ NodePtr Parser::parseIdentifier() {
     NodePtr node;
     TokenData token;
     
-    if (look().token == TokenType::t_LPAREN) {
-        token = consume(optType(TokenType::t_LPAREN));
+    if (look().token == Token::Type::LPAREN) {
+        token = consume(optType(Token::Type::LPAREN));
         node = parseIdentifierOrTuple();
-        token = consume(optType(TokenType::t_RPAREN));
+        token = consume(optType(Token::Type::RPAREN));
     } else {
-        token = consume(optType(TokenType::t_IDENT));
+        token = consume(optType(Token::Type::IDENT));
         node = std::make_unique<VarNode>(VarNode(token.lineno, token.col, token.text));
     }
 
 
     while (true) {
         token = look();
-        if (token.token == TokenType::t_LPAREN) {
+        if (token.token == Token::Type::LPAREN) {
             node = parseCall(std::move(node));
-        } else if (token.token == TokenType::t_LBRACK) {
+        } else if (token.token == Token::Type::LBRACK) {
             node = parseIndexOrSlice(std::move(node));
-        } else if (token.token == TokenType::t_DOT) {
+        } else if (token.token == Token::Type::DOT) {
             node = parsePropertyAccess(std::move(node));
         } else {
             break;
@@ -150,66 +150,66 @@ NodePtr Parser::parseIdentifier() {
 }
 
 std::unique_ptr<CallNode> Parser::parseCall(NodePtr&& left) {
-    consume(optType(TokenType::t_LPAREN));
-    std::vector<NodePtr> args = parseExpressionList(TokenType::t_RPAREN);
-    consume(optType(TokenType::t_RPAREN));
+    consume(optType(Token::Type::LPAREN));
+    std::vector<NodePtr> args = parseExpressionList(Token::Type::RPAREN);
+    consume(optType(Token::Type::RPAREN));
     return std::make_unique<CallNode>(CallNode(left->lineno, left->col, std::move(left), std::move(args)));
 }
 
 NodePtr Parser::parseIndexOrSlice(NodePtr&& left) {
-    consume(optType(TokenType::t_LBRACK));
+    consume(optType(Token::Type::LBRACK));
 
     std::optional<NodePtr> start = std::nullopt;
     std::optional<NodePtr> end = std::nullopt;
     std::optional<NodePtr> step = std::nullopt;
 
     TokenData token = look();
-    if (token.token != TokenType::t_COLON) {
+    if (token.token != Token::Type::COLON) {
         start = parseExpression();
     }
 
-    if (look().token == TokenType::t_RBRACK) {
+    if (look().token == Token::Type::RBRACK) {
         if (start.has_value()) {
-            consume(optType(TokenType::t_RBRACK));
+            consume(optType(Token::Type::RBRACK));
             return std::make_unique<IndexNode>(IndexNode(left->lineno, left->col, std::move(left), std::move(start.value())));
         } else {
             throw std::logic_error("Invalid slice syntax: missing start expression");
         }
     }
 
-    consume(optType(TokenType::t_COLON));
+    consume(optType(Token::Type::COLON));
 
     token = look();
-    if (token.token != TokenType::t_COLON && token.token != TokenType::t_RBRACK) {
+    if (token.token != Token::Type::COLON && token.token != Token::Type::RBRACK) {
         end = parseExpression();
     }
 
     token = look();
-    if (token.token == TokenType::t_COLON) {
-        consume(optType(TokenType::t_COLON));
+    if (token.token == Token::Type::COLON) {
+        consume(optType(Token::Type::COLON));
         step = parseExpression();
     }
 
-    consume(optType(TokenType::t_RBRACK));
+    consume(optType(Token::Type::RBRACK));
     return std::make_unique<SliceNode>(SliceNode(left->lineno, left->col,
         std::move(left), std::move(start), std::move(end), std::move(step)));
 }
 
 std::unique_ptr<PropertyAccessNode> Parser::parsePropertyAccess(NodePtr&& left) {
-    consume(optType(TokenType::t_DOT));
-    std::string right = consume(optType(TokenType::t_IDENT)).text;
+    consume(optType(Token::Type::DOT));
+    std::string right = consume(optType(Token::Type::IDENT)).text;
     return std::make_unique<PropertyAccessNode>(PropertyAccessNode(
         left->lineno, left->col, std::move(left), std::move(right)));
 }
 
-std::vector<NodePtr> Parser::parseExpressionList(TokenType end_token) {
+std::vector<NodePtr> Parser::parseExpressionList(Token::Type end_token) {
     ignoreWhitespace(true);
 
     std::vector<NodePtr> args;
     if (look().token != end_token) {
         args.push_back(parseExpression());
-        while (look().token == TokenType::t_COMMA) {
-            consume(optType(TokenType::t_COMMA));
+        while (look().token == Token::Type::COMMA) {
+            consume(optType(Token::Type::COMMA));
             if (look().token == end_token) {
                 break;
             }
@@ -224,15 +224,15 @@ std::vector<NodePtr> Parser::parseExpressionList(TokenType end_token) {
 std::vector<std::string> Parser::parseIdentifierList() {
     std::vector<std::string> ids;
 
-    if (!more() || look().token != TokenType::t_IDENT) {
+    if (!more() || look().token != Token::Type::IDENT) {
         return ids;
     }
 
-    ids.push_back(consume(optType(TokenType::t_IDENT)).text);
+    ids.push_back(consume(optType(Token::Type::IDENT)).text);
 
-    while (more() && look().token == TokenType::t_COMMA) {
-        consume(optType(TokenType::t_COMMA));
-        ids.push_back(consume(optType(TokenType::t_IDENT)).text);
+    while (more() && look().token == Token::Type::COMMA) {
+        consume(optType(Token::Type::COMMA));
+        ids.push_back(consume(optType(Token::Type::IDENT)).text);
     }
 
     return ids;
@@ -240,12 +240,12 @@ std::vector<std::string> Parser::parseIdentifierList() {
 
 NodePtr Parser::parseIdentifierOrTuple() {
     NodePtr first = parseIdentifier();
-    if (more() && look().token == TokenType::t_COMMA) {
+    if (more() && look().token == Token::Type::COMMA) {
         std::vector<NodePtr> elems;
         elems.push_back(std::move(first));
         
-        while (more() && look().token == TokenType::t_COMMA) {
-            consume(optType(TokenType::t_COMMA));
+        while (more() && look().token == Token::Type::COMMA) {
+            consume(optType(Token::Type::COMMA));
             NodePtr elem = parseIdentifier();
             elems.push_back(std::move(elem));
         }
@@ -258,10 +258,10 @@ NodePtr Parser::parseIdentifierOrTuple() {
 }
 
 NodePtr Parser::parseAssignmentOrExpression() {
-    static std::set<TokenType> ASSIGNMENT_OPERATORS {
-        TokenType::t_ASSIGN, TokenType::t_PLUS_ASSIGN,
-        TokenType::t_MINUS_ASSIGN, TokenType::t_STAR_ASSIGN,
-        TokenType::t_SLASH_ASSIGN, TokenType::t_PERCENT_ASSIGN
+    static std::set<Token::Type> ASSIGNMENT_OPERATORS {
+        Token::Type::ASSIGN, Token::Type::PLUS_ASSIGN,
+        Token::Type::MINUS_ASSIGN, Token::Type::STAR_ASSIGN,
+        Token::Type::SLASH_ASSIGN, Token::Type::PERCENT_ASSIGN
     };
 
     push();
@@ -276,7 +276,7 @@ NodePtr Parser::parseAssignmentOrExpression() {
             break;
         }
 
-        if (next_token.value().token == TokenType::t_NEWLINE) {
+        if (next_token.value().token == Token::Type::NEWLINE) {
             break;
         }
 
@@ -291,7 +291,7 @@ NodePtr Parser::parseAssignmentOrExpression() {
 
 std::unique_ptr<AssignNode> Parser::parseAssignment() {
     NodePtr left = parseIdentifierOrTuple();
-    TokenType op = consume().token;
+    Token::Type op = consume().token;
     NodePtr right = parseExpression();
 
     return std::make_unique<AssignNode>(AssignNode(left->lineno, left->col, std::move(left), std::move(right), op));
@@ -303,12 +303,12 @@ NodePtr Parser::parseExpression() {
 
 NodePtr Parser::parseTupleExpression() {
     NodePtr first = parseTernary();
-    if (more() && look().token == TokenType::t_COMMA) {
+    if (more() && look().token == Token::Type::COMMA) {
         std::vector<NodePtr> elems;
         elems.push_back(std::move(first));
         
-        while (more() && look().token == TokenType::t_COMMA) {
-            consume(optType(TokenType::t_COMMA));
+        while (more() && look().token == Token::Type::COMMA) {
+            consume(optType(Token::Type::COMMA));
             NodePtr elem = parseTernary();
             elems.push_back(std::move(elem));
         }
@@ -321,10 +321,10 @@ NodePtr Parser::parseTupleExpression() {
 
 NodePtr Parser::parseTernary() {
     NodePtr left = parseBooleanOps();
-    while (more() && look().token == TokenType::t_IF) {
-        consume(optType(TokenType::t_IF));
+    while (more() && look().token == Token::Type::IF) {
+        consume(optType(Token::Type::IF));
         NodePtr cond = parseBooleanOps();
-        consume(optType(TokenType::t_ELSE));
+        consume(optType(Token::Type::ELSE));
         NodePtr right = parseExpression();
         left = std::make_unique<TernaryNode>(TernaryNode(
             left->lineno, left->col, std::move(cond), std::move(left), std::move(right)));
@@ -333,13 +333,13 @@ NodePtr Parser::parseTernary() {
 }
 
 NodePtr Parser::parseBooleanOps() {
-    static std::set<TokenType> BOOLEAN_OPS {
-        TokenType::t_AND, TokenType::t_OR
+    static std::set<Token::Type> BOOLEAN_OPS {
+        Token::Type::AND, Token::Type::OR
     };
     
     NodePtr left = parseBooleanNot();
     while (more() && BOOLEAN_OPS.find(look().token) != BOOLEAN_OPS.end()) {
-        TokenType op = consume().token;
+        Token::Type op = consume().token;
         NodePtr right = parseBooleanNot();
         left = std::make_unique<BinaryOpNode>(BinaryOpNode(
             left->lineno, left->col, std::move(left), std::move(right), op));
@@ -348,25 +348,25 @@ NodePtr Parser::parseBooleanOps() {
 }
 
 NodePtr Parser::parseBooleanNot() {
-    if (more() && look().token == TokenType::t_NOT) {
+    if (more() && look().token == Token::Type::NOT) {
         TokenData token = consume();
         NodePtr op = parseComparison();
         return std::make_unique<UnaryOpNode>(UnaryOpNode(
-            token.lineno, token.col, std::move(op), TokenType::t_NOT));
+            token.lineno, token.col, std::move(op), Token::Type::NOT));
     }
     return parseComparison();
 }
 
 NodePtr Parser::parseComparison() {
-    static std::set<TokenType> COMPARISON_OPS {
-        TokenType::t_EQUAL, TokenType::t_NEQUAL,
-        TokenType::t_LESS, TokenType::t_LESS_EQUAL,
-        TokenType::t_GREATER, TokenType::t_GREATER_EQUAL
+    static std::set<Token::Type> COMPARISON_OPS {
+        Token::Type::EQUAL, Token::Type::NEQUAL,
+        Token::Type::LESS, Token::Type::LESS_EQUAL,
+        Token::Type::GREATER, Token::Type::GREATER_EQUAL
     };
 
     NodePtr left = parseAdditive();
     while (more() && COMPARISON_OPS.find(look().token) != COMPARISON_OPS.end()) {
-        TokenType op = consume().token;
+        Token::Type op = consume().token;
         NodePtr right = parseAdditive();
         left = std::make_unique<BinaryOpNode>(BinaryOpNode(
             left->lineno, left->col, std::move(left), std::move(right), std::move(op)));
@@ -375,13 +375,13 @@ NodePtr Parser::parseComparison() {
 }
 
 NodePtr Parser::parseAdditive() {
-    static std::set<TokenType> ADDITIVE_OPS {
-        TokenType::t_PLUS, TokenType::t_MINUS, TokenType::t_PERCENT
+    static std::set<Token::Type> ADDITIVE_OPS {
+        Token::Type::PLUS, Token::Type::MINUS, Token::Type::PERCENT
     };
 
     NodePtr left = parseMultiplicative();
     while (more() && ADDITIVE_OPS.find(look().token) != ADDITIVE_OPS.end()) {
-        TokenType op = consume().token;
+        Token::Type op = consume().token;
         NodePtr right = parseMultiplicative();
         left = std::make_unique<BinaryOpNode>(BinaryOpNode(
             left->lineno, left->col, std::move(left), std::move(right), std::move(op)));
@@ -390,13 +390,13 @@ NodePtr Parser::parseAdditive() {
 }
 
 NodePtr Parser::parseMultiplicative() {
-    static std::set<TokenType> MULTIPLICATIVE_OPS {
-        TokenType::t_STAR, TokenType::t_SLASH
+    static std::set<Token::Type> MULTIPLICATIVE_OPS {
+        Token::Type::STAR, Token::Type::SLASH
     };
 
     NodePtr left = parseUnary();
     while (more() && MULTIPLICATIVE_OPS.find(look().token) != MULTIPLICATIVE_OPS.end()) {
-        TokenType op = consume().token;
+        Token::Type op = consume().token;
         NodePtr right = parseUnary();
         left = std::make_unique<BinaryOpNode>(BinaryOpNode(
             left->lineno, left->col, std::move(left), std::move(right), std::move(op)));
@@ -407,8 +407,8 @@ NodePtr Parser::parseMultiplicative() {
 NodePtr Parser::parseUnary() {
     if (more()) {
         TokenData token = look();
-        TokenType op = token.token;
-        if (op == TokenType::t_PLUS || op == TokenType::t_MINUS) {
+        Token::Type op = token.token;
+        if (op == Token::Type::PLUS || op == Token::Type::MINUS) {
             consume();
             NodePtr right = parseAtom();
             return std::make_unique<UnaryOpNode>(UnaryOpNode(
@@ -424,30 +424,30 @@ NodePtr Parser::parseAtom() {
     NodePtr node = nullptr;
 
     switch (token.token) {
-        case TokenType::t_NUMBER:
+        case Token::Type::NUMBER:
             consume();
             if (token.text.find('.') != std::string::npos) {
                 return std::make_unique<FloatNode>(FloatNode(token.lineno, token.col, std::stof(token.text)));
             }
             return std::make_unique<IntNode>(IntNode(token.lineno, token.col, std::stoi(token.text)));
-        case TokenType::t_STRING:
+        case Token::Type::STRING:
             consume();
             unescaped = unescapeString(token.text.substr(1, token.text.size() - 2));
             return std::make_unique<StringNode>(StringNode(token.lineno, token.col, unescaped));
-        case TokenType::t_TRUE:
-        case TokenType::t_FALSE:
+        case Token::Type::TRUE:
+        case Token::Type::FALSE:
             consume();
-            return std::make_unique<BoolNode>(BoolNode(token.lineno, token.col, token.token == TokenType::t_TRUE));
-        case TokenType::t_IDENT:
+            return std::make_unique<BoolNode>(BoolNode(token.lineno, token.col, token.token == Token::Type::TRUE));
+        case Token::Type::IDENT:
             return parseIdentifier();
-        case TokenType::t_LPAREN:
-            consume(optType(TokenType::t_LPAREN));
+        case Token::Type::LPAREN:
+            consume(optType(Token::Type::LPAREN));
             node = parseExpression();
-            consume(optType(TokenType::t_RPAREN));
+            consume(optType(Token::Type::RPAREN));
             return node;
-        case TokenType::t_LBRACK:
+        case Token::Type::LBRACK:
             return parseListLiteral();
-        case TokenType::t_LBRACE:
+        case Token::Type::LBRACE:
             return parseDictOrSetLiteral();
         default:
             std::string token_name = TokenMetadata::GetInstance().GetTokenName(token.token);
@@ -456,37 +456,37 @@ NodePtr Parser::parseAtom() {
 }
 
 std::unique_ptr<ListLiteralNode> Parser::parseListLiteral() {
-    TokenData start_token = consume(optType(TokenType::t_LBRACK));
+    TokenData start_token = consume(optType(Token::Type::LBRACK));
 
     ignoreWhitespace(true);
-    std::vector<NodePtr> args = parseExpressionList(TokenType::t_RBRACK);
+    std::vector<NodePtr> args = parseExpressionList(Token::Type::RBRACK);
     ignoreWhitespace(false);
 
-    consume(optType(TokenType::t_RBRACK));
+    consume(optType(Token::Type::RBRACK));
     return std::make_unique<ListLiteralNode>(ListLiteralNode(
         start_token.lineno, start_token.col, std::move(args)));
 }
 
 NodePtr Parser::parseDictOrSetLiteral() {
-    TokenData start_node = consume(optType(TokenType::t_LBRACE));
+    TokenData start_node = consume(optType(Token::Type::LBRACE));
     ignoreWhitespace(true);
 
     push();
 
     std::vector<DictPair> pairs;
 
-    if (look().token == TokenType::t_RBRACE) {
-        consume(optType(TokenType::t_RBRACE));
+    if (look().token == Token::Type::RBRACE) {
+        consume(optType(Token::Type::RBRACE));
         ignoreWhitespace(false);
         pop(false);
         return std::make_unique<DictLiteralNode>(DictLiteralNode(start_node.lineno, start_node.col, std::move(pairs)));
     }
 
     NodePtr left = parseExpression();
-    if (look().token != TokenType::t_COLON) {
+    if (look().token != Token::Type::COLON) {
         pop();
-        std::vector<NodePtr> elems = parseExpressionList(TokenType::t_RBRACE);
-        consume(optType(TokenType::t_RBRACE));
+        std::vector<NodePtr> elems = parseExpressionList(Token::Type::RBRACE);
+        consume(optType(Token::Type::RBRACE));
         return std::make_unique<SetLiteralNode>(SetLiteralNode(start_node.lineno, start_node.col, std::move(elems)));
     }
 
@@ -495,44 +495,44 @@ NodePtr Parser::parseDictOrSetLiteral() {
     NodePtr right = parseExpression();
     pairs.push_back(std::make_pair(std::move(left), std::move(right)));
 
-    while (look().token == TokenType::t_COMMA) {
-        consume(optType(TokenType::t_COMMA));
-        if (look().token == TokenType::t_RBRACE) {
+    while (look().token == Token::Type::COMMA) {
+        consume(optType(Token::Type::COMMA));
+        if (look().token == Token::Type::RBRACE) {
             break;
         }
         left = parseExpression();
-        consume(optType(TokenType::t_COLON));
+        consume(optType(Token::Type::COLON));
         right = parseExpression();
         pairs.push_back(std::make_pair(std::move(left), std::move(right)));
     }
 
-    consume(optType(TokenType::t_RBRACE));
+    consume(optType(Token::Type::RBRACE));
     ignoreWhitespace(false);
 
     return std::make_unique<DictLiteralNode>(DictLiteralNode(start_node.lineno, start_node.col, std::move(pairs)));
 }
 
 std::unique_ptr<IfNode> Parser::parseIf() {
-    TokenData start_token = consume(optType(TokenType::t_IF));
+    TokenData start_token = consume(optType(Token::Type::IF));
     NodePtr cond = parseExpression();
-    consume(optType(TokenType::t_COLON));
+    consume(optType(Token::Type::COLON));
     BlockNodePtr block = parseBlock();
 
     CondBlock if_block = std::make_pair(std::move(cond), std::move(block));
     
     std::vector<CondBlock> elif_blocks;
-    while (more() && look().token == TokenType::t_ELIF) {
-        consume(optType(TokenType::t_ELIF));
+    while (more() && look().token == Token::Type::ELIF) {
+        consume(optType(Token::Type::ELIF));
         cond = parseExpression();
-        consume(optType(TokenType::t_COLON));
+        consume(optType(Token::Type::COLON));
         block = parseBlock();
         elif_blocks.push_back(std::make_pair(std::move(cond), std::move(block)));
     }
 
     std::optional<BlockNodePtr> else_block = std::nullopt;
-    if (more() && look().token == TokenType::t_ELSE) {
-        consume(optType(TokenType::t_ELSE));
-        consume(optType(TokenType::t_COLON));
+    if (more() && look().token == Token::Type::ELSE) {
+        consume(optType(Token::Type::ELSE));
+        consume(optType(Token::Type::COLON));
         block = parseBlock();
         else_block = std::optional<BlockNodePtr>(std::move(block));
     }
@@ -543,9 +543,9 @@ std::unique_ptr<IfNode> Parser::parseIf() {
 }
 
 std::unique_ptr<WhileNode> Parser::parseWhile() {
-    TokenData start_token = consume(optType(TokenType::t_WHILE));
+    TokenData start_token = consume(optType(Token::Type::WHILE));
     NodePtr cond = parseExpression();
-    consume(optType(TokenType::t_COLON));
+    consume(optType(Token::Type::COLON));
     BlockNodePtr block = parseBlock();
 
     return std::make_unique<WhileNode>(WhileNode(
@@ -553,27 +553,27 @@ std::unique_ptr<WhileNode> Parser::parseWhile() {
 }
 
 std::unique_ptr<ForNode> Parser::parseFor() {
-    TokenData start_token = consume(optType(TokenType::t_FOR));
+    TokenData start_token = consume(optType(Token::Type::FOR));
     bool parentheses = false;
 
-    if (look().token == TokenType::t_LPAREN) {
-        consume(optType(TokenType::t_LPAREN));
+    if (look().token == Token::Type::LPAREN) {
+        consume(optType(Token::Type::LPAREN));
         parentheses = true;
     }
 
     std::vector<std::string> vars = parseIdentifierList();
 
     if (parentheses) {
-        consume(optType(TokenType::t_RPAREN));
+        consume(optType(Token::Type::RPAREN));
     }
 
     if (vars.empty()) {
         throw std::logic_error("Expected at least one identifier in for loop. Use '_' if you don't want to use the result from the iterable.");
     }
 
-    consume(optType(TokenType::t_IN));
+    consume(optType(Token::Type::IN));
     NodePtr iterable = parseExpression();
-    consume(optType(TokenType::t_COLON));
+    consume(optType(Token::Type::COLON));
     BlockNodePtr block = parseBlock();
 
     return std::make_unique<ForNode>(ForNode(
@@ -582,12 +582,12 @@ std::unique_ptr<ForNode> Parser::parseFor() {
 }
 
 std::unique_ptr<FunctionDefinitionNode> Parser::parseDef() {
-    TokenData start_token = consume(optType(TokenType::t_DEF));
-    std::string name = consume(optType(TokenType::t_IDENT)).text;
-    consume(optType(TokenType::t_LPAREN));
+    TokenData start_token = consume(optType(Token::Type::DEF));
+    std::string name = consume(optType(Token::Type::IDENT)).text;
+    consume(optType(Token::Type::LPAREN));
     std::vector<std::string> args = parseIdentifierList();
-    consume(optType(TokenType::t_RPAREN));
-    consume(optType(TokenType::t_COLON));
+    consume(optType(Token::Type::RPAREN));
+    consume(optType(Token::Type::COLON));
     BlockNodePtr block = parseBlock();
 
     return std::make_unique<FunctionDefinitionNode>(FunctionDefinitionNode(
@@ -596,9 +596,9 @@ std::unique_ptr<FunctionDefinitionNode> Parser::parseDef() {
 }
 
 std::unique_ptr<ReturnNode> Parser::parseReturn() {
-    TokenData start_token = consume(optType(TokenType::t_RETURN));
+    TokenData start_token = consume(optType(Token::Type::RETURN));
 
-    if (look().token == TokenType::t_NEWLINE) {
+    if (look().token == Token::Type::NEWLINE) {
         return std::make_unique<ReturnNode>(ReturnNode(start_token.lineno, start_token.col, std::nullopt));
     }
 

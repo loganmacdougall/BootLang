@@ -28,7 +28,7 @@ class Parser {
         void ignoreWhitespace(bool ignore);
         void passAllWhitespace();
 
-        TokenData consume(std::optional<TokenType> expected = std::nullopt);
+        TokenData consume(std::optional<Token::Type> expected = std::nullopt);
 
         BlockNodePtr parseBlock();
         NodePtr parseStatement();
@@ -38,7 +38,7 @@ class Parser {
         NodePtr parseIndexOrSlice(NodePtr&& left);
         std::unique_ptr<PropertyAccessNode> parsePropertyAccess(NodePtr&& left);
 
-        std::vector<NodePtr> parseExpressionList(TokenType end_token);
+        std::vector<NodePtr> parseExpressionList(Token::Type end_token);
         std::vector<std::string> parseIdentifierList();
         
         NodePtr parseIdentifierOrTuple();
@@ -68,12 +68,12 @@ class Parser {
         std::unique_ptr<ReturnNode> parseReturn();
 
     private:
-        static inline std::set<TokenType> WHITESPACE {
-            TokenType::t_NEWLINE, TokenType::t_INDENT, TokenType::t_DEDENT
+        static inline std::set<Token::Type> WHITESPACE {
+            Token::Type::NEWLINE, Token::Type::INDENT, Token::Type::DEDENT
         };
 
-        static std::optional<TokenType> optType(TokenType type) {
-            return std::optional<TokenType>(type);
+        static std::optional<Token::Type> optType(Token::Type type) {
+            return std::optional<Token::Type>(type);
         }
 
         static std::string unescapeString(std::string str);

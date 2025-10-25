@@ -1,7 +1,7 @@
 #include "nodes/dictliteral_node.hpp"
 
 DictLiteralNode::DictLiteralNode(uint32_t lineno, uint32_t col, std::vector<DictPair>&& elems)
-: Node(lineno, col, NodeType::n_DICT_LITERAL), elems(std::move(elems)) {}
+: Node(lineno, col, Node::Type::DICT_LITERAL), elems(std::move(elems)) {}
 
 std::string DictLiteralNode::toCode(int indent) const {
     (void)indent; 

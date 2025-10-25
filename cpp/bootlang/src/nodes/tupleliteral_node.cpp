@@ -1,7 +1,7 @@
 #include "nodes/tupleliteral_node.hpp"
 
 TupleLiteralNode::TupleLiteralNode(uint32_t lineno, uint32_t col, std::vector<NodePtr>&& elems)
-: Node(lineno, col, NodeType::n_TUPLE_LITERAL), elems(std::move(elems)) {}
+: Node(lineno, col, Node::Type::TUPLE_LITERAL), elems(std::move(elems)) {}
 
 std::string TupleLiteralNode::toCode(int indent) const {
     (void)indent; 

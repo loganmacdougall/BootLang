@@ -15,7 +15,7 @@ uint32_t count_indent(std::string &text) {
   return count;
 }
 
-std::string build_combined_pattern(std::vector<RegexPair> regex_pairs) {
+std::string build_combined_pattern(std::vector<TokenMetadata::RegexPair> regex_pairs) {
   std::string regex;
 
   for (auto &regex_pair : regex_pairs) {
@@ -48,7 +48,7 @@ Tokenizer::Tokenizer(std::string code) :
   for (auto it = begin; it != end; it++) {
     const std::smatch &match = *it;
     
-    TokenType token = TokenType::t_INVALID_TOKEN;
+    Token::Type token = Token::Type::INVALID_TOKEN;
     std::string text;
 
     for (size_t i = 1; i < match.size(); i++) {
@@ -59,23 +59,23 @@ Tokenizer::Tokenizer(std::string code) :
       }
     }
 
-    if (token == TokenType::t_INVALID_TOKEN) {
+    if (token == Token::Type::INVALID_TOKEN) {
       return std::nullopt;
     }
 
     uint32_t col = static_cast<uint32_t>(match.position() - line_start + 1);
 
-    comment = token == TokenType::t_COMMENT || comment;
-    if (comment && token != TokenType::t_NEWLINE) continue;
+    comment = token == Token::Type::COMMENT || comment;
+    if (comment && token != Token::Type::NEWLINE) continue;
     comment = false;
 
-    if (previous_was_newline && token != TokenType::t_NEWLINE) {
+    if (previous_was_newline && token != Token::Type::NEWLINE) {
       previous_was_newline = false;
 
-      if (token != TokenType::t_WHITESPACE) {
+      if (token != Token::Type::WHITESPACE) {
         while (indent_stack.size() > 1) {
           indent_stack.pop_back();
-          tokens.push_back(TokenData{TokenType::t_DEDENT, "", lineno, 1});
+          tokens.push_back(TokenData{Token::Type::DEDENT, "", lineno, 1});
         }
 
         tokens.push_back(TokenData{token, text, lineno, col});
@@ -85,13 +85,13 @@ Tokenizer::Tokenizer(std::string code) :
       uint32_t indent_count = count_indent(text);
       if (indent_count > indent_stack[indent_stack.size() - 1]) {
         indent_stack.push_back(indent_count);
-        tokens.push_back(TokenData{TokenType::t_INDENT, text, lineno, col});
+        tokens.push_back(TokenData{Token::Type::INDENT, text, lineno, col});
         continue;
       } 
       
       while (indent_count < indent_stack[indent_stack.size() - 1]) {
         indent_stack.pop_back();
-        tokens.push_back(TokenData{TokenType::t_DEDENT, text, lineno, col});
+        tokens.push_back(TokenData{Token::Type::DEDENT, text, lineno, col});
       }
 
       if (indent_count != indent_stack[indent_stack.size() - 1]) {
@@ -101,13 +101,13 @@ Tokenizer::Tokenizer(std::string code) :
       continue;
     }
 
-    if (token == TokenType::t_NEWLINE) {
+    if (token == Token::Type::NEWLINE) {
       previous_was_newline = true;
       lineno += 1;
       line_start = match.position() + match.length();
     }
 
-    if (token == TokenType::t_WHITESPACE)
+    if (token == Token::Type::WHITESPACE)
       continue;
 
     tokens.push_back(TokenData{token, text, lineno, col});
@@ -115,7 +115,7 @@ Tokenizer::Tokenizer(std::string code) :
 
   while (indent_stack.size() > 1) {
     indent_stack.pop_back();
-    tokens.push_back(TokenData{TokenType::t_DEDENT, "", lineno, 1});
+    tokens.push_back(TokenData{Token::Type::DEDENT, "", lineno, 1});
   }
 
   return tokens;

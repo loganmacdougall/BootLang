@@ -7,7 +7,7 @@
 #include "token.hpp"
 
 struct TokenData {
-    TokenType token;
+    Token::Type token;
     std::string text;
     uint32_t lineno;
     uint32_t col;

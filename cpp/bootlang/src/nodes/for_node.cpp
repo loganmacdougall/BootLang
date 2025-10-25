@@ -1,7 +1,7 @@
 #include "nodes/for_node.hpp"
 
 ForNode::ForNode(uint32_t lineno, uint32_t col, std::vector<std::string>&& args, NodePtr&& iterable, BlockNodePtr&& block)
-: Node(lineno, col, NodeType::n_FOR), args(std::move(args)), iterable(std::move(iterable)), block(std::move(block)) {}
+: Node(lineno, col, Node::Type::FOR), args(std::move(args)), iterable(std::move(iterable)), block(std::move(block)) {}
 
 std::string ForNode::toCode(int indent) const {
     std::ostringstream out;

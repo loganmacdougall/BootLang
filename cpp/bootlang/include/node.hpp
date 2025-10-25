@@ -5,44 +5,46 @@
 #include <sstream>
 #include <memory>
 
-enum NodeType {
-    n_INT,
-    n_FLOAT,
-    n_STRING,
-    n_BOOL,
-    n_VAR,
-    n_SLICE_RANGE,
-    n_BREAK,
-    n_CONTINUE,
-    n_RETURN,
-    n_BINARY_OP,
-    n_UNARY_OP,
-    n_ASSIGN,
-    n_TERNARY,
-    n_BLOCK,
-    n_CALL,
-    n_SLICE,
-    n_PROPERTY_ACCESS,
-    n_INDEX,
-    n_FUNCTION_DEFINITION,
-    n_LIST_LITERAL,
-    n_DICT_LITERAL,
-    n_SET_LITERAL,
-    n_TUPLE_LITERAL,
-    n_IF,
-    n_WHILE,
-    n_FOR
-};
-
 typedef std::unique_ptr<class Node> NodePtr;
 
 class Node {
 public:
+enum Type {
+    BLOCK,
+    BOOL,
+    INT,
+    FLOAT,
+    STRING,
+    ASSIGN,
+    TUPLE_LITERAL,
+    LIST_LITERAL,
+    DICT_LITERAL,
+    SET_LITERAL,
+    TERNARY,
+    BINARY_OP,
+    UNARY_OP,
+    CALL,
+    BREAK,
+    CONTINUE,
+    RETURN,
+    VAR,
+    FUNCTION_DEFINITION,
+    IF,
+    WHILE,
+    FOR,
+    INDEX,
+    SLICE,
+    PROPERTY_ACCESS,
+    IDENTIFIER,
+    LITERAL
+};
+
+public:
     uint32_t lineno;
     uint32_t col;
-    NodeType nodetype;
+    Node::Type nodetype;
 
-    Node(uint32_t lineno, uint32_t col, NodeType nodetype);
+    Node(uint32_t lineno, uint32_t col, Node::Type nodetype);
     virtual ~Node() = default;
 
     virtual std::string toCode(int indent) const;

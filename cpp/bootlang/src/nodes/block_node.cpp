@@ -1,7 +1,7 @@
 #include "nodes/block_node.hpp"
 
 BlockNode::BlockNode(uint32_t lineno, uint32_t col, std::vector<NodePtr>&& stmts)
-    : Node(lineno, col, NodeType::n_BLOCK), stmts(std::move(stmts)) {}
+    : Node(lineno, col, Node::Type::BLOCK), stmts(std::move(stmts)) {}
 
 std::string BlockNode::toCode(int indent) const {
     std::ostringstream out;
