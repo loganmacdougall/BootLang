@@ -66,6 +66,7 @@ class Parser {
 
         std::unique_ptr<FunctionDefinitionNode> parseDef();
         std::unique_ptr<ReturnNode> parseReturn();
+        std::unique_ptr<YieldNode> parseYield();
 
     private:
         static inline std::set<Token::Type> WHITESPACE {

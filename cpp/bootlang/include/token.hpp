@@ -26,6 +26,7 @@ namespace Token {
     BREAK,
     CONTINUE,
     RETURN,
+    YIELD,
     AND,
     OR,
     NOT,
@@ -45,6 +46,7 @@ namespace Token {
     MINUS,
     STAR,
     SLASH,
+    DOUBLE_SLASH,
     PERCENT,
     EQUAL,
     NEQUAL,
@@ -57,6 +59,7 @@ namespace Token {
     MINUS_ASSIGN,
     STAR_ASSIGN,
     SLASH_ASSIGN,
+    DOUBLE_SLASH_ASSIGN,
     PERCENT_ASSIGN
   };
 
@@ -82,10 +85,10 @@ class TokenMetadata {
       "", "", "",     // IDENT, NUMBER, STRING
       "\t", "", "\n", "", "", // INDENT, DEDENT, NEWLINE, END_OF_FILE, WHITESPACE
       "if", "else", "elif", "while", "for", "in", "def", "break",
-      "continue", "return", "and", "or", "not ", "True", "False",
+      "continue", "return", "yield", "and", "or", "not ", "True", "False",
       "(", ")", "[", "]", "{", "}", ":", ",", ".", "#",
-      "+", "-", "*", "/", "%", "==", "!=", "<=", ">=", "<", ">", 
-      "=", "+=", "-=", "*=", "/=", "%="
+      "+", "-", "*", "/", "//", "%", "==", "!=", "<=", ">=", "<", ">", 
+      "=", "+=", "-=", "*=", "/=", "//=", "%="
     };
 
     const std::array<std::string, Token::TOKEN_COUNT> token_names{
@@ -93,13 +96,13 @@ class TokenMetadata {
       "IDENT", "NUMBER", "STRING",
       "INDENT", "DEDENT", "NEWLINE", "END_OF_FILE", "WHITESPACE",
       "IF", "ELSE", "ELIF", "WHILE", "FOR",
-      "IN", "DEF", "BREAK", "CONTINUE", "RETURN",
+      "IN", "DEF", "BREAK", "CONTINUE", "RETURN", "YIELD",
       "AND", "OR", "NOT", "TRUE", "FALSE",
       "LPAREN", "RPAREN", "LBRACK", "RBRACK", "LBRACE", "RBRACE",
       "COLON", "COMMA", "DOT", "COMMENT",
-      "PLUS", "MINUS", "STAR", "SLASH", "PERCENT",
+      "PLUS", "MINUS", "STAR", "SLASH", "DOUBLE_SLASH", "PERCENT",
       "EQUAL", "NEQUAL", "LESS_EQUAL", "GREATER_EQUAL", "LESS","GREATER",
-      "ASSIGN", "PLUS_ASSIGN", "MINUS_ASSIGN", "STAR_ASSIGN", "SLASH_ASSIGN", "PERCENT_ASSIGN"
+      "ASSIGN", "PLUS_ASSIGN", "MINUS_ASSIGN", "STAR_ASSIGN", "SLASH_ASSIGN", "DOUBLE_SLASH_ASSIGN", "PERCENT_ASSIGN"
     };
 
     const std::map<std::string, Token::Type> token_name_map{
@@ -122,6 +125,7 @@ class TokenMetadata {
       {"BREAK", Token::Type::BREAK},
       {"CONTINUE", Token::Type::CONTINUE},
       {"RETURN", Token::Type::RETURN},
+      {"YIELD", Token::Type::YIELD},
       {"AND", Token::Type::AND},
       {"OR", Token::Type::OR},
       {"NOT", Token::Type::NOT},
@@ -141,6 +145,7 @@ class TokenMetadata {
       {"MINUS", Token::Type::MINUS},
       {"STAR", Token::Type::STAR},
       {"SLASH", Token::Type::SLASH},
+      {"DOUBLE_SLASH", Token::Type::DOUBLE_SLASH},
       {"PERCENT", Token::Type::PERCENT},
       {"EQUAL", Token::Type::EQUAL},
       {"NEQUAL", Token::Type::NEQUAL},
@@ -153,6 +158,7 @@ class TokenMetadata {
       {"MINUS_ASSIGN", Token::Type::MINUS_ASSIGN},
       {"STAR_ASSIGN", Token::Type::STAR_ASSIGN},
       {"SLASH_ASSIGN", Token::Type::SLASH_ASSIGN},
+      {"DOUBLE_SLASH_ASSIGN", Token::Type::DOUBLE_SLASH_ASSIGN},
       {"PERCENT_ASSIGN", Token::Type::PERCENT_ASSIGN},
     };
     
@@ -168,6 +174,7 @@ class TokenMetadata {
       RegexPair{Token::Type::BREAK,           R"(\bbreak\b)"},
       RegexPair{Token::Type::CONTINUE,        R"(\bcontinue\b)"},
       RegexPair{Token::Type::RETURN,          R"(\breturn\b)"},
+      RegexPair{Token::Type::YIELD,           R"(\byield\b)"},
       RegexPair{Token::Type::AND,             R"(\band\b)"},
       RegexPair{Token::Type::OR,              R"(\bor\b)"},
       RegexPair{Token::Type::NOT,             R"(\bnot\b)"},
@@ -178,6 +185,7 @@ class TokenMetadata {
       RegexPair{Token::Type::PLUS_ASSIGN,     R"(\+=)"},
       RegexPair{Token::Type::MINUS_ASSIGN,    R"(-=)"},
       RegexPair{Token::Type::STAR_ASSIGN,     R"(\*=)"},
+      RegexPair{Token::Type::DOUBLE_SLASH_ASSIGN,    R"(//=)"},
       RegexPair{Token::Type::SLASH_ASSIGN,    R"(/=)"},
       RegexPair{Token::Type::PERCENT_ASSIGN,  R"(%=)"},
       RegexPair{Token::Type::EQUAL,           R"(==)"},
@@ -187,6 +195,7 @@ class TokenMetadata {
       RegexPair{Token::Type::PLUS,            R"(\+)"},
       RegexPair{Token::Type::MINUS,           R"(-)"},
       RegexPair{Token::Type::STAR,            R"(\*)"},
+      RegexPair{Token::Type::DOUBLE_SLASH,           R"(//)"},
       RegexPair{Token::Type::SLASH,           R"(/)"},
       RegexPair{Token::Type::PERCENT,         R"(%)"},
       RegexPair{Token::Type::LESS,            R"(<)"},

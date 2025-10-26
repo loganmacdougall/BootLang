@@ -27,6 +27,7 @@ enum Type {
     BREAK,
     CONTINUE,
     RETURN,
+    YIELD,
     VAR,
     FUNCTION_DEFINITION,
     IF,

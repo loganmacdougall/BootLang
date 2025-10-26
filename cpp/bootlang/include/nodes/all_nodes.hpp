@@ -25,3 +25,4 @@
 #include "nodes/unaryop_node.hpp"
 #include "nodes/var_node.hpp"
 #include "nodes/while_node.hpp"
+#include "nodes/yield_node.hpp"

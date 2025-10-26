@@ -106,6 +106,8 @@ NodePtr Parser::parseStatement() {
             return std::make_unique<ContinueNode>(ContinueNode(start_token.lineno, start_token.col));
         case Token::Type::RETURN:
             return parseReturn();
+        case Token::Type::YIELD:
+            return parseYield();
         case Token::Type::IF:
             return parseIf();
         case Token::Type::WHILE:
@@ -261,7 +263,8 @@ NodePtr Parser::parseAssignmentOrExpression() {
     static std::set<Token::Type> ASSIGNMENT_OPERATORS {
         Token::Type::ASSIGN, Token::Type::PLUS_ASSIGN,
         Token::Type::MINUS_ASSIGN, Token::Type::STAR_ASSIGN,
-        Token::Type::SLASH_ASSIGN, Token::Type::PERCENT_ASSIGN
+        Token::Type::SLASH_ASSIGN, Token::Type::PERCENT_ASSIGN,
+        Token::Type::DOUBLE_SLASH_ASSIGN
     };
 
     push();
@@ -376,7 +379,7 @@ NodePtr Parser::parseComparison() {
 
 NodePtr Parser::parseAdditive() {
     static std::set<Token::Type> ADDITIVE_OPS {
-        Token::Type::PLUS, Token::Type::MINUS, Token::Type::PERCENT
+        Token::Type::PLUS, Token::Type::MINUS
     };
 
     NodePtr left = parseMultiplicative();
@@ -391,7 +394,7 @@ NodePtr Parser::parseAdditive() {
 
 NodePtr Parser::parseMultiplicative() {
     static std::set<Token::Type> MULTIPLICATIVE_OPS {
-        Token::Type::STAR, Token::Type::SLASH
+        Token::Type::STAR, Token::Type::SLASH, Token::Type::DOUBLE_SLASH, Token::Type::PERCENT
     };
 
     NodePtr left = parseUnary();
@@ -605,6 +608,20 @@ std::unique_ptr<ReturnNode> Parser::parseReturn() {
     NodePtr right = parseExpression();
 
     return std::make_unique<ReturnNode>(ReturnNode(
+        start_token.lineno, start_token.col,
+        std::optional<NodePtr>(std::move(right))));
+}
+
+std::unique_ptr<YieldNode> Parser::parseYield() {
+    TokenData start_token = consume(optType(Token::Type::YIELD));
+
+    if (look().token == Token::Type::NEWLINE) {
+        return std::make_unique<YieldNode>(YieldNode(start_token.lineno, start_token.col, std::nullopt));
+    }
+
+    NodePtr right = parseExpression();
+
+    return std::make_unique<YieldNode>(YieldNode(
         start_token.lineno, start_token.col,
         std::optional<NodePtr>(std::move(right))));
 }
