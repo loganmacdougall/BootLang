@@ -71,7 +71,7 @@ class TokenMetadata {
     typedef std::pair<Token::Type, std::string> RegexPair;
     
   public:
-    static TokenMetadata& GetInstance();
+    static const TokenMetadata& GetInstance();
     const std::string& GetTokenString(Token::Type token) const;
     const std::string& GetTokenName(Token::Type token) const;
     Token::Type GetTokenFromName(const std::string &name) const;

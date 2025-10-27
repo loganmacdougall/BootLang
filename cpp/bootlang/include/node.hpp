@@ -36,17 +36,36 @@ enum Type {
     INDEX,
     SLICE,
     PROPERTY_ACCESS,
-    IDENTIFIER,
     LITERAL
 };
 
 public:
     uint32_t lineno;
     uint32_t col;
-    Node::Type nodetype;
+    Node::Type type;
 
-    Node(uint32_t lineno, uint32_t col, Node::Type nodetype);
+    Node(uint32_t lineno, uint32_t col, Node::Type type);
     virtual ~Node() = default;
+
+    template<typename T>
+    static std::shared_ptr<T> toDerived(std::shared_ptr<Node> node) {
+        return static_pointer_cast<std::shared_ptr<T>>(node);
+    }
+
+    template<typename T>
+    static inline std::shared_ptr<Node> toBase(std::shared_ptr<T> node) {
+        return static_pointer_cast<std::shared_ptr<Node>>(node);
+    }
+
+    template<typename T>
+    static const T* toDerived(const Node* node) {
+        return static_cast<const T*>(node);
+    }
+
+    template<typename T>
+    static inline const Node* toBase(const T* node) {
+        return static_cast<const Node*>(node);
+    }
 
     virtual std::string toCode(int indent) const;
 };

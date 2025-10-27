@@ -1,7 +1,8 @@
 #include "values/generator_value.hpp"
 
-GeneratorValue::GeneratorValue(std::shared_ptr<FunctionValue> parent)
-    : Value(Value::GENERATOR), parent(parent) {
-    state.ip = 0;
-    state.finished = false;
+GeneratorValue::GeneratorValue(const CodeObject& code)
+: Value(Value::GENERATOR), code(code) {}
+
+Value GeneratorValue::clone() const {
+  return GeneratorValue(code);
 }

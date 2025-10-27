@@ -14,6 +14,8 @@ file(GLOB_RECURSE BOOTLANG_SOURCES CONFIGURE_DEPENDS
     include/nodes/*.hpp
     src/values/*.cpp
     include/values/*.hpp
+    include/operations/*.cpp
+    include/operations/*.hpp
 )
 
 # Define the library

@@ -1,19 +1,21 @@
 #pragma once
 
 #include "value.hpp"
-#include "values/function_value.hpp"
-
-struct GeneratorState {
-  size_t ip;
-  std::vector<Value::Ptr> stack;
-  std::vector<Value::Ptr> locals;
-  bool finished;
-};
+#include "code_object.hpp"
+#include "values/iterator_value.hpp"
 
 class GeneratorValue : public Value {
-  public:
-    std::shared_ptr<FunctionValue> parent;
-    GeneratorState state;
+  struct GeneratorIterState : public IteratorState {
+    size_t ip;
+    std::vector<Value::Ptr> stack;
+    std::vector<Value::Ptr> locals;
+    bool finished;
+  };
 
-    GeneratorValue(std::shared_ptr<FunctionValue> parent);
+  public:
+    const CodeObject& code;
+
+    GeneratorValue(const CodeObject& code);
+    bool isIterable() const override { return true; }
+    virtual Value clone() const override;
 };

@@ -14,3 +14,7 @@ bool BoolValue::equal(const Value& other) const {
     const BoolValue& other_bool = static_cast<const BoolValue&>(other);
     return value == other_bool.value;
 }
+
+Value BoolValue::clone() const {
+    return BoolValue(value);
+}

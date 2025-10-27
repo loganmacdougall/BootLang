@@ -1,6 +1,6 @@
 #include "token.hpp"
 
-TokenMetadata& TokenMetadata::GetInstance() {
+const TokenMetadata& TokenMetadata::GetInstance() {
   static TokenMetadata instance;
   return instance;
 }

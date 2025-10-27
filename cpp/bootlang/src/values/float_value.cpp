@@ -14,3 +14,7 @@ bool FloatValue::equal(const Value& other) const {
     const FloatValue& other_float = static_cast<const FloatValue&>(other);
     return value == other_float.value;
 }
+
+Value FloatValue::clone() const {
+    return FloatValue(value);
+}

@@ -1,9 +1,9 @@
 #include "values/int_value.hpp"
 
-IntValue::IntValue(int value) : Value(Value::Type::INT), value(value) {}
+IntValue::IntValue(long value) : Value(Value::Type::INT), value(value) {}
 
 std::size_t IntValue::hash() const {
-    return std::hash<int>()(value);
+    return std::hash<long>()(value);
 }
 
 bool IntValue::equal(const Value& other) const {
@@ -13,4 +13,8 @@ bool IntValue::equal(const Value& other) const {
 
     const IntValue& other_int = static_cast<const IntValue&>(other);
     return value == other_int.value;
+}
+
+Value IntValue::clone() const {
+    return IntValue(value);
 }

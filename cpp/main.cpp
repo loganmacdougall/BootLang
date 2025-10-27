@@ -2,6 +2,8 @@
 #include "token.hpp"
 #include "tokenizer.hpp"
 #include "parser.hpp"
+#include "environment.hpp"
+#include "compiler.hpp"
 
 std::string code = ""
 "a = 1\n"
@@ -40,6 +42,12 @@ int main() {
   BlockNodePtr ast = parser.parse();
 
   std::cout << ast->toCode(0) << std::endl;
+
+  Environment env;
+  Compiler compiler(env);
+  Program program = compiler.compile(ast);
+
+  std::cout << program.toDissassembly() << std::endl;
 
   return 0;
 }

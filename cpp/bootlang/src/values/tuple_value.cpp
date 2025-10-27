@@ -39,3 +39,38 @@ bool TupleValue::equal(const Value& other) const {
   }
   return true;
 }
+
+Value::Ptr TupleValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
+  auto state = std::static_pointer_cast<TupleValue::IteratorState>(base_state);
+  
+  if (state->it == elems.end()) {
+      return NoneValue::NONE;
+  }
+
+  Value::Ptr elem = *state->it;
+  state->it++;
+
+  return elem;
+}
+
+std::shared_ptr<Value::IteratorState> TupleValue::iterInitialState() const {
+  auto iter_state = std::make_shared<TupleValue::IteratorState>(
+      TupleValue::IteratorState()
+  );
+
+  iter_state->it = elems.begin();
+
+  return iter_state;
+}
+
+
+Value TupleValue::clone() const {
+  std::vector<Value::Ptr> other_elems;
+
+  for (size_t i = 0; i < elems.size(); i++) {
+    Value::Ptr copied = std::make_shared<Value>(elems[i]->clone());
+    other_elems.push_back(std::move(copied));
+  }
+
+  return TupleValue(std::move(other_elems));
+}

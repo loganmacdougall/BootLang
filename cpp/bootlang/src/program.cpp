@@ -1,4 +1,12 @@
 #include "program.hpp"
 
-Program::Program(std::vector<Instruction>&& instructions, std::vector<size_t>&& line_starts)
-    : instructions(std::move(instructions)), line_starts(line_starts) {}
+Program::Program(TopLevelContext&& context, const Environment& env)
+    : context(std::move(context)), env(env) {}
+
+std::string Program::toDissassembly() const {
+    std::ostringstream out;
+
+    out << context.toDissassembly() << std::endl;
+
+    return out.str();
+}
