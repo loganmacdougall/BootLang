@@ -1,4 +1,6 @@
 #include "environment.hpp"
 
 Environment::Environment()
-: binaryOpRegistry(BinaryOpRegistry::GetInstance()) {}
+: binaryOpRegistry(BinaryOpRegistry::GetInstance()) {
+    
+}

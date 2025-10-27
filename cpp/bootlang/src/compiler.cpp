@@ -24,6 +24,9 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::BLOCK:
             compileBlock(Node::toDerived<BlockNode>(node));
             break;
+        case Node::Type::VAR:
+            compileVar(Node::toDerived<VarNode>(node));
+            break;
         case Node::Type::INT:
             compileInt(Node::toDerived<IntNode>(node));
             break;
@@ -33,11 +36,26 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::STRING:
             compileString(Node::toDerived<StringNode>(node));
             break;
+        case Node::Type::SLICE:
+            compileSlice(Node::toDerived<SliceNode>(node));
+            break;
+        case Node::Type::PROPERTY_ACCESS:
+            compilePropertyAccess(Node::toDerived<PropertyAccessNode>(node));
+            break;
+        case Node::Type::TUPLE_LITERAL:
+            compileTupleLiteral(Node::toDerived<TupleLiteralNode>(node));
+            break;
+        case Node::Type::LIST_LITERAL:
+            compileListLiteral(Node::toDerived<ListLiteralNode>(node));
+            break;
         case Node::Type::BINARY_OP:
             compileBinaryOp(Node::toDerived<BinaryOpNode>(node));
             break;
         case Node::Type::ASSIGN:
             compileAssign(Node::toDerived<AssignNode>(node));
+            break;
+        case Node::Type::TERNARY:
+            compileTernary(Node::toDerived<TernaryNode>(node));
             break;
         case Node::Type::IF:
             compileIf(Node::toDerived<IfNode>(node));
@@ -51,36 +69,80 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::RETURN:
             compileReturn(Node::toDerived<ReturnNode>(node));
             break;
+        case Node::Type::CALL:
+            compileCall(Node::toDerived<CallNode>(node));
+            break;
         default:
-            throw std::runtime_error("Unknown node type in compileNode");
+            std::string msg = "Unknown node type in compileNode: \"" + NodeMetadata::GetInstance().GetNodeName(node->type) + "\"";
+            throw std::runtime_error(msg);
+    }
+}
+
+void Compiler::compileToplevelNode(const Node* node) {
+    switch (node->type) {
+        case Node::Type::BINARY_OP:
+        case Node::Type::CALL:
+        case Node::Type::INDEX:
+        case Node::Type::SLICE:
+        case Node::Type::TERNARY:
+        case Node::Type::UNARY_OP:
+        case Node::Type::PROPERTY_ACCESS:
+        case Node::Type::TUPLE_LITERAL:
+        case Node::Type::SET_LITERAL:
+        case Node::Type::DICT_LITERAL:
+        case Node::Type::LIST_LITERAL:
+            compileNode(node);
+            c->emit(INST::POP_TOP);
+            break;
+        case Node::Type::BOOL:
+        case Node::Type::VAR:
+        case Node::Type::INT:
+        case Node::Type::FLOAT:
+        case Node::Type::STRING:
+            break;
+        default:
+            compileNode(node);
     }
 }
 
 void Compiler::compileBlock(const BlockNode* node) {
     for (auto& stmt : node->stmts) {
-        compileNode(stmt.get());
+        compileToplevelNode(stmt.get());
+    }
+
+    if (node->stmts.at(node->stmts.size() - 1)->type != Node::Type::RETURN) {
+        c->emit(INST::PUSH_NULL);
+        c->emit(INST::RETURN);
     }
 }
 
-void Compiler::compileInt(const IntNode* node) {
-    Value int_val = IntValue(node->value);
-    size_t id = c->idConstant(std::move(int_val));
+void Compiler::compileVar(const VarNode* node) {
+    size_t id = c->idGlobal(node->name);
+    c->emit(INST::LOAD_GLOBAL, id);
+}
 
-    c->emit(INST::LOAD_CONST, id);
+void Compiler::compileInt(const IntNode* node) {
+    c->emit(INST::LOAD_INT, node->value);
 }
 
 void Compiler::compileFloat(const FloatNode* node) {
-    Value int_val = FloatValue(node->value);
-    size_t id = c->idConstant(std::move(int_val));
-
+    FloatValue value = FloatValue(node->value);
+    size_t id = c->idConstant(&value);
     c->emit(INST::LOAD_CONST, id);
 }
 
 void Compiler::compileString(const StringNode* node) {
-    Value int_val = StringValue(node->value);
-    size_t id = c->idConstant(std::move(int_val));
-
+    StringValue value = StringValue(node->value);
+    size_t id = c->idConstant(&value);
     c->emit(INST::LOAD_CONST, id);
+}
+
+void Compiler::compilePropertyAccess(const PropertyAccessNode* node) {
+    compileNode(node->left.get());
+    
+    StringValue value = StringValue(node->property);
+    size_t id = c->idConstant(&value);
+    c->emit(INST::LOAD_ATTR, id);
 }
 
 void Compiler::compileSlice(const SliceNode* node) {
@@ -105,6 +167,59 @@ void Compiler::compileSlice(const SliceNode* node) {
     }
 
     c->emit(INST::BUILD_SLICE);
+    c->emit(INST::LOAD_INDEX);
+}
+
+size_t Compiler::pushNodes(const std::vector<NodePtr>& elems) {
+    for (auto &elem : elems) {
+        compileNode(elem.get());
+    }
+
+    return elems.size();
+}
+
+size_t Compiler::pushNodes(const std::map<NodePtr, NodePtr>& elems) {
+    for (auto &elem : elems) {
+        compileNode(elem.first.get());
+        compileNode(elem.second.get());
+    }
+
+    return elems.size();
+}
+
+size_t Compiler::pushNodes(const std::set<NodePtr>& elems) {
+    for (auto &elem : elems) {
+        compileNode(elem.get());
+    }
+
+    return elems.size();
+}
+
+void Compiler::compileIndex(const IndexNode* node) {
+    compileNode(node->left.get());
+    compileNode(node->right.get());
+    c->emit(INST::LOAD_INDEX);
+
+}
+
+void Compiler::compileTupleLiteral(const TupleLiteralNode* node) {
+    size_t size = pushNodes(node->elems);
+    c->emit(INST::BUILD_TUPLE, size);
+}
+
+void Compiler::compileListLiteral(const ListLiteralNode* node) {
+    size_t size = pushNodes(node->elems);
+    c->emit(INST::BUILD_LIST, size);
+}
+
+void Compiler::compileSetLiteral(const ListLiteralNode* node) {
+    size_t size = pushNodes(node->elems);
+    c->emit(INST::BUILD_SET, size);
+}   
+
+void Compiler::compileMapLiteral(const ListLiteralNode* node) {
+    size_t size = pushNodes(node->elems);
+    c->emit(INST::BUILD_MAP, size);
 }
 
 void Compiler::compileBinaryOp(const BinaryOpNode* node) {
@@ -119,7 +234,7 @@ void Compiler::compileAssign(const AssignNode* node) {
     
     if (op == Token::Type::ASSIGN) {
         compileNode(Node::toBase(node->right.get()));
-        compileAssignLeft(Node::toBase(node->left.get()), op);
+        compileAssignLeft(Node::toBase(node->left.get()), op, node->right.get());
     } else {
         if (node->left->type == Node::Type::TUPLE_LITERAL) {
             throw std::runtime_error("Tuple doesn't support augmented assignment");
@@ -128,11 +243,11 @@ void Compiler::compileAssign(const AssignNode* node) {
         compileNode(Node::toBase(node->left.get()));
         compileNode(Node::toBase(node->right.get()));
         c->emit(INST::BINARY_OP, node->op);
-        compileAssignLeft(Node::toBase(node->left.get()), op);
+        compileAssignLeft(Node::toBase(node->left.get()), op, node->right.get());
     }
 }
 
-void Compiler::compileAssignLeft(const Node* node, Token::Type op) {
+void Compiler::compileAssignLeft(const Node* node, Token::Type op, const Node* right) {
     switch (node->type) {
         case Node::Type::VAR: 
         {
@@ -144,45 +259,46 @@ void Compiler::compileAssignLeft(const Node* node, Token::Type op) {
 
         case Node::Type::INDEX: 
         {
-            const IndexNode* left_node = Node::toDerived<IndexNode>(node);
-            compileNode(left_node->left.get());
-            compileNode(left_node->right.get());
+            compileIndex(Node::toDerived<IndexNode>(node));
+            c->burn();
             c->emit(INST::STORE_INDEX);
             break;
         }
 
+        case Node::Type::PROPERTY_ACCESS: {
+            compileNode(node);
+            Instruction false_load = c->burn();
+            c->emit(INST::LOAD_ATTR, false_load.arg);
+
+            break;
+        }
+
         case Node::Type::TUPLE_LITERAL:
+        case Node::Type::LIST_LITERAL:
         {
-            const TupleLiteralNode* left_node = Node::toDerived<TupleLiteralNode>(node);
-            c->emit(INST::UNPACK_SEQUENCE, left_node->elems.size());
-            for (size_t i = 0; i < left_node->elems.size(); i++) {
-                compileAssignLeft(left_node->elems[i].get(), op);
+            const std::vector<std::unique_ptr<Node>>* elems;
+            if (node->type == Node::Type::TUPLE_LITERAL) {
+                const TupleLiteralNode* tuple_node = Node::toDerived<TupleLiteralNode>(node);
+                elems = &tuple_node->elems;
+            } else {
+                const ListLiteralNode* list_node = Node::toDerived<ListLiteralNode>(node);
+                elems = &list_node->elems;
+            }
+            
+            
+            size_t size = elems->size();
+            
+            c->emit(INST::UNPACK_SEQUENCE, size);
+
+            for (size_t i = 0; i < elems->size(); i++) {
+                compileAssignLeft(elems->at(i).get(), op, right);
             }
             break;
         }
 
         case Node::Type::SLICE: {
-            const SliceNode* left_node = Node::toDerived<SliceNode>(node);
-            compileNode(left_node->left.get());
-    
-            if (left_node->start.has_value()) {
-                compileNode(left_node->start.value().get());
-            } else {
-                c->emit(INST::PUSH_NULL);
-            }
-
-            if (left_node->end.has_value()) {
-                compileNode(left_node->end.value().get());
-            } else {
-                c->emit(INST::PUSH_NULL);
-            }
-
-            if (left_node->step.has_value()) {
-                compileNode(left_node->step.value().get());
-            } else {
-                c->emit(INST::PUSH_NULL);
-            }
-
+            compileSlice(Node::toDerived<SliceNode>(node));
+            c->burn();
             c->emit(INST::STORE_SLICE);
             break;
         }
@@ -191,6 +307,36 @@ void Compiler::compileAssignLeft(const Node* node, Token::Type op) {
             throw std::runtime_error("Assigning to type which assignment is not implemented");
 
     }
+}
+
+void Compiler::compileCall(const CallNode* node) {
+    compileNode(node->left.get());
+
+    if (node->left->type != Node::Type::PROPERTY_ACCESS) {
+        c->emit(INST::PUSH_NULL);
+    }
+    
+    for (auto &arg : node->args) {
+        compileNode(arg.get());
+    }
+
+    c->emit(INST::CALL, node->args.size());
+}
+
+void Compiler::compileTernary(const TernaryNode* node) {
+    size_t jump_to_else;
+    size_t jump_to_end;
+    size_t end;
+
+    compileNode(node->cond.get());
+    jump_to_else = c->emit(INST::JUMP_IF_FALSE);
+    compileNode(node->left.get());
+    jump_to_end = c-> emit(INST::JUMP);
+    compileNode(node->right.get());
+    end = c->len();
+
+    c->patch(jump_to_else, INST::JUMP_IF_FALSE, jump_to_end - jump_to_else + 1);
+    c->patch(jump_to_end, INST::JUMP, end - jump_to_end);
 }
 
 void Compiler::compileIf(const IfNode* node) {

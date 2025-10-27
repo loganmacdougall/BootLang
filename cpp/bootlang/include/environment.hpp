@@ -3,8 +3,9 @@
 #include <unordered_map>
 #include <binaryop_registry.hpp>
 #include "value.hpp"
+#include "values/function_value.hpp"
 
-typedef std::unordered_map<std::string, Value::Ptr> References;
+typedef std::unordered_map<std::string, std::shared_ptr<FunctionValue>> References;
 
 struct Environment {
   References builtins;

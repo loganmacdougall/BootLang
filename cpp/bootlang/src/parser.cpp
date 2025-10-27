@@ -209,13 +209,13 @@ std::vector<NodePtr> Parser::parseExpressionList(Token::Type end_token) {
 
     std::vector<NodePtr> args;
     if (look().token != end_token) {
-        args.push_back(parseExpression());
+        args.push_back(parseTernary());
         while (look().token == Token::Type::COMMA) {
             consume(optType(Token::Type::COMMA));
             if (look().token == end_token) {
                 break;
             }
-            args.push_back(parseExpression());
+            args.push_back(parseTernary());
         }
     }
 
@@ -330,7 +330,7 @@ NodePtr Parser::parseTernary() {
         consume(optType(Token::Type::ELSE));
         NodePtr right = parseExpression();
         left = std::make_unique<TernaryNode>(TernaryNode(
-            left->lineno, left->col, std::move(cond), std::move(left), std::move(right)));
+            left->lineno, left->col, std::move(left), std::move(right), std::move(cond)));
     }
     return left;
 }

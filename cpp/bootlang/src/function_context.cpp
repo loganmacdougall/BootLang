@@ -1,5 +1,8 @@
 #include "function_context.hpp"
 
+FunctionContext::FunctionContext(TopLevelContext& top_context) 
+: top_context(top_context) {}
+
 size_t FunctionContext::emit(Instruction::Type type, size_t arg) {
   instructions.emplace_back(type, arg);
   return instructions.size() - 1;
@@ -17,31 +20,33 @@ const Instruction& FunctionContext::get(size_t index) const {
   return instructions[index];
 }
 
-size_t FunctionContext::idConstant(const Value&& value) {
-  size_t h = value.hash();
+size_t FunctionContext::idConstant(const Value* value) {
+  size_t h = value->hash();
 
   auto it = constants_hash_map.find(h);
   if (it != constants_hash_map.end()) {
       for (auto idx : it->second) {
-          if (value.equal(*constants[idx])) {
+          if (value->equal(*constants[idx])) {
               return idx;
           }
       }
   }
 
+  Value::Ptr copy = std::make_shared<Value>(value->clone());
+
   size_t index = constants.size();
-  constants.push_back(std::make_shared<Value>(std::move(value)));
+  constants.push_back(copy);
   constants_hash_map[h].push_back(index);
   return index;
 }
 
-size_t FunctionContext::getConstantId(const Value& value) const {
-    size_t h = value.hash();
+size_t FunctionContext::getConstantId(const Value* value) const {
+    size_t h = value->hash();
 
     auto it = constants_hash_map.find(h);
     if (it != constants_hash_map.end()) {
         for (auto idx : it->second) {
-            if (value.equal(*constants[idx])) {
+            if (value->equal(*constants[idx])) {
                 return idx;
             }
         }
@@ -122,8 +127,26 @@ std::string FunctionContext::toDissassembly() const {
       const Instruction& inst = instructions[i];
       std::string inst_name = InstructionMetadata::GetInstance().GetInstructionName(inst.type);
       std::string space = std::string(NAME_SPACE - inst_name.size(), ' ');
-      out << "  " << inst_name << space << inst.arg << std::endl;
+      out << "  " << inst_name << space << inst.arg << ' ';
+      
+      switch (inst.type) {
+        case Instruction::Type::LOAD_INT:
+            out << "(" << inst.arg << ")";
+            break;
+        case Instruction::Type::LOAD_GLOBAL:
+        case Instruction::Type::STORE_GLOBAL:
+            out << "(" <<  top_context.globals[inst.arg] << ")";
+            break;
+        case Instruction::Type::LOAD_CONST:
+            out << "(" << constants[inst.arg] << ")";
+            break;
+        default:
+            break;
+      };
+
+      out << std::endl;
   }
+
 
   return out.str();
 }

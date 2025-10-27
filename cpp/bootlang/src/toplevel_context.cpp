@@ -5,6 +5,12 @@ size_t TopLevelContext::emit(Instruction::Type type, size_t arg) {
     return instructions.size() - 1;
 }
 
+Instruction TopLevelContext::burn() {
+    Instruction inst = instructions.back();
+    instructions.pop_back();
+    return inst;
+}
+
 void TopLevelContext::patch(size_t index, Instruction::Type type, size_t arg) {
   instructions[index] = Instruction(type, arg);
 }
@@ -17,31 +23,33 @@ const Instruction& TopLevelContext::get(size_t index) const {
   return instructions[index];
 }
 
-size_t TopLevelContext::idConstant(const Value&& value) {
-  size_t h = value.hash();
+size_t TopLevelContext::idConstant(const Value* value) {
+  size_t h = value->hash();
 
   auto it = constants_hash_map.find(h);
   if (it != constants_hash_map.end()) {
       for (auto idx : it->second) {
-          if (value.equal(*constants[idx])) {
+          if (value->equal(*constants[idx])) {
               return idx;
           }
       }
   }
 
+  Value::Ptr copy = std::make_shared<Value>(value->clone());
+
   size_t index = constants.size();
-  constants.push_back(std::make_shared<Value>(std::move(value)));
+  constants.push_back(copy);
   constants_hash_map[h].push_back(index);
   return index;
 }
 
-size_t TopLevelContext::getConstantId(const Value& value) const {
-    size_t h = value.hash();
+size_t TopLevelContext::getConstantId(const Value* value) const {
+    size_t h = value->hash();
 
     auto it = constants_hash_map.find(h);
     if (it != constants_hash_map.end()) {
         for (auto idx : it->second) {
-            if (value.equal(*constants[idx])) {
+            if (value->equal(*constants[idx])) {
                 return idx;
             }
         }
@@ -75,12 +83,37 @@ std::string TopLevelContext::toDissassembly() const {
   std::ostringstream out;
 
   const size_t NAME_SPACE = 32;
+  std::string temp;
 
   for (size_t i = 0; i < instructions.size(); i++) {
       const Instruction& inst = instructions[i];
       std::string inst_name = InstructionMetadata::GetInstance().GetInstructionName(inst.type);
-      std::string space = std::string(NAME_SPACE - inst_name.size(), ' ');
-      out << "  " << inst_name << space << inst.arg << std::endl;
+      std::string arg_string = std::to_string(inst.arg);
+      size_t space_size = NAME_SPACE - inst_name.size() - arg_string.size();
+      space_size = space_size >= 1 ? space_size : 1;
+      std::string space = std::string(space_size, ' ');
+      out << "  " << inst_name << space << inst.arg << ' ';
+      
+      switch (inst.type) {
+        case Instruction::Type::LOAD_INT:
+            out << "(" << inst.arg << ")";
+            break;
+        case Instruction::Type::LOAD_GLOBAL:
+        case Instruction::Type::STORE_GLOBAL:
+            out << "(" << globals[inst.arg] << ")";
+            break;
+        case Instruction::Type::LOAD_CONST:
+            out << "(" << constants[inst.arg].get() << ")";
+            break;
+        case Instruction::Type::BINARY_OP:
+            temp = TokenMetadata::GetInstance().GetTokenString(static_cast<Token::Type>(inst.arg));
+            out << "(" << temp << ")";
+            break;
+        default:
+            break;
+      };
+      
+      out << std::endl;
   }
 
   return out.str();

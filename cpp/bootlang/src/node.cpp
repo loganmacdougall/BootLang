@@ -6,3 +6,12 @@ std::string Node::toCode(int indent) const {
     (void)indent;
     return "";
 }
+
+const NodeMetadata& NodeMetadata::GetInstance() {
+    static NodeMetadata instance;
+    return instance;
+}
+
+const std::string& NodeMetadata::GetNodeName(Node::Type token) const {
+    return node_names[static_cast<size_t>(token)];
+}

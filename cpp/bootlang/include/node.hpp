@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <array>
 #include <sstream>
 #include <memory>
 
@@ -39,6 +40,8 @@ enum Type {
     LITERAL
 };
 
+static const size_t NODE_COUNT = static_cast<size_t>(Type::LITERAL) + 1;
+
 public:
     uint32_t lineno;
     uint32_t col;
@@ -68,4 +71,29 @@ public:
     }
 
     virtual std::string toCode(int indent) const;
+};
+
+class NodeMetadata {
+  public:
+    typedef std::pair<Node::Type, std::string> RegexPair;
+    
+  public:
+    static const NodeMetadata& GetInstance();
+    const std::string& GetNodeName(Node::Type token) const;
+    
+  private:
+    NodeMetadata() = default;
+
+    const std::array<std::string, Node::NODE_COUNT> node_names{
+        "BLOCK", "BOOL", "INT", "FLOAT", "STRING",
+        "ASSIGN", "TUPLE_LITERAL", "LIST_LITERAL", "DICT_LITERAL", "SET_LITERAL",
+        "TERNARY", "BINARY_OP", "UNARY_OP", "CALL",
+        "BREAK", "CONTINUE", "RETURN", "YIELD",
+        "VAR", "FUNCTION_DEFINITION",
+        "IF", "WHILE", "FOR", "INDEX", "SLICE", "PROPERTY_ACCESS", "LITERAL"
+    };
+    
+  public:
+    NodeMetadata(NodeMetadata const&) = delete;
+    void operator=(NodeMetadata const&) = delete;
 };

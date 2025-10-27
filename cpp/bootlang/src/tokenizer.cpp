@@ -113,9 +113,10 @@ Tokenizer::Tokenizer(std::string code) :
     tokens.push_back(TokenData{token, text, lineno, col});
   }
 
+  tokens.push_back(TokenData{Token::Type::NEWLINE, "", lineno, 1});
   while (indent_stack.size() > 1) {
     indent_stack.pop_back();
-    tokens.push_back(TokenData{Token::Type::DEDENT, "", lineno, 1});
+    tokens.push_back(TokenData{Token::Type::DEDENT, "", lineno + 1, 1});
   }
 
   return tokens;
