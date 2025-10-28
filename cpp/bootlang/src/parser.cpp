@@ -564,14 +564,10 @@ std::unique_ptr<ForNode> Parser::parseFor() {
         parentheses = true;
     }
 
-    std::vector<std::string> vars = parseIdentifierList();
+    NodePtr target = parseIdentifierOrTuple();
 
     if (parentheses) {
         consume(optType(Token::Type::RPAREN));
-    }
-
-    if (vars.empty()) {
-        throw std::logic_error("Expected at least one identifier in for loop. Use '_' if you don't want to use the result from the iterable.");
     }
 
     consume(optType(Token::Type::IN));
@@ -581,7 +577,7 @@ std::unique_ptr<ForNode> Parser::parseFor() {
 
     return std::make_unique<ForNode>(ForNode(
         start_token.lineno, start_token.col,
-        std::move(vars), std::move(iterable), std::move(block)));
+        std::move(target), std::move(iterable), std::move(block)));
 }
 
 std::unique_ptr<FunctionDefinitionNode> Parser::parseDef() {

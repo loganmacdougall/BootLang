@@ -1,21 +1,21 @@
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
 #include "token.hpp"
 #include "tokenizer.hpp"
 #include "parser.hpp"
 #include "environment.hpp"
 #include "compiler.hpp"
 
-std::string code = ""
-"A = [1, 2, 3, 4]\n"
-"a, b, c = A[1:]\n"
-"print(\"a smaller than c\" if a < c else \"a greater or equal to c\")\n"
-;
+std::string samples_path = "../../samples/";
 
 int main() {
+  std::ifstream sample_file(samples_path + "example03.bl");
+  std::stringstream code_buffer;
+  code_buffer << sample_file.rdbuf();
+  
   try {
-
-    Tokenizer tokenizer(code);
+    Tokenizer tokenizer(code_buffer.str());
     auto tokens = tokenizer.tokenize();
     
     if (!tokens) {
@@ -31,13 +31,13 @@ int main() {
         }
         std::cout << TokenMetadata::GetInstance().GetTokenName(tokens->at(i).token) << " ";
       }
-      std::cout << std::endl;
+      std::cout << std::endl << std::endl;
     }
     
     Parser parser(tokens.value());
     BlockNodePtr ast = parser.parse();
     
-    std::cout << ast->toCode(0) << std::endl;
+    std::cout << ast->toCode(0) << std::endl << std::endl;
     
     Environment env;
     Compiler compiler(env);

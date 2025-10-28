@@ -44,13 +44,14 @@ private:
     void compileBinaryOp(const BinaryOpNode* node);
     
     void compileAssign(const AssignNode* node);
-    void compileAssignLeft(const Node* node, Token::Type op, const Node* right);
+    void compileAssignIdent(const Node* node, Token::Type op = Token::ASSIGN);
 
     void compileCall(const CallNode* node);
     
     void compileTernary(const TernaryNode* node);
     void compileIf(const IfNode* node);
     void compileWhile(const WhileNode* node);
+    void compileFor(const ForNode* node);
     void compileFunction(const FunctionDefinitionNode* node);
     void compileReturn(const ReturnNode* node);
 };

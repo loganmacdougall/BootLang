@@ -10,6 +10,11 @@ Program Compiler::compile(const BlockNodePtr &ast) {
     
     compileBlock(ast.get());
 
+    if (c->instructions.size() == 0 || c->instructions.back().type != INST::RETURN) {
+        c->emit(INST::PUSH_NULL);
+        c->emit(INST::RETURN);
+    }
+
     Program program(
         std::move(temp_context),
         env);
@@ -63,6 +68,9 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::WHILE:
             compileWhile(Node::toDerived<WhileNode>(node));
             break;
+        case Node::Type::FOR:
+            compileFor(Node::toDerived<ForNode>(node));
+            break;
         case Node::Type::FUNCTION_DEFINITION:
             compileFunction(Node::toDerived<FunctionDefinitionNode>(node));
             break;
@@ -108,11 +116,6 @@ void Compiler::compileToplevelNode(const Node* node) {
 void Compiler::compileBlock(const BlockNode* node) {
     for (auto& stmt : node->stmts) {
         compileToplevelNode(stmt.get());
-    }
-
-    if (node->stmts.at(node->stmts.size() - 1)->type != Node::Type::RETURN) {
-        c->emit(INST::PUSH_NULL);
-        c->emit(INST::RETURN);
     }
 }
 
@@ -234,7 +237,7 @@ void Compiler::compileAssign(const AssignNode* node) {
     
     if (op == Token::Type::ASSIGN) {
         compileNode(Node::toBase(node->right.get()));
-        compileAssignLeft(Node::toBase(node->left.get()), op, node->right.get());
+        compileAssignIdent(Node::toBase(node->left.get()), op);
     } else {
         if (node->left->type == Node::Type::TUPLE_LITERAL) {
             throw std::runtime_error("Tuple doesn't support augmented assignment");
@@ -243,11 +246,11 @@ void Compiler::compileAssign(const AssignNode* node) {
         compileNode(Node::toBase(node->left.get()));
         compileNode(Node::toBase(node->right.get()));
         c->emit(INST::BINARY_OP, node->op);
-        compileAssignLeft(Node::toBase(node->left.get()), op, node->right.get());
+        compileAssignIdent(Node::toBase(node->left.get()), op);
     }
 }
 
-void Compiler::compileAssignLeft(const Node* node, Token::Type op, const Node* right) {
+void Compiler::compileAssignIdent(const Node* node, Token::Type op) {
     switch (node->type) {
         case Node::Type::VAR: 
         {
@@ -291,7 +294,7 @@ void Compiler::compileAssignLeft(const Node* node, Token::Type op, const Node* r
             c->emit(INST::UNPACK_SEQUENCE, size);
 
             for (size_t i = 0; i < elems->size(); i++) {
-                compileAssignLeft(elems->at(i).get(), op, right);
+                compileAssignIdent(elems->at(i).get(), op);
             }
             break;
         }
@@ -385,9 +388,26 @@ void Compiler::compileWhile(const WhileNode* node) {
     c->patch(jump_to_end, INST::JUMP_IF_FALSE, last_inst - loop_start + 1);
 }
 
+void Compiler::compileFor(const ForNode* node) {
+    size_t start_for, end_for, jump_back;
+    
+    compileNode(node->iterable.get());
+    c->emit(INST::TO_ITER);
+    start_for = c->emit(INST::FOR_ITER);
+    compileAssignIdent(node->target.get());
+    
+    compileBlock(node->block.get());
+
+    jump_back = c->len();
+    c->emit(INST::JUMP_BACKWARDS, jump_back - start_for);
+    end_for = c->emit(INST::POP_TOP);
+
+    c->patch(start_for, INST::FOR_ITER, end_for - start_for);
+}
+
 void Compiler::compileFunction(const FunctionDefinitionNode* node) {
     (void)node;
-
+    // TODO:
 }
 
 void Compiler::compileReturn(const ReturnNode* node) {

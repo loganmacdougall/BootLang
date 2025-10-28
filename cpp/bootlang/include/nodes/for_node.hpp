@@ -6,11 +6,11 @@
 
 class ForNode : public Node {
 public:
-    std::vector<std::string> args;
+    NodePtr target;
     NodePtr iterable;
     BlockNodePtr block;
 
-    ForNode(uint32_t lineno, uint32_t col, std::vector<std::string>&& args, NodePtr&& iterable, BlockNodePtr&& block);
+    ForNode(uint32_t lineno, uint32_t col, NodePtr&& target, NodePtr&& iterable, BlockNodePtr&& block);
 
     std::string toCode(int indent) const override;
 };
