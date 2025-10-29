@@ -485,7 +485,7 @@ NodePtr Parser::parseDictOrSetLiteral() {
         return std::make_unique<DictLiteralNode>(DictLiteralNode(start_node.lineno, start_node.col, std::move(pairs)));
     }
 
-    NodePtr left = parseExpression();
+    NodePtr left = parseTernary();
     if (look().token != Token::Type::COLON) {
         pop();
         std::vector<NodePtr> elems = parseExpressionList(Token::Type::RBRACE);
@@ -495,7 +495,8 @@ NodePtr Parser::parseDictOrSetLiteral() {
 
     pop(false);
 
-    NodePtr right = parseExpression();
+    consume(optType(Token::Type::COLON));
+    NodePtr right = parseTernary();
     pairs.push_back(std::make_pair(std::move(left), std::move(right)));
 
     while (look().token == Token::Type::COMMA) {
@@ -503,9 +504,9 @@ NodePtr Parser::parseDictOrSetLiteral() {
         if (look().token == Token::Type::RBRACE) {
             break;
         }
-        left = parseExpression();
+        left = parseTernary();
         consume(optType(Token::Type::COLON));
-        right = parseExpression();
+        right = parseTernary();
         pairs.push_back(std::make_pair(std::move(left), std::move(right)));
     }
 

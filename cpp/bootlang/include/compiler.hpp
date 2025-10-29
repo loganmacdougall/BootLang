@@ -39,11 +39,12 @@ private:
     void compileString(const StringNode* node);
     void compilePropertyAccess(const PropertyAccessNode* node);
     void compileSlice(const SliceNode* node);
+    void compileIndex(const IndexNode* node);
     
     size_t pushNodes(const std::vector<NodePtr>& elems);
     size_t pushNodes(const std::map<NodePtr, NodePtr>& elems);
     size_t pushNodes(const std::set<NodePtr>& elems);
-    void compileIndex(const IndexNode* node);
+    void compileDictLiteral(const DictLiteralNode* node);
     void compileTupleLiteral(const TupleLiteralNode* node);
     void compileListLiteral(const ListLiteralNode* node);
     void compileSetLiteral(const ListLiteralNode* node);

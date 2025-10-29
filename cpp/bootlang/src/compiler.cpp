@@ -50,6 +50,12 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::PROPERTY_ACCESS:
             compilePropertyAccess(Node::toDerived<PropertyAccessNode>(node));
             break;
+        case Node::Type::INDEX:
+            compileIndex(Node::toDerived<IndexNode>(node));
+            break;
+        case Node::Type::DICT_LITERAL:
+            compileDictLiteral(Node::toDerived<DictLiteralNode>(node));
+            break;
         case Node::Type::TUPLE_LITERAL:
             compileTupleLiteral(Node::toDerived<TupleLiteralNode>(node));
             break;
@@ -188,6 +194,12 @@ void Compiler::compileSlice(const SliceNode* node) {
     c->emit(INST::LOAD_INDEX);
 }
 
+void Compiler::compileIndex(const IndexNode* node) {
+    compileNode(node->left.get());
+    compileNode(node->right.get());
+    c->emit(INST::LOAD_INDEX);
+}
+
 size_t Compiler::pushNodes(const std::vector<NodePtr>& elems) {
     for (auto &elem : elems) {
         compileNode(elem.get());
@@ -213,11 +225,13 @@ size_t Compiler::pushNodes(const std::set<NodePtr>& elems) {
     return elems.size();
 }
 
-void Compiler::compileIndex(const IndexNode* node) {
-    compileNode(node->left.get());
-    compileNode(node->right.get());
-    c->emit(INST::LOAD_INDEX);
-
+void Compiler::compileDictLiteral(const DictLiteralNode* node) {
+    for (auto &elem : node->elems) {
+        compileNode(elem.first.get());
+        compileNode(elem.second.get());
+    }
+    
+    c->emit(INST::BUILD_MAP, node->elems.size());
 }
 
 void Compiler::compileTupleLiteral(const TupleLiteralNode* node) {
