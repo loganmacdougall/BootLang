@@ -14,5 +14,5 @@ class Program {
   
 public:
   Program(TopLevelContext&& context, const Environment& env);
-  std::string toDissassembly() const;
+  std::string toDisassembly() const;
 };

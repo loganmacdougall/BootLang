@@ -3,10 +3,10 @@
 Program::Program(TopLevelContext&& context, const Environment& env)
     : context(std::move(context)), env(env) {}
 
-std::string Program::toDissassembly() const {
+std::string Program::toDisassembly() const {
     std::ostringstream out;
 
-    out << context.toDissassembly() << std::endl;
+    out << context.toDisassembly() << std::endl;
 
     return out.str();
 }

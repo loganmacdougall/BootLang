@@ -43,7 +43,7 @@ int main() {
     Compiler compiler(env);
     Program program = compiler.compile(ast);
     
-    std::cout << program.toDissassembly() << std::endl;
+    std::cout << program.toDisassembly() << std::endl;
   } catch (std::exception &e) {
     std::cout << std::endl << e.what() << std::endl;
   }

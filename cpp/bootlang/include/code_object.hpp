@@ -20,5 +20,5 @@ public:
                 const std::vector<std::string>&& parameters,
                 FunctionContext&& context);
 
-  std::string toDissassembly() const;
+  std::string toDisassembly() const;
 };

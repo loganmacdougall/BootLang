@@ -1,61 +1,5 @@
 #include "toplevel_context.hpp"
 
-size_t TopLevelContext::emit(Instruction::Type type, size_t arg) {
-    instructions.emplace_back(type, arg);
-    return instructions.size() - 1;
-}
-
-Instruction TopLevelContext::burn() {
-    Instruction inst = instructions.back();
-    instructions.pop_back();
-    return inst;
-}
-
-void TopLevelContext::patch(size_t index, Instruction::Type type, size_t arg) {
-  instructions[index] = Instruction(type, arg);
-}
-
-size_t TopLevelContext::len() const {
-  return instructions.size();
-}
-
-const Instruction& TopLevelContext::get(size_t index) const {
-  return instructions[index];
-}
-
-size_t TopLevelContext::idConstant(const Value* value) {
-  size_t h = value->hash();
-
-  auto it = constants_hash_map.find(h);
-  if (it != constants_hash_map.end()) {
-      for (auto idx : it->second) {
-          if (value->equal(*constants[idx])) {
-              return idx;
-          }
-      }
-  }
-
-  size_t index = constants.size();
-  constants.push_back(value->clone());
-  constants_hash_map[h].push_back(index);
-  return index;
-}
-
-size_t TopLevelContext::getConstantId(const Value* value) const {
-    size_t h = value->hash();
-
-    auto it = constants_hash_map.find(h);
-    if (it != constants_hash_map.end()) {
-        for (auto idx : it->second) {
-            if (value->equal(*constants[idx])) {
-                return idx;
-            }
-        }
-    }
-
-    return -1;
-}
-
 size_t TopLevelContext::idGlobal(const std::string& name) {
     auto it = global_map.find(name);
     if (it != global_map.end()) {
@@ -77,7 +21,7 @@ size_t TopLevelContext::getGlobalId(const std::string& name) const {
     }
 }
 
-std::string TopLevelContext::toDissassembly() const {
+std::string TopLevelContext::toDisassembly() const {
   std::ostringstream out;
 
   const size_t NAME_SPACE = 32;

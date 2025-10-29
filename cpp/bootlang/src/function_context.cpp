@@ -3,56 +3,6 @@
 FunctionContext::FunctionContext(TopLevelContext& top_context) 
 : top_context(top_context) {}
 
-size_t FunctionContext::emit(Instruction::Type type, size_t arg) {
-  instructions.emplace_back(type, arg);
-  return instructions.size() - 1;
-}
-
-void FunctionContext::patch(size_t index, Instruction::Type type, size_t arg) {
-  instructions[index] = Instruction(type, arg);
-}
-
-size_t FunctionContext::len() const {
-  return instructions.size();
-}
-
-const Instruction& FunctionContext::get(size_t index) const {
-  return instructions[index];
-}
-
-size_t FunctionContext::idConstant(const Value* value) {
-  size_t h = value->hash();
-
-  auto it = constants_hash_map.find(h);
-  if (it != constants_hash_map.end()) {
-      for (auto idx : it->second) {
-          if (value->equal(*constants[idx])) {
-              return idx;
-          }
-      }
-  }
-
-  size_t index = constants.size();
-  constants.push_back(value->clone());
-  constants_hash_map[h].push_back(index);
-  return index;
-}
-
-size_t FunctionContext::getConstantId(const Value* value) const {
-    size_t h = value->hash();
-
-    auto it = constants_hash_map.find(h);
-    if (it != constants_hash_map.end()) {
-        for (auto idx : it->second) {
-            if (value->equal(*constants[idx])) {
-                return idx;
-            }
-        }
-    }
-
-    return -1;
-}
-
 size_t FunctionContext::idVar(const std::string& name) {
   auto it = vars_map.find(name);
   if (it != vars_map.end()) {
@@ -116,7 +66,15 @@ size_t FunctionContext::getCellVarId(const std::string& name) const {
   return -1;
 }
 
-std::string FunctionContext::toDissassembly() const {
+size_t FunctionContext::idGlobal(const std::string& name) {
+  return top_context.idGlobal(name);
+}
+
+size_t FunctionContext::getGlobalId(const std::string& name) const {
+  return top_context.getGlobalId(name);
+}
+
+std::string FunctionContext::toDisassembly() const {
   std::ostringstream out;
 
   const size_t NAME_SPACE = 32;
