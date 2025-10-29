@@ -26,6 +26,10 @@ size_t Value::len() const {
     throw std::runtime_error("len not implemented for this Value type");
 };
 
-Value Value::clone() const {
+Value::Ptr Value::clone() const {
     throw std::runtime_error("clone not implemented for this Value type");
+}
+
+std::string Value::toCode() const {
+    throw std::runtime_error("toCode not implemented for this Value type");
 }

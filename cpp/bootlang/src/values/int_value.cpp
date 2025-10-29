@@ -15,6 +15,10 @@ bool IntValue::equal(const Value& other) const {
     return value == other_int.value;
 }
 
-Value IntValue::clone() const {
-    return IntValue(value);
+Value::Ptr IntValue::clone() const {
+    return std::make_shared<IntValue>(IntValue(value));
+}
+
+std::string IntValue::toCode() const {
+    return std::to_string(value);
 }

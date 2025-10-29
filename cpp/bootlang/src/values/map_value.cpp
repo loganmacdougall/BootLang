@@ -27,14 +27,41 @@ std::shared_ptr<Value::IteratorState> MapValue::iterInitialState() const {
 }
 
 
-Value MapValue::clone() const {
+Value::Ptr MapValue::clone() const {
     std::map<Value::Ptr, Value::Ptr> other_map;
 
     for (auto &pair : map) {
-        Value::Ptr key = std::make_shared<Value>(pair.first->clone());
-        Value::Ptr value = std::make_shared<Value>(pair.second->clone());
+        Value::Ptr key = pair.first->clone();
+        Value::Ptr value = pair.second->clone();
         other_map[key] = value;
     }
 
-    return MapValue(std::move(other_map));
+    return std::make_shared<MapValue>(MapValue(std::move(other_map)));
+}
+
+std::string MapValue::toCode() const {
+    std::string out = "[";
+
+    for (auto it = map.begin(); it != map.end(); it++) {
+        if (it != map.begin()) {
+            out += ',';
+        }
+
+        if (out.size() > Value::LIST_DISPLAY_HALF_WIDTH) {
+            out = out.substr(0, Value::LIST_DISPLAY_HALF_WIDTH);
+            break;
+        }
+        
+        out += it->first->toCode() + ":";
+
+        if (out.size() > Value::LIST_DISPLAY_HALF_WIDTH) {
+            out = out.substr(0, Value::LIST_DISPLAY_HALF_WIDTH);
+            break;
+        }
+
+        out += it->second->toCode();
+    }
+
+    out += '}';
+    return out;
 }

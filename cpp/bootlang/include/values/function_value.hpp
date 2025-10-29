@@ -12,5 +12,6 @@ public:
   const CodeObject& code;
 
   FunctionValue(const CodeObject& code);
-  virtual Value clone() const override;
+  virtual Value::Ptr clone() const override;
+  virtual std::string toCode() const override;
 };

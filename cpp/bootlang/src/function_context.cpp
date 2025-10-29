@@ -32,10 +32,8 @@ size_t FunctionContext::idConstant(const Value* value) {
       }
   }
 
-  Value::Ptr copy = std::make_shared<Value>(value->clone());
-
   size_t index = constants.size();
-  constants.push_back(copy);
+  constants.push_back(value->clone());
   constants_hash_map[h].push_back(index);
   return index;
 }

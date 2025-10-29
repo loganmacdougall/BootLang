@@ -64,13 +64,33 @@ std::shared_ptr<Value::IteratorState> TupleValue::iterInitialState() const {
 }
 
 
-Value TupleValue::clone() const {
+Value::Ptr TupleValue::clone() const {
   std::vector<Value::Ptr> other_elems;
 
   for (size_t i = 0; i < elems.size(); i++) {
-    Value::Ptr copied = std::make_shared<Value>(elems[i]->clone());
+    Value::Ptr copied = elems[i]->clone();
     other_elems.push_back(std::move(copied));
   }
 
-  return TupleValue(std::move(other_elems));
+  return std::make_shared<TupleValue>(TupleValue(std::move(other_elems)));
+}
+
+std::string TupleValue::toCode() const {
+    std::string out = "(";
+
+    for (auto it = elems.begin(); it != elems.end(); it++) {
+        if (it != elems.begin()) {
+            out += ',';
+        }
+
+        if (out.size() > Value::LIST_DISPLAY_HALF_WIDTH) {
+            out = out.substr(0, Value::LIST_DISPLAY_HALF_WIDTH);
+            break;
+        }
+        
+        out += it->get()->toCode();
+    }
+
+    out += ')';
+    return out;
 }

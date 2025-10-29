@@ -40,6 +40,10 @@ std::shared_ptr<Value::IteratorState> StringValue::iterInitialState() const {
 }
 
 
-Value StringValue::clone() const {
-    return StringValue(value);
+Value::Ptr StringValue::clone() const {
+    return std::make_shared<StringValue>(StringValue(value));
+}
+
+std::string StringValue::toCode() const {
+    return '"' + value + '"';
 }

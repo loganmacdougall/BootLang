@@ -1,6 +1,7 @@
 #pragma once
 
 #include <set>
+#include <sstream>
 #include "value.hpp"
 #include "values/none_value.hpp"
 
@@ -16,5 +17,6 @@ class SetValue : public Value {
     bool isIterable() const override { return true; }
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
-    virtual Value clone() const override;
+    virtual Value::Ptr clone() const override;
+    virtual std::string toCode() const override;
 };

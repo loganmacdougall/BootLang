@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
 #include "value.hpp"
 #include "values/none_value.hpp"
 
@@ -16,5 +17,6 @@ public:
   bool isIterable() const override { return true; }
   virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> state) const override;
   virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;
-  virtual Value clone() const override;
+  virtual Value::Ptr clone() const override;
+  virtual std::string toCode() const override;
 };

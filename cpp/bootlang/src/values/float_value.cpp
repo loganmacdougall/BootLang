@@ -15,6 +15,10 @@ bool FloatValue::equal(const Value& other) const {
     return value == other_float.value;
 }
 
-Value FloatValue::clone() const {
-    return FloatValue(value);
+Value::Ptr FloatValue::clone() const {
+    return std::make_shared<FloatValue>(FloatValue(value));
+}
+
+std::string FloatValue::toCode() const {
+    return std::to_string(value);
 }

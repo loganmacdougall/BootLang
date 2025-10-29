@@ -35,10 +35,8 @@ size_t TopLevelContext::idConstant(const Value* value) {
       }
   }
 
-  Value::Ptr copy = std::make_shared<Value>(value->clone());
-
   size_t index = constants.size();
-  constants.push_back(copy);
+  constants.push_back(value->clone());
   constants_hash_map[h].push_back(index);
   return index;
 }
@@ -103,7 +101,7 @@ std::string TopLevelContext::toDissassembly() const {
             out << "(" << globals[inst.arg] << ")";
             break;
         case Instruction::Type::LOAD_CONST:
-            out << "(" << constants[inst.arg].get() << ")";
+            out << "(" << constants[inst.arg].get()->toCode() << ")";
             break;
         case Instruction::Type::BINARY_OP:
             temp = TokenMetadata::GetInstance().GetTokenString(static_cast<Token::Type>(inst.arg));

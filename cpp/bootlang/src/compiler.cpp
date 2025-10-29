@@ -32,6 +32,9 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::VAR:
             compileVar(Node::toDerived<VarNode>(node));
             break;
+        case Node::Type::BOOL:
+            compileBool(Node::toDerived<BoolNode>(node));
+            break;
         case Node::Type::INT:
             compileInt(Node::toDerived<IntNode>(node));
             break;
@@ -76,6 +79,12 @@ void Compiler::compileNode(const Node* node) {
             break;
         case Node::Type::RETURN:
             compileReturn(Node::toDerived<ReturnNode>(node));
+            break;
+        case Node::Type::CONTINUE:
+            compileContinue(Node::toDerived<ContinueNode>(node));
+            break;
+        case Node::Type::BREAK:
+            compileBreak(Node::toDerived<BreakNode>(node));
             break;
         case Node::Type::CALL:
             compileCall(Node::toDerived<CallNode>(node));
@@ -122,6 +131,12 @@ void Compiler::compileBlock(const BlockNode* node) {
 void Compiler::compileVar(const VarNode* node) {
     size_t id = c->idGlobal(node->name);
     c->emit(INST::LOAD_GLOBAL, id);
+}
+
+void Compiler::compileBool(const BoolNode* node) {
+    BoolValue value = BoolValue(node->value);
+    size_t id = c->idConstant(&value);
+    c->emit(INST::LOAD_CONST, id);
 }
 
 void Compiler::compileInt(const IntNode* node) {
@@ -378,6 +393,8 @@ void Compiler::compileIf(const IfNode* node) {
 
 void Compiler::compileWhile(const WhileNode* node) {
     size_t loop_start = c->len();
+
+    loop_stack.emplace_back();
     
     compileNode(node->cond.get());
     size_t jump_to_end = c->emit(INST::JUMP_IF_FALSE);
@@ -386,6 +403,7 @@ void Compiler::compileWhile(const WhileNode* node) {
     size_t last_inst = c->len();
     c->emit(INST::JUMP_BACKWARDS, last_inst - loop_start);
     c->patch(jump_to_end, INST::JUMP_IF_FALSE, last_inst - loop_start + 1);
+    patchLoopControls(loop_start, last_inst + 1);
 }
 
 void Compiler::compileFor(const ForNode* node) {
@@ -396,6 +414,8 @@ void Compiler::compileFor(const ForNode* node) {
     start_for = c->emit(INST::FOR_ITER);
     compileAssignIdent(node->target.get());
     
+    loop_stack.emplace_back();
+    
     compileBlock(node->block.get());
 
     jump_back = c->len();
@@ -403,11 +423,32 @@ void Compiler::compileFor(const ForNode* node) {
     end_for = c->emit(INST::POP_TOP);
 
     c->patch(start_for, INST::FOR_ITER, end_for - start_for);
+    patchLoopControls(start_for, end_for);
 }
 
 void Compiler::compileFunction(const FunctionDefinitionNode* node) {
     (void)node;
     // TODO:
+}
+
+void Compiler::compileBreak(const BreakNode* node) {
+    (void)node;
+    if (loop_stack.empty()) {
+        throw std::runtime_error("Can only break out of a loop");
+    }
+
+    size_t pos = c->emit(INST::JUMP);
+    loop_stack.back().breaks.push_back(pos);
+}
+
+void Compiler::compileContinue(const ContinueNode* node) {
+    (void)node;
+    if (loop_stack.empty()) {
+        throw std::runtime_error("Can only break out of a loop");
+    }
+
+    size_t pos = c->emit(INST::JUMP_BACKWARDS);
+    loop_stack.back().continues.push_back(pos);
 }
 
 void Compiler::compileReturn(const ReturnNode* node) {
@@ -418,4 +459,17 @@ void Compiler::compileReturn(const ReturnNode* node) {
     }
 
     c->emit(INST::RETURN);
+}
+
+void Compiler::patchLoopControls(size_t loop_start, size_t loop_end) {
+    LoopFrame frame = loop_stack.back();
+    loop_stack.pop_back();
+
+    for (size_t pos : frame.breaks) {
+        c->patch(pos, INST::JUMP, loop_end - pos);
+    }
+
+    for (size_t pos : frame.continues) {
+        c->patch(pos, INST::JUMP_BACKWARDS, pos - loop_start);
+    }
 }

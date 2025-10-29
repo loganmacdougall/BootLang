@@ -14,8 +14,15 @@
 
 
 class Compiler {
+    struct LoopFrame {
+        std::vector<size_t> breaks;
+        std::vector<size_t> continues;
+    };
+
     TopLevelContext* c = nullptr;
     Environment& env;
+
+    std::vector<LoopFrame> loop_stack;
 
 public:
     Compiler(Environment& env);
@@ -26,6 +33,7 @@ private:
     void compileToplevelNode(const Node* node);
     void compileBlock(const BlockNode* node);
     void compileVar(const VarNode* node);
+    void compileBool(const BoolNode* node);
     void compileInt(const IntNode* node);
     void compileFloat(const FloatNode* node);
     void compileString(const StringNode* node);
@@ -53,5 +61,8 @@ private:
     void compileWhile(const WhileNode* node);
     void compileFor(const ForNode* node);
     void compileFunction(const FunctionDefinitionNode* node);
+    void compileBreak(const BreakNode* node);
+    void compileContinue(const ContinueNode* node);
     void compileReturn(const ReturnNode* node);
+    void patchLoopControls(size_t loop_start, size_t loop_end);
 };

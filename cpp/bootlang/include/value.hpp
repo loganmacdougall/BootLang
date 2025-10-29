@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <stdexcept>
 #include <memory>
 #include <any>
@@ -24,6 +25,8 @@ class Value {
         ITERATOR
     };
 
+    static const size_t LIST_DISPLAY_HALF_WIDTH = 16;
+
     Type type;
 
     struct IteratorState {
@@ -39,7 +42,8 @@ class Value {
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
     virtual size_t len() const;
-    virtual Value clone() const;
+    virtual Value::Ptr clone() const;
+    virtual std::string toCode() const;
 
     template<typename T>
     static inline std::shared_ptr<T> toDerived(Value::Ptr value) {

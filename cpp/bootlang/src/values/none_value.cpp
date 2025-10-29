@@ -12,6 +12,10 @@ bool NoneValue::equal(const Value& other) const {
     return type == other.type;
 }
 
-Value NoneValue::clone() const {
-    return NoneValue();
+Value::Ptr NoneValue::clone() const {
+    return NONE;
+}
+
+std::string NoneValue::toCode() const {
+    return "None";
 }

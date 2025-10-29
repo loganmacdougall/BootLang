@@ -15,6 +15,10 @@ bool BoolValue::equal(const Value& other) const {
     return value == other_bool.value;
 }
 
-Value BoolValue::clone() const {
-    return BoolValue(value);
+Value::Ptr BoolValue::clone() const {
+    return std::make_shared<BoolValue>(BoolValue(value));
+}
+
+std::string BoolValue::toCode() const {
+    return value ? "True" : "False";
 }

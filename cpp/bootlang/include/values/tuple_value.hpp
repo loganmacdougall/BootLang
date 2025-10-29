@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <sstream>
 #include <stdexcept>
 #include "value.hpp"
 #include "values/none_value.hpp"
@@ -20,6 +21,7 @@ class TupleValue : public Value {
     bool equal(const Value& other) const override;
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
-    virtual Value clone() const override;
+    virtual Value::Ptr clone() const override;
+    virtual std::string toCode() const override;
   
 };

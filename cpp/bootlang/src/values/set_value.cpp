@@ -27,13 +27,33 @@ std::shared_ptr<Value::IteratorState> SetValue::iterInitialState() const {
 }
 
 
-Value SetValue::clone() const {
+Value::Ptr SetValue::clone() const {
     std::set<Value::Ptr> other_elems;
 
     for (auto &elem : elems) {
-        Value::Ptr copy = std::make_shared<Value>(elem->clone());
+        Value::Ptr copy = elem->clone();
         other_elems.insert(copy);
     }
 
-    return SetValue(std::move(other_elems));
+    return std::make_shared<SetValue>(SetValue(std::move(other_elems)));
+}
+
+std::string SetValue::toCode() const {
+    std::string out = "{";
+
+    for (auto it = elems.begin(); it != elems.end(); it++) {
+        if (it != elems.begin()) {
+            out += ',';
+        }
+
+        if (out.size() > Value::LIST_DISPLAY_HALF_WIDTH) {
+            out = out.substr(0, Value::LIST_DISPLAY_HALF_WIDTH);
+            break;
+        }
+        
+        out += it->get()->toCode();
+    }
+
+    out += '}';
+    return out;
 }

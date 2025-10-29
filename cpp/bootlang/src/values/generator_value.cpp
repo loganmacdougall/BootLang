@@ -3,6 +3,13 @@
 GeneratorValue::GeneratorValue(const CodeObject& code)
 : Value(Value::GENERATOR), code(code) {}
 
-Value GeneratorValue::clone() const {
-  return GeneratorValue(code);
+Value::Ptr GeneratorValue::clone() const {
+  return std::make_shared<GeneratorValue>(GeneratorValue(code));
+}
+
+std::string GeneratorValue::toCode() const {
+  std::stringstream out;
+  out << "<code object - \"" << code.name << "\"";
+  out << "(" << static_cast<const void*>(&code) << ")>";
+  return out.str();
 }
