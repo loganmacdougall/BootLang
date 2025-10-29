@@ -65,6 +65,9 @@ void Compiler::compileNode(const Node* node) {
         case Node::Type::BINARY_OP:
             compileBinaryOp(Node::toDerived<BinaryOpNode>(node));
             break;
+        case Node::Type::UNARY_OP:
+            compileUnaryOp(Node::toDerived<UnaryOpNode>(node));
+            break;
         case Node::Type::ASSIGN:
             compileAssign(Node::toDerived<AssignNode>(node));
             break;
@@ -255,10 +258,16 @@ void Compiler::compileMapLiteral(const ListLiteralNode* node) {
 }
 
 void Compiler::compileBinaryOp(const BinaryOpNode* node) {
-    compileNode(Node::toBase(node->left.get()));
-    compileNode(Node::toBase(node->right.get()));
+    compileNode(node->left.get());
+    compileNode(node->right.get());
     
     c->emit(INST::BINARY_OP, node->op);
+}
+
+void Compiler::compileUnaryOp(const UnaryOpNode* node) {
+    compileNode(node->right.get());
+
+    c->emit(INST::UNARY_OP, node->op);
 }
 
 void Compiler::compileAssign(const AssignNode* node) {

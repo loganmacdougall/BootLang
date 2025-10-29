@@ -51,6 +51,7 @@ private:
     void compileMapLiteral(const ListLiteralNode* node);
     
     void compileBinaryOp(const BinaryOpNode* node);
+    void compileUnaryOp(const UnaryOpNode* node);
     
     void compileAssign(const AssignNode* node);
     void compileAssignIdent(const Node* node, Token::Type op = Token::ASSIGN);

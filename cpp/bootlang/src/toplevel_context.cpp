@@ -104,6 +104,7 @@ std::string TopLevelContext::toDissassembly() const {
             out << "(" << constants[inst.arg].get()->toCode() << ")";
             break;
         case Instruction::Type::BINARY_OP:
+        case Instruction::Type::UNARY_OP:
             temp = TokenMetadata::GetInstance().GetTokenString(static_cast<Token::Type>(inst.arg));
             out << "(" << temp << ")";
             break;
