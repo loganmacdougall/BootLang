@@ -10,9 +10,10 @@
 
 class Program {
   const std::shared_ptr<TopLevelContext> context;
+  const std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs;
   const Environment& env;
   
 public:
-  Program(std::shared_ptr<TopLevelContext> context, const Environment& env);
+  Program(std::shared_ptr<TopLevelContext> context, std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs, const Environment& env);
   std::string toDisassembly() const;
 };

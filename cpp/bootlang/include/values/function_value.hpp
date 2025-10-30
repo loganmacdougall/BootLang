@@ -9,9 +9,9 @@
 
 class FunctionValue : public Value {
 public:
-  const CodeObject& code;
+  const std::shared_ptr<CodeObject> code;
 
-  FunctionValue(const CodeObject& code);
+  FunctionValue(std::shared_ptr<CodeObject> code);
   virtual std::size_t hash() const override;
   virtual bool equal(const Value& other) const override;
   virtual Value::Ptr clone() const override;

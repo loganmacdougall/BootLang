@@ -8,12 +8,11 @@ Program Compiler::compile(const BlockNodePtr &ast) {
     top_context = std::make_shared<TopLevelContext>();
     c = top_context;
     
+    funcs = std::make_shared<std::vector<std::shared_ptr<CodeObject>>>();
+    
     compileTopBlock(ast);
 
-    Program program(top_context, env);
-
-    c = nullptr;
-    top_context = nullptr;
+    Program program(top_context, funcs, env);
     
     return program;
 }
@@ -462,13 +461,14 @@ void Compiler::compileFunction(const FunctionDefinitionNode* node) {
     c = parent_context;
     auto args_copy = node->args;
 
-    CodeObject code = CodeObject(
+    auto code = std::make_shared<CodeObject>(CodeObject(
         node->name,
         node->doc,
         std::move(args_copy),
         func_context
-    );
-
+    ));
+    funcs->push_back(code);
+    
     FunctionValue value = FunctionValue(code);
     size_t id = c->idConstant(&value);
     c->emit(INST::LOAD_CONST, id);

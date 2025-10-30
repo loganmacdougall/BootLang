@@ -21,6 +21,7 @@ class Compiler {
 
     std::shared_ptr<Context> c = nullptr;
     std::shared_ptr<TopLevelContext> top_context = nullptr;
+    std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs = nullptr;
     Environment& env;
 
     std::vector<LoopFrame> loop_stack;
