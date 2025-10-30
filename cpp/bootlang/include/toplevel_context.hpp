@@ -11,7 +11,7 @@
 
 class TopLevelContext : public Context {
 public:
-  
+
   virtual inline bool topLevel() override { return true; }
   virtual void loadIdentifier(const std::string& name) override;
   virtual void storeIdentifier(const std::string& name) override;

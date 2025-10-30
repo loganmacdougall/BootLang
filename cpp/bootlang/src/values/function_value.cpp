@@ -23,7 +23,7 @@ Value::Ptr FunctionValue::clone() const {
 
 std::string FunctionValue::toCode() const {
   std::stringstream out;
-  out << "<code object - \"" << code->name << "\"";
-  out << "(" << static_cast<const void*>(&code) << ")>";
+  out << "code object <\"" << code->name << "\": ";
+  out << static_cast<const void*>(code.get()) << ">";
   return out.str();
 }

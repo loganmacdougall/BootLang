@@ -398,13 +398,13 @@ void Compiler::compileIf(const IfNode* node) {
 
     if (node->else_block) {
         jump_to_next.push_back(c->len());
-        compileBlock(node->if_block.second.get());
+        compileBlock(node->else_block.value().get());
     }
 
     size_t end = c->len();
 
     for (size_t pos : jump_to_end) {
-        c->patch(pos, INST::JUMP_IF_FALSE, end - pos);
+        c->patch(pos, INST::JUMP, end - pos);
     }
 
     for (size_t i = 0; i < jump_to_next.size() - 1; i++) {
@@ -452,13 +452,7 @@ void Compiler::compileFor(const ForNode* node) {
 void Compiler::compileFunction(const FunctionDefinitionNode* node) {
     std::shared_ptr<FunctionContext> parent = (c == top_context) ? nullptr : std::static_pointer_cast<FunctionContext>(c);
     auto func_context = std::make_shared<FunctionContext>(FunctionContext(top_context, parent));
-    
-    std::shared_ptr<Context> parent_context = c;
-    c = func_context;
 
-    compileTopBlock(node->block);
-
-    c = parent_context;
     auto args_copy = node->args;
 
     auto code = std::make_shared<CodeObject>(CodeObject(
@@ -468,10 +462,33 @@ void Compiler::compileFunction(const FunctionDefinitionNode* node) {
         func_context
     ));
     funcs->push_back(code);
+
+    for (std::string arg : node->args) {
+        func_context->idVar(arg);
+    }
+    
+    std::shared_ptr<Context> parent_context = c;
+    c = func_context;
+
+    compileTopBlock(node->block);
+
+    c = parent_context;
     
     FunctionValue value = FunctionValue(code);
     size_t id = c->idConstant(&value);
-    c->emit(INST::LOAD_CONST, id);
+
+    if (!func_context->freevars.empty()) {
+        for (auto freevar : func_context->freevars) {
+            c->loadIdentifier(freevar);
+        }
+        c->emit(INST::BUILD_TUPLE, func_context->freevars.size());
+        c->emit(INST::LOAD_CONST, id);
+        c->emit(INST::MAKE_CLOSURE);
+    } else {
+        c->emit(INST::LOAD_CONST, id);
+    }
+
+    c->storeIdentifier(node->name);
 }
 
 void Compiler::compileBreak(const BreakNode* node) {

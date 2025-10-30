@@ -19,7 +19,6 @@ public:
 
   static const size_t NOT_FOUND = -1;
 
-  Context() = default;
   size_t emit(Instruction::Type type, size_t arg = 0);
   Instruction burn();
   void patch(size_t index, Instruction::Type type, size_t arg = 0);

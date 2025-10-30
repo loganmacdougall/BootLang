@@ -32,12 +32,14 @@ std::string TopLevelContext::toDisassembly() const {
         case Instruction::Type::LOAD_GLOBAL:
         case Instruction::Type::STORE_GLOBAL:
             out << "(";
-            out << (vars.size() < inst.arg) ? vars[inst.arg] : "???";
+            out << ((inst.arg < vars.size()) ? vars[inst.arg] : "???");
             out << ")";
             break;
         case Instruction::Type::LOAD_CONST:
+        case Instruction::Type::LOAD_ATTR:
+        case Instruction::Type::STORE_ATTR:
             out << "(";
-            out << (constants.size() < inst.arg) ? constants[inst.arg].get()->toCode() : "???";
+            out << ((inst.arg < constants.size()) ? constants[inst.arg].get()->toCode() : "???");
             out << ")";
             break;
         case Instruction::Type::BINARY_OP:

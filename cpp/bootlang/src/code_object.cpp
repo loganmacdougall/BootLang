@@ -10,7 +10,8 @@ parameters(std::move(parameters)), context(context) {}
 std::string CodeObject::toDisassembly() const {
     std::ostringstream out;
 
-    out << "Disassembly of code object \"" << name << "\":\n";
+    out << "Disassembly of code object <\"" << name << "\": ";
+    out << static_cast<const void*>(this) << ">\n";
     out << context->toDisassembly();
 
     return out.str();

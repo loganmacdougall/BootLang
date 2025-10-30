@@ -10,7 +10,7 @@ std::string Program::toDisassembly() const {
 
     for (auto it = funcs->begin(); it != funcs->end(); it++) {
         auto code = *it;
-        out << code->toDisassembly();
+        out << code->toDisassembly() << std::endl;
     }
 
     return out.str();
