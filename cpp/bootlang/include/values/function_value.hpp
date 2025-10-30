@@ -12,6 +12,8 @@ public:
   const CodeObject& code;
 
   FunctionValue(const CodeObject& code);
+  virtual std::size_t hash() const override;
+  virtual bool equal(const Value& other) const override;
   virtual Value::Ptr clone() const override;
   virtual std::string toCode() const override;
 };

@@ -5,23 +5,26 @@ using INST = Instruction::Type;
 Compiler::Compiler(Environment& env) : env(env) {}
 
 Program Compiler::compile(const BlockNodePtr &ast) {
-    TopLevelContext temp_context;
-    c = &temp_context;
+    top_context = std::make_shared<TopLevelContext>();
+    c = top_context;
     
+    compileTopBlock(ast);
+
+    Program program(top_context, env);
+
+    c = nullptr;
+    top_context = nullptr;
+    
+    return program;
+}
+
+void Compiler::compileTopBlock(const BlockNodePtr &ast) {
     compileBlock(ast.get());
 
     if (c->instructions.size() == 0 || c->instructions.back().type != INST::RETURN) {
         c->emit(INST::PUSH_NULL);
         c->emit(INST::RETURN);
     }
-
-    Program program(
-        std::move(temp_context),
-        env);
-
-    c = nullptr;
-    
-    return program;
 }
 
 void Compiler::compileNode(const Node* node) {
@@ -138,8 +141,7 @@ void Compiler::compileBlock(const BlockNode* node) {
 }
 
 void Compiler::compileVar(const VarNode* node) {
-    size_t id = c->idGlobal(node->name);
-    c->emit(INST::LOAD_GLOBAL, id);
+    c->loadIdentifier(node->name);
 }
 
 void Compiler::compileBool(const BoolNode* node) {
@@ -293,8 +295,7 @@ void Compiler::compileAssignIdent(const Node* node, Token::Type op) {
         case Node::Type::VAR: 
         {
             const VarNode* left_node = Node::toDerived<VarNode>(node);
-            size_t id = c->idGlobal(left_node->name);
-            c->emit(INST::STORE_GLOBAL, id);
+            c->storeIdentifier(left_node->name);
             break;
         }
 
@@ -450,8 +451,27 @@ void Compiler::compileFor(const ForNode* node) {
 }
 
 void Compiler::compileFunction(const FunctionDefinitionNode* node) {
-    (void)node;
-    // TODO:
+    std::shared_ptr<FunctionContext> parent = (c == top_context) ? nullptr : std::static_pointer_cast<FunctionContext>(c);
+    auto func_context = std::make_shared<FunctionContext>(FunctionContext(top_context, parent));
+    
+    std::shared_ptr<Context> parent_context = c;
+    c = func_context;
+
+    compileTopBlock(node->block);
+
+    c = parent_context;
+    auto args_copy = node->args;
+
+    CodeObject code = CodeObject(
+        node->name,
+        node->doc,
+        std::move(args_copy),
+        func_context
+    );
+
+    FunctionValue value = FunctionValue(code);
+    size_t id = c->idConstant(&value);
+    c->emit(INST::LOAD_CONST, id);
 }
 
 void Compiler::compileBreak(const BreakNode* node) {

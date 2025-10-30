@@ -37,6 +37,15 @@ void Parser::ignoreWhitespace(bool ignore) {
     ignore_whitespace = ignore;
 }
 
+bool Parser::consumeNewlines() {
+    bool found_newline = false;
+    while (more() && look().token == Token::Type::NEWLINE) {
+        found_newline = true;
+        consume();
+    }
+    return found_newline;
+}
+
 void Parser::passAllWhitespace() {
     std::optional<TokenData> token = pos < tokens.size() ? std::optional<TokenData>(tokens[pos]) : std::nullopt;
     while (token.has_value() && WHITESPACE.find(token.value().token) != WHITESPACE.end()) {
@@ -62,8 +71,7 @@ BlockNodePtr Parser::parse() {
     while (more()) {
         TokenData token = look();
 
-        if (token.token == Token::Type::NEWLINE) {
-            consume(Token::Type::NEWLINE);
+        if (consumeNewlines()) {
             continue;
         }
 
@@ -74,13 +82,12 @@ BlockNodePtr Parser::parse() {
 }
 
 BlockNodePtr Parser::parseBlock() {
-    consume(optType(Token::Type::NEWLINE));
+    consumeNewlines();
     TokenData start_token = consume(optType(Token::Type::INDENT));
 
     std::vector<NodePtr> stmts;
     while (more() && look().token != Token::Type::DEDENT) {
-        if (look().token == Token::Type::NEWLINE) {
-            consume(optType(Token::Type::NEWLINE));
+        if (consumeNewlines()) {
             continue;
         }
         stmts.push_back(parseStatement());
@@ -588,11 +595,23 @@ std::unique_ptr<FunctionDefinitionNode> Parser::parseDef() {
     std::vector<std::string> args = parseIdentifierList();
     consume(optType(Token::Type::RPAREN));
     consume(optType(Token::Type::COLON));
+
+    push();
+    
+    std::string doc = std::string("");
+    ignoreWhitespace(true);
+    if (look().token == Token::Type::STRING) {
+        doc = unescapeString(look().text.substr(1, look().text.size() - 2));
+    }
+    ignoreWhitespace(false);
+
+    pop();
+
     BlockNodePtr block = parseBlock();
 
     return std::make_unique<FunctionDefinitionNode>(FunctionDefinitionNode(
         start_token.lineno, start_token.col,
-        std::move(name), std::move(args), std::move(block)));
+        std::move(name), std::move(args), std::move(block), std::move(doc)));
 }
 
 std::unique_ptr<ReturnNode> Parser::parseReturn() {

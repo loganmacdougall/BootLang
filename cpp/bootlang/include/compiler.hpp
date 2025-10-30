@@ -19,7 +19,8 @@ class Compiler {
         std::vector<size_t> continues;
     };
 
-    TopLevelContext* c = nullptr;
+    std::shared_ptr<Context> c = nullptr;
+    std::shared_ptr<TopLevelContext> top_context = nullptr;
     Environment& env;
 
     std::vector<LoopFrame> loop_stack;
@@ -29,6 +30,7 @@ public:
     Program compile(const BlockNodePtr &ast);
 
 private:    
+    void compileTopBlock(const BlockNodePtr &ast);
     void compileNode(const Node* node);
     void compileToplevelNode(const Node* node);
     void compileBlock(const BlockNode* node);

@@ -11,10 +11,10 @@
 
 class TopLevelContext : public Context {
 public:
-  std::vector<std::string> globals;
-  std::unordered_map<std::string, size_t> global_map;
 
-  virtual size_t idGlobal(const std::string& name) override;
-  virtual size_t getGlobalId(const std::string& name) const override;
+  virtual inline bool topLevel() override { return true; }
+
+  virtual void loadIdentifier(const std::string& name) override;
+  virtual void storeIdentifier(const std::string& name) override;
   virtual std::string toDisassembly() const override;
 };

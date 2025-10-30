@@ -1,28 +1,7 @@
 #include "function_context.hpp"
 
-FunctionContext::FunctionContext(TopLevelContext& top_context) 
-: top_context(top_context) {}
-
-size_t FunctionContext::idVar(const std::string& name) {
-  auto it = vars_map.find(name);
-  if (it != vars_map.end()) {
-      return it->second;
-  }
-
-  size_t index = vars.size();
-  vars.push_back(name);
-  vars_map[name] = index;
-  return index;
-}
-
-size_t FunctionContext::getVarId(const std::string& name) const {
-  auto it = vars_map.find(name);
-  if (it != vars_map.end()) {
-      return it->second;
-  }
-
-  return -1;
-}
+FunctionContext::FunctionContext(std::shared_ptr<TopLevelContext> top_context, std::shared_ptr<FunctionContext> parent) 
+: top_context(top_context), parent(parent) {}
 
 size_t FunctionContext::idFreeVar(const std::string& name) {
   auto it = freevars_map.find(name);
@@ -42,19 +21,24 @@ size_t FunctionContext::getFreeVarId(const std::string& name) const {
       return it->second;
   }
 
-  return -1;
+  return Context::NOT_FOUND;
 }
 
 size_t FunctionContext::idCellVar(const std::string& name) {
-  auto it = cellvars_map.find(name);
-  if (it != cellvars_map.end()) {
-      return it->second;
+  auto cell_it = cellvars_map.find(name);
+  if (cell_it != cellvars_map.end()) {
+    return cell_it->second;
   }
 
-  size_t index = cellvars.size();
-  cellvars.push_back(name);
-  cellvars_map[name] = index;
-  return index;
+  auto var_it = vars_map.find(name);
+  if (var_it != vars_map.end()) {  
+    size_t index = cellvars.size();
+    cellvars.push_back(name);
+    cellvars_map[name] = index;
+    return index;
+  }
+
+  return Context::NOT_FOUND;
 }
 
 size_t FunctionContext::getCellVarId(const std::string& name) const {
@@ -63,15 +47,54 @@ size_t FunctionContext::getCellVarId(const std::string& name) const {
       return it->second;
   }
 
-  return -1;
+  return Context::NOT_FOUND;
 }
 
-size_t FunctionContext::idGlobal(const std::string& name) {
-  return top_context.idGlobal(name);
+void FunctionContext::loadIdentifier(const std::string& name) {
+  size_t var_id = getVarId(name);
+  if (var_id != Context::NOT_FOUND) {
+    emit(Instruction::LOAD_FAST, var_id);
+    return;
+  }
+
+  size_t free_id = getFreeVarId(name);
+  if (free_id != Context::NOT_FOUND) {
+    emit(Instruction::LOAD_DEFER, free_id);
+    return;
+  }
+
+  if (parent != nullptr) {
+    free_id = parent->idCellVar(name);
+    if (free_id != Context::NOT_FOUND) {
+      
+      emit(Instruction::LOAD_DEFER, free_id);
+    }
+  }
+  
+  top_context->loadIdentifier(name);
 }
 
-size_t FunctionContext::getGlobalId(const std::string& name) const {
-  return top_context.getGlobalId(name);
+void FunctionContext::storeIdentifier(const std::string& name) {
+  size_t var_id = getVarId(name);
+  if (var_id != Context::NOT_FOUND) {
+    emit(Instruction::STORE_FAST, var_id);
+    return;
+  }
+
+  size_t free_id = getFreeVarId(name);
+  if (free_id != Context::NOT_FOUND) {
+    emit(Instruction::STORE_DEFER, free_id);
+    return;
+  }
+
+  size_t global_id = top_context->getVarId(name);
+  if (global_id != Context::NOT_FOUND) {
+    emit(Instruction::STORE_GLOBAL, global_id);
+    return;
+  }
+
+  size_t new_id = idVar(name);
+  emit(Instruction::STORE_FAST, new_id);
 }
 
 std::string FunctionContext::toDisassembly() const {
@@ -91,7 +114,7 @@ std::string FunctionContext::toDisassembly() const {
             break;
         case Instruction::Type::LOAD_GLOBAL:
         case Instruction::Type::STORE_GLOBAL:
-            out << "(" <<  top_context.globals[inst.arg] << ")";
+            out << "(" <<  top_context->vars[inst.arg] << ")";
             break;
         case Instruction::Type::LOAD_CONST:
             out << "(" << constants[inst.arg] << ")";

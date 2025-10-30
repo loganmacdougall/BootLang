@@ -1,17 +1,17 @@
 #include "code_object.hpp"
 
-CodeObject::CodeObject(const std::string&& name,
-              const std::string&& doc,
+CodeObject::CodeObject(const std::string& name,
+              const std::string& doc,
               const std::vector<std::string>&& parameters,
-              FunctionContext&& context)
-: name(std::move(name)), doc(std::move(doc)), 
-parameters(std::move(parameters)), context(std::move(context)) {}
+              std::shared_ptr<FunctionContext> context)
+: name(name), doc(doc), 
+parameters(std::move(parameters)), context(context) {}
 
 std::string CodeObject::toDisassembly() const {
     std::ostringstream out;
 
     out << "Disassembly of code object (name \"" << name << "\")";
-    out << context.toDisassembly();
+    out << context->toDisassembly();
 
     return out.str();
 }

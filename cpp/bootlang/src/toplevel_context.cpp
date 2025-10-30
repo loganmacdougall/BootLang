@@ -1,24 +1,13 @@
 #include "toplevel_context.hpp"
 
-size_t TopLevelContext::idGlobal(const std::string& name) {
-    auto it = global_map.find(name);
-    if (it != global_map.end()) {
-        return it->second;
-    }
-
-    size_t index = globals.size();
-    globals.push_back(name);
-    global_map[name] = index;
-    return index;
+void TopLevelContext::loadIdentifier(const std::string& name) {
+    size_t id = idVar(name);
+    emit(Instruction::LOAD_GLOBAL, id);
 }
 
-size_t TopLevelContext::getGlobalId(const std::string& name) const {
-    auto it = global_map.find(name);
-    if (it != global_map.end()) {
-        return it->second;
-    } else {
-        return -1;
-    }
+void TopLevelContext::storeIdentifier(const std::string& name) {
+    size_t id = idVar(name);
+    emit(Instruction::STORE_GLOBAL, id);
 }
 
 std::string TopLevelContext::toDisassembly() const {
@@ -42,10 +31,14 @@ std::string TopLevelContext::toDisassembly() const {
             break;
         case Instruction::Type::LOAD_GLOBAL:
         case Instruction::Type::STORE_GLOBAL:
-            out << "(" << globals[inst.arg] << ")";
+            out << "(";
+            out << (vars.size() < inst.arg) ? vars[inst.arg] : "???";
+            out << ")";
             break;
         case Instruction::Type::LOAD_CONST:
-            out << "(" << constants[inst.arg].get()->toCode() << ")";
+            out << "(";
+            out << (constants.size() < inst.arg) ? constants[inst.arg].get()->toCode() : "???";
+            out << ")";
             break;
         case Instruction::Type::BINARY_OP:
         case Instruction::Type::UNARY_OP:
@@ -56,7 +49,7 @@ std::string TopLevelContext::toDisassembly() const {
             break;
       };
       
-      out << std::endl;
+      out << "\n";
   }
 
   return out.str();

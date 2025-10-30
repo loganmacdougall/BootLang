@@ -26,6 +26,7 @@ class Parser {
         void pop(bool replace = true);
         
         void ignoreWhitespace(bool ignore);
+        bool consumeNewlines();
         void passAllWhitespace();
 
         TokenData consume(std::optional<Token::Type> expected = std::nullopt);

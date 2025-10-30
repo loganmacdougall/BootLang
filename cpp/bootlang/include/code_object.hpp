@@ -13,12 +13,12 @@ public:
   std::string name;
   std::string doc = "";
   std::vector<std::string> parameters;
-  FunctionContext context;
+  std::shared_ptr<FunctionContext> context;
 
-  CodeObject(const std::string&& name,
-                const std::string&& doc,
+  CodeObject(const std::string& name,
+                const std::string& doc,
                 const std::vector<std::string>&& parameters,
-                FunctionContext&& context);
+                std::shared_ptr<FunctionContext> context);
 
   std::string toDisassembly() const;
 };

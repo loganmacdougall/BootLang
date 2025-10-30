@@ -180,7 +180,7 @@ class TokenMetadata {
       RegexPair{Token::Type::NOT,             R"(\bnot\b)"},
       RegexPair{Token::Type::TRUE,            R"(\bTrue\b)"},
       RegexPair{Token::Type::FALSE,           R"(\bFalse\b)"},
-      RegexPair{Token::Type::STRING,          R"("[^"]*"|'[^']*')"},
+      RegexPair{Token::Type::STRING,          R"("[^"\n]*"|'[^'\n]*'|"""[^"]*"""|'''[^']*''')"},
       RegexPair{Token::Type::IDENT,           R"([A-Za-z_][A-Za-z_0-9]*)"},
       RegexPair{Token::Type::PLUS_ASSIGN,     R"(\+=)"},
       RegexPair{Token::Type::MINUS_ASSIGN,    R"(-=)"},

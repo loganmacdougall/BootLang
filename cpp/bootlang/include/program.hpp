@@ -9,10 +9,10 @@
 #include "value.hpp"
 
 class Program {
-  const TopLevelContext context;
+  const std::shared_ptr<TopLevelContext> context;
   const Environment& env;
   
 public:
-  Program(TopLevelContext&& context, const Environment& env);
+  Program(std::shared_ptr<TopLevelContext> context, const Environment& env);
   std::string toDisassembly() const;
 };

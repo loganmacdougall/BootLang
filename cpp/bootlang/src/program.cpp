@@ -1,12 +1,12 @@
 #include "program.hpp"
 
-Program::Program(TopLevelContext&& context, const Environment& env)
-    : context(std::move(context)), env(env) {}
+Program::Program(std::shared_ptr<TopLevelContext> context, const Environment& env)
+    : context(context), env(env) {}
 
 std::string Program::toDisassembly() const {
     std::ostringstream out;
 
-    out << context.toDisassembly() << std::endl;
+    out << context->toDisassembly() << std::endl;
 
     return out.str();
 }

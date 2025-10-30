@@ -23,6 +23,27 @@ const Instruction& Context::get(size_t index) const {
   return instructions[index];
 }
 
+size_t Context::idVar(const std::string& name) {
+  auto it = vars_map.find(name);
+  if (it != vars_map.end()) {
+      return it->second;
+  }
+
+  size_t index = vars.size();
+  vars.push_back(name);
+  vars_map[name] = index;
+  return index;
+}
+
+size_t Context::getVarId(const std::string& name) const {
+  auto it = vars_map.find(name);
+  if (it != vars_map.end()) {
+      return it->second;
+  }
+
+  return -1;
+}
+
 size_t Context::idConstant(const Value* value) {
   size_t h = value->hash();
 
@@ -56,14 +77,16 @@ size_t Context::getConstantId(const Value* value) const {
     return -1;
 }
 
-size_t Context::idGlobal(const std::string& name) {
-    throw std::runtime_error("Base context doesn't support idGlobal");
+void Context::loadIdentifier(const std::string& name) {
+    (void)name;
+    throw std::runtime_error("Base context doesn't support loadIdentifier");
 }
 
-size_t Context::getGlobalId(const std::string& name) const {
-    throw std::runtime_error("Base context doesn't support getGlobalId");
+void Context::storeIdentifier(const std::string& name) {
+    (void)name;
+    throw std::runtime_error("Base context doesn't support storeIdentifier");
 }
 
 std::string Context::toDisassembly() const {
-    throw std::runtime_error("Base context doesn't support toDis");
+    throw std::runtime_error("Base context doesn't support toDisassembly");
 }

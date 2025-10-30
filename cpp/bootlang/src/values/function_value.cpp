@@ -3,6 +3,20 @@
   FunctionValue::FunctionValue(const CodeObject& code)
 : Value(Value::Type::FUNCTION), code(code) {}
 
+std::size_t FunctionValue::hash() const {
+   return std::hash<const CodeObject*>()(&code);
+}
+
+bool FunctionValue::equal(const Value& other) const {
+  if (other.type != type) {
+    return false;
+  }
+
+  const FunctionValue& other_func = static_cast<const FunctionValue&>(other);
+  return &code == &other_func.code;
+}
+
+
 Value::Ptr FunctionValue::clone() const {
   return std::make_shared<FunctionValue>(FunctionValue(code));
 }
