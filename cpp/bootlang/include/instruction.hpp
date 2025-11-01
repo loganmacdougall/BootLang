@@ -12,14 +12,13 @@ class Instruction {
       LOAD_CONST,
       LOAD_INT,
       LOAD_GLOBAL,
+      LOAD_BUILTIN,
       LOAD_FAST,
-      LOAD_NAME,
       LOAD_ATTR,
       LOAD_INDEX,
       LOAD_DEREF,
       STORE_GLOBAL,
       STORE_FAST,
-      STORE_NAME,
       STORE_ATTR,
       STORE_INDEX,
       STORE_SLICE,
@@ -38,10 +37,7 @@ class Instruction {
       BUILD_MAP,
       BUILD_SET,
       BUILD_SLICE,
-      MAKE_FUNCTION,
       MAKE_CLOSURE,
-      MAKE_CELL,
-      COPY_FREEVARS,
       PUSH_NULL,
       POP_TOP,
       SWAP,
@@ -71,13 +67,12 @@ class InstructionMetadata {
     InstructionMetadata() = default;
 
     const std::array<std::string, Instruction::INSTRUCTION_COUNT> instruction_names{
-      "LOAD_CONST", "LOAD_INT", "LOAD_GLOBAL", "LOAD_FAST", "LOAD_NAME", "LOAD_ATTR", "LOAD_INDEX", "LOAD_DEREF",
-      "STORE_GLOBAL", "STORE_FAST", "STORE_NAME", "STORE_ATTR", "STORE_INDEX", "STORE_SLICE", "STORE_DEREF",
+      "LOAD_CONST", "LOAD_INT", "LOAD_GLOBAL", "LOAD_BUILTIN", "LOAD_FAST", "LOAD_ATTR", "LOAD_INDEX", "LOAD_DEREF",
+      "STORE_GLOBAL", "STORE_FAST", "STORE_ATTR", "STORE_INDEX", "STORE_SLICE", "STORE_DEREF",
       "BINARY_OP", "UNARY_OP", "UNPACK_SEQUENCE",
       "JUMP", "JUMP_BACKWARDS", "JUMP_IF_FALSE", "CALL", "TO_ITER", "FOR_ITER",
       "BUILD_TUPLE", "BUILD_LIST", "BUILD_MAP", "BUILD_SET", "BUILD_SLICE",
-      "MAKE_FUNCTION", "MAKE_CLOSURE", "MAKE_CELL", "COPY_FREEVARS",
-      "PUSH_NULL", "POP_TOP", "SWAP", "COPY",
+      "MAKE_CLOSURE", "PUSH_NULL", "POP_TOP", "SWAP", "COPY",
       "PAUSE", "RETURN"
     };
     

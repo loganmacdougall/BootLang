@@ -9,11 +9,19 @@
 #include "value.hpp"
 
 class Program {
-  const std::shared_ptr<TopLevelContext> context;
-  const std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs;
-  const Environment& env;
-  
 public:
-  Program(std::shared_ptr<TopLevelContext> context, std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs, const Environment& env);
+  std::shared_ptr<TopLevelContext> context;
+  std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs;
+  std::shared_ptr<std::unordered_map<size_t, size_t>> line_numbers;
+  
+  std::unordered_map<std::string, size_t> func_map;
+  
+  Program(const Program& other);
+  Program& operator=(const Program& other);
+
+  Program(std::shared_ptr<TopLevelContext> context,
+  std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs,
+  std::shared_ptr<std::unordered_map<size_t, size_t>> line_numbers);
   std::string toDisassembly() const;
+
 };

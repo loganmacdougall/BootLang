@@ -1,6 +1,6 @@
 #include "nodes/assign_node.hpp"
 
-AssignNode::AssignNode(uint32_t lineno, uint32_t col, NodePtr&& left, NodePtr&& right, Token::Type op)
+AssignNode::AssignNode(size_t lineno, size_t col, NodePtr&& left, NodePtr&& right, Token::Type op)
     : Node(lineno, col, Node::Type::ASSIGN), left(std::move(left)), right(std::move(right)), op(op) {}
 
 std::string AssignNode::toCode(int indent) const {

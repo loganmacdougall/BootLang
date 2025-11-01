@@ -1,6 +1,6 @@
 #include "nodes/int_node.hpp"
 
-IntNode::IntNode(uint32_t lineno, uint32_t col, long value)
+IntNode::IntNode(size_t lineno, size_t col, long value)
     : Node(lineno, col, Node::Type::INT), value(value) {}
 
 std::string IntNode::toCode(int indent) const {

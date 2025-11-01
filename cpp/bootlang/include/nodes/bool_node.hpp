@@ -6,7 +6,7 @@ class BoolNode : public Node {
 public:
     bool value;
 
-    BoolNode(uint32_t lineno, uint32_t col, bool value);
+    BoolNode(size_t lineno, size_t col, bool value);
 
     std::string toCode(int indent) const override;
 };

@@ -9,5 +9,6 @@
 #include "values/map_value.hpp"
 #include "values/none_value.hpp"
 #include "values/set_value.hpp"
+#include "values/slice_value.hpp"
 #include "values/string_value.hpp"
 #include "values/tuple_value.hpp"

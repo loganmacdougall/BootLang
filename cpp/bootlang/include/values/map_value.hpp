@@ -14,6 +14,7 @@ class MapValue : public Value {
     };
 
     MapValue(std::map<Value::Ptr, Value::Ptr>&& map);
+    virtual bool toBool() const { return !map.empty(); }
     bool isIterable() const override { return true; }
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const override;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;

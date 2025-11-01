@@ -10,7 +10,7 @@ public:
     NodePtr iterable;
     BlockNodePtr block;
 
-    ForNode(uint32_t lineno, uint32_t col, NodePtr&& target, NodePtr&& iterable, BlockNodePtr&& block);
+    ForNode(size_t lineno, size_t col, NodePtr&& target, NodePtr&& iterable, BlockNodePtr&& block);
 
     std::string toCode(int indent) const override;
 };

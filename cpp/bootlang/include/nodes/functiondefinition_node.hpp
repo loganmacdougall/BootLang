@@ -11,7 +11,7 @@ public:
     BlockNodePtr block;
     std::string doc;
 
-    FunctionDefinitionNode(uint32_t lineno, uint32_t col, std::string name, std::vector<std::string>&& args, BlockNodePtr&& block, std::string doc);
+    FunctionDefinitionNode(size_t lineno, size_t col, std::string name, std::vector<std::string>&& args, BlockNodePtr&& block, std::string doc);
 
     std::string toCode(int indent) const override;
 };

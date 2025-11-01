@@ -39,9 +39,7 @@ int main() {
     
     std::cout << ast->toCode(0) << std::endl << std::endl;
     
-    Environment env;
-    Compiler compiler(env);
-    Program program = compiler.compile(ast);
+    Program program = Compiler().compile(ast);
     
     std::cout << program.toDisassembly() << std::endl;
   } catch (std::exception &e) {

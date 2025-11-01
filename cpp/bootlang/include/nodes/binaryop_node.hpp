@@ -9,7 +9,7 @@ public:
     NodePtr right;
     Token::Type op;
 
-    BinaryOpNode(uint32_t lineno, uint32_t col, NodePtr&& left, NodePtr&& right, Token::Type op);
+    BinaryOpNode(size_t lineno, size_t col, NodePtr&& left, NodePtr&& right, Token::Type op);
 
     std::string toCode(int indent) const override;
 };

@@ -43,11 +43,11 @@ enum Type {
 static const size_t NODE_COUNT = static_cast<size_t>(Type::LITERAL) + 1;
 
 public:
-    uint32_t lineno;
-    uint32_t col;
+    size_t lineno;
+    size_t col;
     Node::Type type;
 
-    Node(uint32_t lineno, uint32_t col, Node::Type type);
+    Node(size_t lineno, size_t col, Node::Type type);
     virtual ~Node() = default;
 
     template<typename T>

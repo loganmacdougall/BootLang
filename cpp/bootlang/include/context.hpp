@@ -28,6 +28,7 @@ public:
   size_t getVarId(const std::string& name) const;
   size_t idConstant(const Value* value);
   size_t getConstantId(const Value* value) const;
+  Value::Ptr getConstant(size_t id);
   virtual void loadIdentifier(const std::string& name);
   virtual void storeIdentifier(const std::string& name);
   virtual inline bool topLevel() { return false; }

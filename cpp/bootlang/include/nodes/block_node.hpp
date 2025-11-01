@@ -9,7 +9,7 @@ class BlockNode : public Node {
 public:
     std::vector<NodePtr> stmts;
 
-    BlockNode(uint32_t lineno, uint32_t col, std::vector<NodePtr>&& stmts);
+    BlockNode(size_t lineno, size_t col, std::vector<NodePtr>&& stmts);
 
     std::string toCode(int indent) const override;
 };

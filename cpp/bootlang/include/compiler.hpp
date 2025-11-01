@@ -22,12 +22,12 @@ class Compiler {
     std::shared_ptr<Context> c = nullptr;
     std::shared_ptr<TopLevelContext> top_context = nullptr;
     std::shared_ptr<std::vector<std::shared_ptr<CodeObject>>> funcs = nullptr;
-    Environment& env;
+    std::shared_ptr<std::unordered_map<size_t, size_t>> line_numbers = nullptr;
 
     std::vector<LoopFrame> loop_stack;
 
 public:
-    Compiler(Environment& env);
+    Compiler() = default;
     Program compile(const BlockNodePtr &ast);
 
 private:    

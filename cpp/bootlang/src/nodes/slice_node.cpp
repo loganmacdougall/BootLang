@@ -1,6 +1,6 @@
 #include "nodes/slice_node.hpp"
 
-SliceNode::SliceNode(uint32_t lineno, uint32_t col, NodePtr&& left, std::optional<NodePtr>&& start, std::optional<NodePtr>&& end, std::optional<NodePtr>&& step)
+SliceNode::SliceNode(size_t lineno, size_t col, NodePtr&& left, std::optional<NodePtr>&& start, std::optional<NodePtr>&& end, std::optional<NodePtr>&& step)
 : Node(lineno, col, Node::Type::SLICE), left(std::move(left)),
   start(std::move(start)), end(std::move(end)), step(std::move(step)) {}
 

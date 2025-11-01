@@ -1,6 +1,6 @@
 #include "nodes/return_node.hpp"
 
-ReturnNode::ReturnNode(uint32_t lineno, uint32_t col, std::optional<NodePtr>&& value)
+ReturnNode::ReturnNode(size_t lineno, size_t col, std::optional<NodePtr>&& value)
     : Node(lineno, col, Node::Type::RETURN), value(std::move(value)) {}
 
 std::string ReturnNode::toCode(int indent) const {

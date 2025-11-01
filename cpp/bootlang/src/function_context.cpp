@@ -137,6 +137,11 @@ std::string FunctionContext::toDisassembly() const {
             out << ((inst.arg < top_context->vars.size()) ? top_context->vars[inst.arg] : "???");
             out << ")";
             break;
+        case Instruction::Type::LOAD_BUILTIN:
+            out << "(";
+            out << ((inst.arg < top_context->builtins.size()) ? top_context->builtins[inst.arg] : "???");
+            out << ")";
+            break;
         case Instruction::Type::LOAD_CONST:
         case Instruction::Type::LOAD_ATTR:
         case Instruction::Type::STORE_ATTR:

@@ -9,8 +9,8 @@
 struct TokenData {
     Token::Type token;
     std::string text;
-    uint32_t lineno;
-    uint32_t col;
+    size_t lineno;
+    size_t col;
 };
 
 class Tokenizer {

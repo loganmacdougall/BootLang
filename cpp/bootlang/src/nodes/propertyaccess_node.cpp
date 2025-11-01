@@ -1,6 +1,6 @@
 #include "nodes/propertyaccess_node.hpp"
 
-PropertyAccessNode::PropertyAccessNode(uint32_t lineno, uint32_t col, NodePtr&& left, std::string property)
+PropertyAccessNode::PropertyAccessNode(size_t lineno, size_t col, NodePtr&& left, std::string property)
 : Node(lineno, col, Node::Type::PROPERTY_ACCESS), left(std::move(left)), property(property) {}
 
 std::string PropertyAccessNode::toCode(int indent) const {

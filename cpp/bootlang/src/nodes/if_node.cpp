@@ -1,6 +1,6 @@
 #include "nodes/if_node.hpp"
 
-IfNode::IfNode(uint32_t lineno, uint32_t col, CondBlock&& if_block, std::vector<CondBlock>&& elif_blocks, std::optional<BlockNodePtr>&& else_block)
+IfNode::IfNode(size_t lineno, size_t col, CondBlock&& if_block, std::vector<CondBlock>&& elif_blocks, std::optional<BlockNodePtr>&& else_block)
 : Node(lineno, col, Node::Type::IF), if_block(std::move(if_block)), elif_blocks(std::move(elif_blocks)), else_block(std::move(else_block)) {}
 
 std::string IfNode::toCode(int indent) const {

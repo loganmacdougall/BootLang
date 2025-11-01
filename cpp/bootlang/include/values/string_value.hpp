@@ -13,6 +13,7 @@ class StringValue : public Value {
     };
 
     StringValue(const std::string &value);
+    virtual bool toBool() const { return !value.empty(); }
     virtual bool isHashable() const override { return true; }
     bool isIterable() const override { return true; }
     std::size_t hash() const override;

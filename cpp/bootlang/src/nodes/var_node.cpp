@@ -1,6 +1,6 @@
 #include "nodes/var_node.hpp"
 
-VarNode::VarNode(uint32_t lineno, uint32_t col, std::string name)
+VarNode::VarNode(size_t lineno, size_t col, std::string name)
     : Node(lineno, col, Node::Type::VAR), name(name) {}
 
 std::string VarNode::toCode(int indent) const {

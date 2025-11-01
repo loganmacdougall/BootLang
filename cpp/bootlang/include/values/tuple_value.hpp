@@ -15,6 +15,7 @@ class TupleValue : public Value {
     };
 
     TupleValue(std::vector<Value::Ptr>&& elems);
+    virtual bool toBool() const { return !elems.empty(); }
     virtual bool isHashable() const override { return true; }
     bool isIterable() const override { return true; }
     std::size_t hash() const override;

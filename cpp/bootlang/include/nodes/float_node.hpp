@@ -6,7 +6,7 @@ class FloatNode : public Node {
 public:
     double value;
 
-    FloatNode(uint32_t lineno, uint32_t col, double value);
+    FloatNode(size_t lineno, size_t col, double value);
 
     std::string toCode(int indent) const override;
 };

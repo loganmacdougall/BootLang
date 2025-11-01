@@ -14,6 +14,7 @@ class SetValue : public Value {
     };
 
     SetValue(std::set<Value::Ptr>&& elems);
+    virtual bool toBool() const { return !elems.empty(); }
     bool isIterable() const override { return true; }
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;

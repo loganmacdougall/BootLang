@@ -6,7 +6,7 @@ class VarNode : public Node {
 public:
     std::string name;
 
-    VarNode(uint32_t lineno, uint32_t col, std::string name);
+    VarNode(size_t lineno, size_t col, std::string name);
 
     std::string toCode(int indent) const override;
 };

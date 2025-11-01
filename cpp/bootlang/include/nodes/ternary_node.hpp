@@ -8,7 +8,7 @@ public:
     NodePtr right;
     NodePtr cond;
 
-    TernaryNode(uint32_t lineno, uint32_t col, NodePtr&& left, NodePtr&& right, NodePtr&& cond);
+    TernaryNode(size_t lineno, size_t col, NodePtr&& left, NodePtr&& right, NodePtr&& cond);
 
     std::string toCode(int indent) const override;
 };

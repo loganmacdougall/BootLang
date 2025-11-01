@@ -1,8 +1,36 @@
 #include "toplevel_context.hpp"
 
+size_t TopLevelContext::idBuiltin(std::string name) {
+    auto it = builtins_map.find(name);
+    if (it != builtins_map.end()) {
+        return it->second;
+    }
+
+    size_t index = builtins.size();
+    builtins.push_back(name);
+    builtins_map[name] = index;
+    return index;
+}
+
+size_t TopLevelContext::getBuiltinId(std::string name) const {
+    auto it = builtins_map.find(name);
+    if (it == builtins_map.end()) {
+        return Context::NOT_FOUND;
+    } else {
+        return it->second;
+    }
+}
+
 void TopLevelContext::loadIdentifier(const std::string& name) {
-    size_t id = idVar(name);
-    emit(Instruction::LOAD_GLOBAL, id);
+    size_t id = getVarId(name);
+
+    if (id != Context::NOT_FOUND) {
+        emit(Instruction::LOAD_GLOBAL, id);
+    } else {
+        size_t builtin_id = idBuiltin(name);
+        emit(Instruction::LOAD_BUILTIN, builtin_id);
+    }
+
 }
 
 void TopLevelContext::storeIdentifier(const std::string& name) {
@@ -33,6 +61,11 @@ std::string TopLevelContext::toDisassembly() const {
         case Instruction::Type::STORE_GLOBAL:
             out << "(";
             out << ((inst.arg < vars.size()) ? vars[inst.arg] : "???");
+            out << ")";
+            break;
+        case Instruction::Type::LOAD_BUILTIN:
+            out << "(";
+            out << ((inst.arg < builtins.size()) ? builtins[inst.arg] : "???");
             out << ")";
             break;
         case Instruction::Type::LOAD_CONST:

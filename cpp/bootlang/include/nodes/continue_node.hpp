@@ -4,7 +4,7 @@
 
 class ContinueNode : public Node {
 public:
-    ContinueNode(uint32_t lineno, uint32_t col);
+    ContinueNode(size_t lineno, size_t col);
 
     std::string toCode(int indent) const override;
 };

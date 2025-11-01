@@ -11,12 +11,14 @@
 
 class BinaryOpRegistry {
 public:
-  typedef Value::Ptr (*BinaryOpFn)(const Value&, const Value&);
+  typedef Value::Ptr (*BinaryOpFn)(Value::Ptr, Value::Ptr);
 
   BinaryOpRegistry();
   static const BinaryOpRegistry& GetInstance();
   std::optional<BinaryOpFn> get(Value::Type lhs, Value::Type rhs, Token::Type op) const;
   void reg(Value::Type lhs, Value::Type rhs, Token::Type op, BinaryOpFn fn);
+
+  void throwNotFunction(Value::Type lhs, Value::Type rhs, Token::Type op) const;
 private:
   
   static constexpr size_t hash(Value::Type lhs, Value::Type rhs, Token::Type op);

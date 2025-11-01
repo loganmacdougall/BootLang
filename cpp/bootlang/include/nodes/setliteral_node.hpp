@@ -7,7 +7,7 @@ class SetLiteralNode : public Node {
 public:
     std::vector<NodePtr> elems;
 
-    SetLiteralNode(uint32_t lineno, uint32_t col, std::vector<NodePtr>&& elems);
+    SetLiteralNode(size_t lineno, size_t col, std::vector<NodePtr>&& elems);
 
     std::string toCode(int indent) const override;
 };

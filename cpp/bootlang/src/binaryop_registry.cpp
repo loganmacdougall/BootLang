@@ -19,6 +19,14 @@ void BinaryOpRegistry::reg(Value::Type lhs, Value::Type rhs, Token::Type op, Bin
   registry[h] = fn;
 }
 
+void BinaryOpRegistry::throwNotFunction(Value::Type lhs, Value::Type rhs, Token::Type op) const {
+  std::ostringstream out;
+  out << "No support for binary operator ";
+  out << lhs << " " << op << " " << rhs;
+
+  throw std::runtime_error(out.str());
+}
+
 constexpr size_t BinaryOpRegistry::hash(Value::Type lhs, Value::Type rhs, Token::Type op) {
   return (static_cast<size_t>(op))
     | (static_cast<size_t>(lhs) << 8)

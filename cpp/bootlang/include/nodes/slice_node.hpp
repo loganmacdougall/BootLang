@@ -10,7 +10,7 @@ public:
     std::optional<NodePtr> end;
     std::optional<NodePtr> step;
 
-    SliceNode(uint32_t lineno, uint32_t col, NodePtr&& left, std::optional<NodePtr>&& start, std::optional<NodePtr>&& end, std::optional<NodePtr>&& step);
+    SliceNode(size_t lineno, size_t col, NodePtr&& left, std::optional<NodePtr>&& start, std::optional<NodePtr>&& end, std::optional<NodePtr>&& step);
 
     std::string toCode(int indent) const override;
 };

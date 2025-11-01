@@ -2,17 +2,16 @@
 
 using INST = Instruction::Type;
 
-Compiler::Compiler(Environment& env) : env(env) {}
-
 Program Compiler::compile(const BlockNodePtr &ast) {
     top_context = std::make_shared<TopLevelContext>();
     c = top_context;
     
     funcs = std::make_shared<std::vector<std::shared_ptr<CodeObject>>>();
+    line_numbers = std::make_shared<std::unordered_map<size_t, size_t>>();
     
     compileTopBlock(ast);
 
-    Program program(top_context, funcs, env);
+    Program program(top_context, funcs, line_numbers);
     
     return program;
 }
@@ -135,6 +134,7 @@ void Compiler::compileToplevelNode(const Node* node) {
 
 void Compiler::compileBlock(const BlockNode* node) {
     for (auto& stmt : node->stmts) {
+        line_numbers->insert({stmt->lineno, c->len()});
         compileToplevelNode(stmt.get());
     }
 }

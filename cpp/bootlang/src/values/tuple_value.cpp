@@ -41,16 +41,20 @@ bool TupleValue::equal(const Value& other) const {
 }
 
 Value::Ptr TupleValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
-  auto state = std::static_pointer_cast<TupleValue::IteratorState>(base_state);
-  
-  if (state->it == elems.end()) {
-      return NoneValue::NONE;
-  }
+      if (base_state->finished) {
+        return NoneValue::NONE;
+    }
+    
+    auto state = std::static_pointer_cast<TupleValue::IteratorState>(base_state);
 
-  Value::Ptr elem = *state->it;
-  state->it++;
+    Value::Ptr elem = *state->it;
+    state->it++;
 
-  return elem;
+    if (state->it == elems.end()) {
+        base_state->finished = true;
+    }
+
+    return elem;
 }
 
 std::shared_ptr<Value::IteratorState> TupleValue::iterInitialState() const {
@@ -59,6 +63,10 @@ std::shared_ptr<Value::IteratorState> TupleValue::iterInitialState() const {
   );
 
   iter_state->it = elems.begin();
+
+  if (iter_state->it == elems.end()) {
+      iter_state->finished = true;
+  }
 
   return iter_state;
 }

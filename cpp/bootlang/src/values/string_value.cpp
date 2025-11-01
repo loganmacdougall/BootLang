@@ -17,14 +17,18 @@ bool StringValue::equal(const Value& other) const {
 
 Value::Ptr StringValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
     auto state = std::static_pointer_cast<StringValue::IteratorState>(base_state);
-    
-    if (state->it == value.end()) {
+
+    if (base_state->finished) {
         return NoneValue::NONE;
     }
 
     char charater = *state->it;
     Value::Ptr elem = std::make_shared<StringValue>(StringValue(std::string(1, charater)));
     state->it++;
+
+    if (state->it == value.end()) {
+        base_state->finished = true;
+    }
 
     return elem;
 }
@@ -35,6 +39,10 @@ std::shared_ptr<Value::IteratorState> StringValue::iterInitialState() const {
     );
 
     iter_state->it = value.begin();
+
+    if (iter_state->it == value.end()) {
+        iter_state->finished = true;
+    }
 
     return iter_state;
 }

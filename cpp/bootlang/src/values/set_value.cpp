@@ -4,14 +4,18 @@ SetValue::SetValue(std::set<Value::Ptr>&& elems)
     : Value(Value::SET), elems(std::move(elems)) {}
 
 Value::Ptr SetValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
-    auto state = std::static_pointer_cast<SetValue::IteratorState>(base_state);
-    
-    if (state->it == elems.end()) {
+    if (base_state->finished) {
         return NoneValue::NONE;
     }
+    
+    auto state = std::static_pointer_cast<SetValue::IteratorState>(base_state);
 
     Value::Ptr elem = *state->it;
     state->it++;
+    
+    if (state->it == elems.end()) {
+        base_state->finished = true;
+    }
 
     return elem;
 }
@@ -22,6 +26,11 @@ std::shared_ptr<Value::IteratorState> SetValue::iterInitialState() const {
     );
 
     iter_state->it = elems.begin();
+
+    if (iter_state->it == elems.end()) {
+        iter_state->finished = true;
+    }
+
 
     return iter_state;
 }

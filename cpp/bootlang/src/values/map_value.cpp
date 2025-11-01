@@ -4,14 +4,18 @@ MapValue::MapValue(std::map<Value::Ptr, Value::Ptr>&& map)
     : Value(Value::MAP), map(std::move(map)) {}
 
 Value::Ptr MapValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
-    auto state = std::static_pointer_cast<MapValue::IteratorState>(base_state);
-    
-    if (state->it == map.end()) {
+    if (base_state->finished) {
         return NoneValue::NONE;
     }
+    
+    auto state = std::static_pointer_cast<MapValue::IteratorState>(base_state);
 
     Value::Ptr elem = (*state->it).first;
     state->it++;
+
+    if (state->it == map.end()) {
+        base_state->finished = true;
+    }
 
     return elem;
 }
@@ -22,6 +26,10 @@ std::shared_ptr<Value::IteratorState> MapValue::iterInitialState() const {
     );
 
     iter_state->it = map.begin();
+
+    if (iter_state->it == map.end()) {
+        iter_state->finished = true;
+    }
 
     return iter_state;
 }

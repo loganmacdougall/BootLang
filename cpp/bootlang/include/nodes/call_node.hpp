@@ -8,7 +8,7 @@ public:
     NodePtr left;
     std::vector<NodePtr> args;
 
-    CallNode(uint32_t lineno, uint32_t col, NodePtr&& left, std::vector<NodePtr>&& args);
+    CallNode(size_t lineno, size_t col, NodePtr&& left, std::vector<NodePtr>&& args);
 
     std::string toCode(int indent) const override;
 };

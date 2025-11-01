@@ -3,10 +3,10 @@
 #include <iostream>
 #include "tokenizer.hpp"
 
-const uint32_t SPACES_IN_TABS = 2;
+const size_t SPACES_IN_TABS = 2;
 
-uint32_t count_indent(std::string &text) {
-  uint32_t count = 0;
+size_t count_indent(std::string &text) {
+  size_t count = 0;
   for (char c : text) {
     if (c == ' ') count += 1;
     if (c == '\t') count += SPACES_IN_TABS;
@@ -31,12 +31,12 @@ Tokenizer::Tokenizer(std::string code) :
 
   std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
   std::vector<TokenData> tokens;
-  std::vector<uint32_t> indent_stack{0};
+  std::vector<size_t> indent_stack{0};
 
   bool previous_was_newline = false;
   bool comment = false;
-  uint32_t lineno = 1;
-  uint32_t line_start = 0;
+  size_t lineno = 1;
+  size_t line_start = 0;
   
   static const auto regex_pairs = TokenMetadata::GetInstance().GetTokenRegexes();
   static const auto regex_pattern = build_combined_pattern(regex_pairs);  
@@ -63,7 +63,7 @@ Tokenizer::Tokenizer(std::string code) :
       return std::nullopt;
     }
 
-    uint32_t col = static_cast<uint32_t>(match.position() - line_start + 1);
+    size_t col = static_cast<size_t>(match.position() - line_start + 1);
 
     comment = token == Token::Type::COMMENT || comment;
     if (comment && token != Token::Type::NEWLINE) continue;
@@ -82,7 +82,7 @@ Tokenizer::Tokenizer(std::string code) :
         continue;
       }
 
-      uint32_t indent_count = count_indent(text);
+      size_t indent_count = count_indent(text);
       if (indent_count > indent_stack[indent_stack.size() - 1]) {
         indent_stack.push_back(indent_count);
         tokens.push_back(TokenData{Token::Type::INDENT, text, lineno, col});
