@@ -11,7 +11,7 @@
 std::string samples_path = "../../samples/";
 
 int main() {
-  std::ifstream sample_file(samples_path + "example02.bl");
+  std::ifstream sample_file(samples_path + "example04.bl");
   std::stringstream code_buffer;
   code_buffer << sample_file.rdbuf();
   

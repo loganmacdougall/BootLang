@@ -27,8 +27,8 @@ VirtualMachine::VirtualMachine(Environment& env) :
 void VirtualMachine::pushFrame(std::shared_ptr<Context> context) {
   CallFrame* next_f = new CallFrame(context, stack.size());
   if (f) {
-    f->parent = next_f;
-    f = f->parent;
+    next_f->parent = f;
+    f = next_f;
   } else {
     f = next_f;
   }
@@ -46,7 +46,7 @@ void VirtualMachine::popFrame() {
     f = nullptr;
     return;
   }
-  
+
   CallFrame* next_f = f->parent;
   delete f;
   f = next_f;
@@ -255,9 +255,9 @@ void VirtualMachine::runStoreAttr(size_t arg) {
 
 void VirtualMachine::runStoreIndex(size_t arg) {
   (void)arg;
-  Value::Ptr value = popStack();
   Value::Ptr index = popStack();
   Value::Ptr collection = popStack();
+  Value::Ptr value = popStack();
 
   collection_index_assign(collection, index, value);
 }
@@ -318,9 +318,11 @@ void VirtualMachine::runUnpackSequence(size_t arg) {
     throw std::runtime_error(out.str());
   }
 
+  stack.resize(stack.size() + arg);
+
   auto iter = collection->iterInitialState();
-  while (!iter->finished) {
-    pushStack(collection->nextFromIter(iter));
+  for (size_t i = 0; i < arg; i++) {
+    stack[stack.size() - i - 1] = collection->nextFromIter(iter);
   }
 }
 
@@ -412,9 +414,12 @@ void VirtualMachine::runForIter(size_t arg) {
 
 void VirtualMachine::runBuildTuple(size_t arg) {
   std::vector<Value::Ptr> elems;
+  elems.resize(arg);
 
-  for (size_t i = 0; i < arg; i++) {
-    elems.push_back(std::move(popStack()));
+  long size = static_cast<long>(arg);
+
+  for (long i = size - 1; i >= 0; i--) {
+    elems[static_cast<size_t>(i)] = std::move(popStack());
   }
 
   Value::Ptr value = std::make_shared<TupleValue>(std::move(elems));
@@ -423,9 +428,12 @@ void VirtualMachine::runBuildTuple(size_t arg) {
 
 void VirtualMachine::runBuildList(size_t arg) {
   std::vector<Value::Ptr> elems;
+  elems.resize(arg);
 
-  for (size_t i = 0; i < arg; i++) {
-    elems.push_back(std::move(popStack()));
+  long size = static_cast<long>(arg);
+
+  for (long i = size - 1; i >= 0; i--) {
+    elems[static_cast<size_t>(i)] = std::move(popStack());
   }
 
   Value::Ptr value = std::make_shared<ListValue>(std::move(elems));
@@ -434,11 +442,15 @@ void VirtualMachine::runBuildList(size_t arg) {
 
 void VirtualMachine::runBuildMap(size_t arg) {
   std::vector<std::pair<Value::Ptr, Value::Ptr>> pairs;
+  pairs.resize(arg);
 
-  for (size_t i = 0; i < arg; i++) {
-    Value::Ptr key = popStack();
+  long size = static_cast<long>(arg);
+
+  for (long i = size - 1; i >= 0; i--) {
     Value::Ptr value = popStack();
-    pairs.emplace_back(key, value);
+    Value::Ptr key = popStack();
+    auto pair = std::pair<Value::Ptr, Value::Ptr>(key, value);
+    pairs[i] = pair;
   }
 
   Value::Ptr value = std::make_shared<MapValue>(std::move(pairs));
@@ -447,9 +459,12 @@ void VirtualMachine::runBuildMap(size_t arg) {
 
 void VirtualMachine::runBuildSet(size_t arg) {
   std::vector<Value::Ptr> elems;
+  elems.resize(arg);
 
-  for (size_t i = 0; i < arg; i++) {
-    elems.push_back(std::move(popStack()));
+  long size = static_cast<long>(arg);
+
+  for (long i = size - 1; i >= 0; i--) {
+    elems[static_cast<size_t>(i)] = std::move(popStack());
   }
 
   Value::Ptr value = std::make_shared<SetValue>(std::move(elems));
@@ -457,28 +472,31 @@ void VirtualMachine::runBuildSet(size_t arg) {
 }
 
 void VirtualMachine::runBuildSlice(size_t arg) {
-  if (arg != 2 || arg != 3) {
-    throw std::runtime_error("Invalid argument provided from BUILD_SLICE.");
-  }
+  (void)arg;
+  long start = 0, end = -1, step = 1;
 
-  long start, end, step = 1;
-
-  Value::Ptr start_value = popStack();
-  Value::Ptr end_value = popStack();
-
-  if (start_value->type != Value::Type::INT || end_value->type != Value::Type::INT) {
-    throw std::runtime_error("Slice arguments must be of type int");
-  }
-
-  start = Value::toDerived<IntValue>(start_value)->value;
-  end = Value::toDerived<IntValue>(end_value)->value;
-
-  if (arg == 3) {
-    Value::Ptr step_value = popStack();
+  Value::Ptr step_value = popStack();
+  if (step_value->type != Value::Type::NONE) {
     if (step_value->type != Value::Type::INT) {
       throw std::runtime_error("Slice arguments must be of type int");
     }
     step = Value::toDerived<IntValue>(step_value)->value;
+  }
+
+  Value::Ptr end_value = popStack();
+  if (end_value->type != Value::Type::NONE) {
+    if (end_value->type != Value::Type::INT) {
+      throw std::runtime_error("Slice arguments must be of type int");
+    }
+    end = Value::toDerived<IntValue>(end_value)->value;
+  }
+
+  Value::Ptr start_value = popStack();
+  if (start_value->type != Value::Type::NONE) {
+    if (start_value->type != Value::Type::INT) {
+      throw std::runtime_error("Slice arguments must be of type int");
+    }
+    start = Value::toDerived<IntValue>(start_value)->value;
   }
 
   Value::Ptr slice = std::make_shared<SliceValue>(start, end, step);
@@ -539,5 +557,10 @@ void VirtualMachine::runPause(size_t arg) {
 
 void VirtualMachine::runReturn(size_t arg) {
   (void)arg;
+
+  Value::Ptr returned = popStack();
+  stack.resize(f->bp);
+  pushStack(returned);
+
   popFrame();
 }

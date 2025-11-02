@@ -433,7 +433,7 @@ void Compiler::compileFor(const ForNode* node) {
 
     jump_back = c->len();
     c->emit(INST::JUMP_BACKWARDS, jump_back - start_for + 1);
-    end_for = c->emit(INST::POP_TOP);
+    end_for = c->len();
 
     c->patch(start_for, INST::FOR_ITER, end_for - start_for - 1);
     patchLoopControls(start_for, end_for);

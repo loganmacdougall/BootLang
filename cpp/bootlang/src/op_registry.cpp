@@ -134,4 +134,8 @@ OpRegistry::OpRegistry() {
   reg(V::FLOAT, V::FLOAT, T::LESS, float_l_float);
   reg(V::FLOAT, V::FLOAT, T::EQUAL, float_eq_float);
   reg(V::FLOAT, V::FLOAT, T::NEQUAL, float_neq_float);
+
+  reg(V::STRING, V::STRING, T::EQUAL, string_eq_string);
+  reg(V::STRING, V::STRING, T::PLUS, string_add_string);
+  reg(V::STRING, V::STRING, T::PLUS_ASSIGN, string_add_string);
 }

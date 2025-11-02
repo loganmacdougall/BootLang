@@ -1,0 +1,14 @@
+num1 = 97
+operator = "+"
+num2 = 54
+def calc():
+    if operator == "+":
+        answer = (num1 + num2)
+    elif operator == "-":
+        answer = (num1 - num2)
+    elif operator == "*":
+        answer = (num1 * num2)
+    elif operator == "/":
+        answer = (num1 / num2)
+    return answer
+print(calc())

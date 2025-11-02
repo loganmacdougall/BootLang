@@ -16,12 +16,14 @@ class TupleValue : public Value {
 
     TupleValue(std::vector<Value::Ptr>&& elems);
     virtual bool toBool() const { return !elems.empty(); }
+    virtual bool hasLength() const override { return true; }
     virtual bool isHashable() const override { return true; }
     bool isIterable() const override { return true; }
     std::size_t hash() const override;
     bool equal(const Value& other) const override;
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
+    virtual size_t len() const override { return elems.size(); };
     virtual Value::Ptr clone() const override;
     virtual std::string toString() const override;
   

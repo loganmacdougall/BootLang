@@ -129,7 +129,7 @@ void collection_index_assign(Value::Ptr a_base, Value::Ptr b_base, Value::Ptr va
   }
 
   size_t slice_length = b->sliceLength(a->elems.size());
-  auto [start, end, step] = b->sliceValues(a->elems.size(), false);
+  auto [start, end, step] = b->sliceValues(a->elems.size());
 
   if (step == 1) {
     if (slice_length == 0) return;
@@ -139,10 +139,9 @@ void collection_index_assign(Value::Ptr a_base, Value::Ptr b_base, Value::Ptr va
     std::vector<Value::Ptr> elems;
 
     elems.insert(elems.end(), a->elems.begin(), a->elems.begin() + start);
-    for (auto iter = value->nextFromIter(iter_state);
-      !iter_state->finished;
-      iter = value->nextFromIter(iter_state)) {
-      elems.push_back(Value::copy(iter));
+    while (!iter_state->finished) {
+      auto elem = value->nextFromIter(iter_state);
+      elems.push_back(Value::copy(elem)); 
     }
     elems.insert(elems.end(), a->elems.begin() + end, a->elems.end());
 

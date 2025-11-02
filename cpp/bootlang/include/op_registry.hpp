@@ -6,8 +6,7 @@
 #include <optional>
 #include "values/all_values.hpp"
 #include "token.hpp"
-#include "operations/int.hpp"
-#include "operations/float.hpp"
+#include "operations/all_operations.hpp"
 
 class OpRegistry {
 public:

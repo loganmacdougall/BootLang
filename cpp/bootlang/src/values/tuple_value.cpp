@@ -41,7 +41,7 @@ bool TupleValue::equal(const Value& other) const {
 }
 
 Value::Ptr TupleValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
-      if (base_state->finished) {
+    if (base_state->finished) {
         return NoneValue::NONE;
     }
     

@@ -23,10 +23,12 @@ class MapValue : public Value {
     bool hasValue(Value::Ptr key);
     Value::Ptr getValue(Value::Ptr key);
 
-    virtual bool toBool() const { return !keys.empty(); }
     bool isIterable() const override { return true; }
+    virtual bool hasLength() const override { return true; }
+    virtual bool toBool() const { return !keys.empty(); }
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const override;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;
+    virtual size_t len() const override { return keys.size(); };
     virtual Value::Ptr clone() const override;
     virtual std::string toString() const override;
 };

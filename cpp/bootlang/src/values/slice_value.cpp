@@ -3,35 +3,35 @@
 SliceValue::SliceValue(std::optional<long> start, std::optional<long> end, std::optional<long> step)
 : Value(Value::Type::SLICE), start(start), end(end), step(step) {}
 
-std::tuple<long, long, long> SliceValue::sliceValues(size_t length, bool negitives_reach_end) const {
+std::tuple<long, long, long> SliceValue::sliceValues(size_t length) const {
   long _start = start.value_or(0);
   long _end = end.value_or(length);
   long _step = step.value_or(1);
   
   _start = _start < 0 ? length - _start : _start;
-  _end = _end < 0 ? (negitives_reach_end ? length - _end : length - _end - 1) : _end;
+  _end = _end < 0 ? length + _end : _end;
 
   return std::tuple(_start, _end, _step);
 }
 
-size_t SliceValue::sliceLength(size_t length, bool exclusive_ends) const {
-  auto [_start, _end, _step] = sliceValues(length, exclusive_ends);
+size_t SliceValue::sliceLength(size_t length) const {
+  auto [_start, _end, _step] = sliceValues(length);
 
   if (_step == 0) return 0;
-  if (_step > 0 && _start <= _end) return 0;
-  if (_step < 0 && _start >= _end ) return 0;
+  if (_step > 0 && _start >= _end) return 0;
+  if (_step < 0 && _start <= _end ) return 0;
   
-  return (_end - _start) / _step;
+  return (_end - _start + 1) / _step;
 }
 
-std::tuple<long, long> SliceValue::sliceRange(size_t length, bool exclusive_ends) const {
-  auto [_start, _end, _step] = sliceValues(length, exclusive_ends);
+std::tuple<long, long> SliceValue::sliceRange(size_t length) const {
+  auto [_start, _end, _step] = sliceValues(length);
 
   if (_step == 0) return std::tuple(0,0);
-  if (_step > 0 && _start <= _end) return std::tuple(0,0);
-  if (_step < 0 && _start >= _end ) return std::tuple(0,0);
+  if (_step > 0 && _start >= _end) return std::tuple(0,0);
+  if (_step < 0 && _start <= _end ) return std::tuple(0,0);
 
-  long count = (_end - _start) / _step;
+  long count = (_end - _start - 1) / _step;
   return std::tuple(_start, _start + (_step * count));
 }
 
