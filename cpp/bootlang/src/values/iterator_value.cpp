@@ -7,6 +7,6 @@ Value::Ptr IterableValue::next() const {
   return parent->nextFromIter(state);
 }
 
-std::string IterableValue::toCode() const {
-  return "iter of " + parent->toCode();
+std::string IterableValue::toString() const {
+  return "iter of " + parent->toString();
 }

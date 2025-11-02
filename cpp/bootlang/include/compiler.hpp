@@ -45,8 +45,6 @@ private:
     void compileIndex(const IndexNode* node);
     
     size_t pushNodes(const std::vector<NodePtr>& elems);
-    size_t pushNodes(const std::map<NodePtr, NodePtr>& elems);
-    size_t pushNodes(const std::set<NodePtr>& elems);
     void compileDictLiteral(const DictLiteralNode* node);
     void compileTupleLiteral(const TupleLiteralNode* node);
     void compileListLiteral(const ListLiteralNode* node);

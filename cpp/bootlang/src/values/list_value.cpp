@@ -17,7 +17,7 @@ Value::Ptr ListValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_st
         base_state->finished = true;
     }
 
-    return elem;
+    return copy(elem);
 }
 
 std::shared_ptr<Value::IteratorState> ListValue::iterInitialState() const {
@@ -45,7 +45,7 @@ Value::Ptr ListValue::clone() const {
   return std::make_shared<ListValue>(ListValue(std::move(other_elems)));
 }
 
-std::string ListValue::toCode() const {
+std::string ListValue::toString() const {
     std::string out = "[";
 
     for (auto it = elems.begin(); it != elems.end(); it++) {
@@ -58,7 +58,7 @@ std::string ListValue::toCode() const {
             break;
         }
         
-        out += it->get()->toCode();
+        out += it->get()->toString();
     }
 
     out += ']';

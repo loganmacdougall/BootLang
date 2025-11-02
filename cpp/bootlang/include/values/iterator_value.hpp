@@ -11,5 +11,5 @@ class IterableValue : public Value {
     IterableValue(Value::Ptr parent, std::shared_ptr<IteratorState> state);
     bool isIterable() const override { return true; }
     virtual Value::Ptr next() const;
-    virtual std::string toCode() const override;
+    virtual std::string toString() const override;
 };

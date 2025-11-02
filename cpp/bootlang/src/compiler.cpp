@@ -212,23 +212,6 @@ size_t Compiler::pushNodes(const std::vector<NodePtr>& elems) {
     return elems.size();
 }
 
-size_t Compiler::pushNodes(const std::map<NodePtr, NodePtr>& elems) {
-    for (auto &elem : elems) {
-        compileNode(elem.first.get());
-        compileNode(elem.second.get());
-    }
-
-    return elems.size();
-}
-
-size_t Compiler::pushNodes(const std::set<NodePtr>& elems) {
-    for (auto &elem : elems) {
-        compileNode(elem.get());
-    }
-
-    return elems.size();
-}
-
 void Compiler::compileDictLiteral(const DictLiteralNode* node) {
     for (auto &elem : node->elems) {
         compileNode(elem.first.get());
@@ -340,7 +323,7 @@ void Compiler::compileAssignIdent(const Node* node, Token::Type op) {
         case Node::Type::SLICE: {
             compileSlice(Node::toDerived<SliceNode>(node));
             c->burn();
-            c->emit(INST::STORE_SLICE);
+            c->emit(INST::STORE_INDEX);
             break;
         }
 

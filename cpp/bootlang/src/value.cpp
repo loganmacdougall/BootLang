@@ -30,6 +30,13 @@ Value::Ptr Value::clone() const {
     throw std::runtime_error("clone not implemented for this Value type");
 }
 
-std::string Value::toCode() const {
+std::string Value::toString() const {
     throw std::runtime_error("toCode not implemented for this Value type");
+}
+
+Value::Ptr Value::copy(Value::Ptr value) {
+    if (value->isPrimitive()) {
+        return value->clone();
+    }
+    return value;
 }

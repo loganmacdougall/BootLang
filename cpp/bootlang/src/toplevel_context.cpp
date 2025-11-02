@@ -72,7 +72,7 @@ std::string TopLevelContext::toDisassembly() const {
         case Instruction::Type::LOAD_ATTR:
         case Instruction::Type::STORE_ATTR:
             out << "(";
-            out << ((inst.arg < constants.size()) ? constants[inst.arg].get()->toCode() : "???");
+            out << ((inst.arg < constants.size()) ? constants[inst.arg].get()->toString() : "???");
             out << ")";
             break;
         case Instruction::Type::BINARY_OP:

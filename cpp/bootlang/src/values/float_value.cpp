@@ -19,6 +19,6 @@ Value::Ptr FloatValue::clone() const {
     return std::make_shared<FloatValue>(FloatValue(value));
 }
 
-std::string FloatValue::toCode() const {
+std::string FloatValue::toString() const {
     return std::to_string(value);
 }

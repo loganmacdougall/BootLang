@@ -17,9 +17,11 @@ class Value {
         STRING,
         BOOL,
         FUNCTION,
+        BUILTIN_FUNCTION,
+        BUILTIN_GENERATOR,
         LIST,
         SLICE,
-        MAP,
+        DICT,
         SET,
         TUPLE,
         GENERATOR,
@@ -47,7 +49,9 @@ class Value {
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
     virtual size_t len() const;
     virtual Value::Ptr clone() const;
-    virtual std::string toCode() const;
+    virtual std::string toString() const;
+
+    static Value::Ptr copy(Value::Ptr);
 
     template<typename T>
     static inline std::shared_ptr<T> toDerived(Value::Ptr value) {

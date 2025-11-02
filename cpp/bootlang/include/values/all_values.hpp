@@ -1,6 +1,8 @@
 #pragma once
 
 #include "values/bool_value.hpp"
+#include "values/builtin_function_value.hpp"
+#include "values/builtin_generator_value.hpp"
 #include "values/float_value.hpp"
 #include "values/function_value.hpp"
 #include "values/generator_value.hpp"

@@ -19,6 +19,6 @@ Value::Ptr IntValue::clone() const {
     return std::make_shared<IntValue>(IntValue(value));
 }
 
-std::string IntValue::toCode() const {
+std::string IntValue::toString() const {
     return std::to_string(value);
 }

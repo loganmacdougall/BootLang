@@ -16,6 +16,6 @@ Value::Ptr NoneValue::clone() const {
     return NONE;
 }
 
-std::string NoneValue::toCode() const {
+std::string NoneValue::toString() const {
     return "None";
 }

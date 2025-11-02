@@ -7,7 +7,7 @@ Value::Ptr GeneratorValue::clone() const {
   return std::make_shared<GeneratorValue>(GeneratorValue(code));
 }
 
-std::string GeneratorValue::toCode() const {
+std::string GeneratorValue::toString() const {
   std::stringstream out;
   out << "<code object - \"" << code.name << "\"";
   out << "(" << static_cast<const void*>(&code) << ")>";

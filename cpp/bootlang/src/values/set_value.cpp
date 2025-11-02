@@ -1,7 +1,48 @@
 #include "values/set_value.hpp"
 
-SetValue::SetValue(std::set<Value::Ptr>&& elems)
-    : Value(Value::SET), elems(std::move(elems)) {}
+SetValue::SetValue(std::vector<Value::Ptr>&& elems)
+    : Value(Value::SET) {
+    for (auto& key : elems) {
+        storeKey(key);
+    }
+}
+
+std::pair<size_t, size_t> SetValue::getKeyId(Value::Ptr key) {
+    if (!key->isHashable()) {
+        throw std::runtime_error("Attempted to use an unhashable value as set element");
+    }
+
+    size_t key_h = key->hash();
+
+    auto it = key_hashmap.find(key_h);
+    if (it != key_hashmap.end()) {
+        for (size_t ki : it->second) {
+            Value::Ptr other_key = keys.at(ki);
+            if (other_key->equal(*key)) {
+                return std::pair(key_h, ki);
+            }
+        }
+    }
+
+    return std::pair(key_h, static_cast<size_t>(-1));
+}
+
+void SetValue::storeKey(Value::Ptr key) {
+    auto [key_h, id] = getKeyId(key);
+
+    if (id != static_cast<size_t>(-1)) {
+        return;
+    }
+
+    size_t new_id = keys.size();
+
+    key_hashmap[key_h].push_back(new_id);
+    keys[new_id] = copy(key);
+}
+
+bool SetValue::hasKey(Value::Ptr key) {
+    return getKeyId(key).second != static_cast<size_t>(-1);
+}
 
 Value::Ptr SetValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
     if (base_state->finished) {
@@ -10,14 +51,14 @@ Value::Ptr SetValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_sta
     
     auto state = std::static_pointer_cast<SetValue::IteratorState>(base_state);
 
-    Value::Ptr elem = *state->it;
+    Value::Ptr elem = state->it->second;
     state->it++;
     
-    if (state->it == elems.end()) {
+    if (state->it == keys.end()) {
         base_state->finished = true;
     }
 
-    return elem;
+    return copy(elem);
 }
 
 std::shared_ptr<Value::IteratorState> SetValue::iterInitialState() const {
@@ -25,9 +66,9 @@ std::shared_ptr<Value::IteratorState> SetValue::iterInitialState() const {
         SetValue::IteratorState()
     );
 
-    iter_state->it = elems.begin();
+    iter_state->it = keys.begin();
 
-    if (iter_state->it == elems.end()) {
+    if (iter_state->it == keys.end()) {
         iter_state->finished = true;
     }
 
@@ -37,21 +78,22 @@ std::shared_ptr<Value::IteratorState> SetValue::iterInitialState() const {
 
 
 Value::Ptr SetValue::clone() const {
-    std::set<Value::Ptr> other_elems;
+    std::vector<Value::Ptr> cloned_elems;
+    cloned_elems.reserve(keys.size());
 
-    for (auto &elem : elems) {
-        Value::Ptr copy = elem->clone();
-        other_elems.insert(copy);
+    for (const auto& [id, key] : keys) {
+        cloned_elems.push_back(copy(key));
     }
 
-    return std::make_shared<SetValue>(SetValue(std::move(other_elems)));
+    return std::make_shared<SetValue>(std::move(cloned_elems));
 }
 
-std::string SetValue::toCode() const {
+
+std::string SetValue::toString() const {
     std::string out = "{";
 
-    for (auto it = elems.begin(); it != elems.end(); it++) {
-        if (it != elems.begin()) {
+    for (auto it = keys.begin(); it != keys.end(); it++) {
+        if (it != keys.begin()) {
             out += ',';
         }
 
@@ -60,7 +102,7 @@ std::string SetValue::toCode() const {
             break;
         }
         
-        out += it->get()->toCode();
+        out += it->second.get()->toString();
     }
 
     out += '}';

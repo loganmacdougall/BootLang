@@ -52,6 +52,6 @@ Value::Ptr StringValue::clone() const {
     return std::make_shared<StringValue>(StringValue(value));
 }
 
-std::string StringValue::toCode() const {
+std::string StringValue::toString() const {
     return '"' + value + '"';
 }

@@ -1,14 +1,22 @@
 #pragma once
 
+#include <functional>
+#include <optional>
 #include <sstream>
 #include "value.hpp"
 
 class SliceValue : public Value {
 public:
-  long start, end, step;
+  std::optional<long> start, end, step;
 
-  SliceValue(long start, long end, long step = 1);
+  SliceValue(std::optional<long> start, std::optional<long> end, std::optional<long> step = std::nullopt);
+  std::tuple<long, long, long> sliceValues(size_t length, bool exclusive_ends = true) const;
+  size_t sliceLength(size_t length, bool exclusive_ends = true) const;
+  std::tuple<long, long> sliceRange(size_t length, bool exclusive_ends = true) const;
+  std::function<size_t()> sliceGenerator(size_t length) const;
+  
   virtual bool equal(const Value& other) const override;
   virtual Value::Ptr clone() const override;
-  virtual std::string toCode() const override;
+  virtual std::string toString() const override;
+
 };

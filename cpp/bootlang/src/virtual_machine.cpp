@@ -68,7 +68,7 @@ void VirtualMachine::loadProgram(Program& program) {
   global = new CallFrame(program.context, 0, true);
 }
 
-void VirtualMachine::runProgram() {
+void VirtualMachine::runProgram(bool reset_global) {
   if (program == nullptr) {
     throw std::runtime_error("Attempted to run program before load");
   }
@@ -81,7 +81,9 @@ void VirtualMachine::runProgram() {
     f = global;
   }
 
-  f->reset();
+  if (reset_global) {
+    global->reset();
+  }
   
   run();
 }
@@ -153,7 +155,6 @@ void VirtualMachine::runInstruction(const Instruction& instruction) {
     case I::STORE_FAST:       runStoreFast(instruction.arg); break;
     case I::STORE_ATTR:       runStoreAttr(instruction.arg); break;
     case I::STORE_INDEX:      runStoreIndex(instruction.arg); break;
-    case I::STORE_SLICE:      runStoreSlice(instruction.arg); break;
     case I::STORE_DEREF:      runStoreDeref(instruction.arg); break;
 
     case I::BINARY_OP:        runBinaryOp(instruction.arg); break;
@@ -204,7 +205,15 @@ void VirtualMachine::runLoadGlobal(size_t arg) {
 }
 
 void VirtualMachine::runLoadBuiltin(size_t arg) {
-  // TODO:
+  std::string builtin_name = program->context->builtins[arg];
+
+  auto it = env.builtins.find(builtin_name);
+
+  if (it == env.builtins.end()) {
+    std::runtime_error("variable " + builtin_name + " is undefined");
+  }
+
+  pushStack(it->second);
 }
 
 void VirtualMachine::runLoadFast(size_t arg) {
@@ -212,11 +221,17 @@ void VirtualMachine::runLoadFast(size_t arg) {
 }
 
 void VirtualMachine::runLoadAttr(size_t arg) {
+  (void)arg;
   // TODO:
 }
 
 void VirtualMachine::runLoadIndex(size_t arg) {
-  runBinaryOp(Token::LBRACE);
+  (void)arg;
+  Value::Ptr collection = popStack();
+  Value::Ptr index = popStack();
+  
+  Value::Ptr value = collection_index(collection, index);
+  pushStack(value);
 }
 
 void VirtualMachine::runLoadDeref(size_t arg) {
@@ -234,15 +249,17 @@ void VirtualMachine::runStoreFast(size_t arg) {
 }
 
 void VirtualMachine::runStoreAttr(size_t arg) {
-
+  (void)arg;
+  // TODO
 }
 
 void VirtualMachine::runStoreIndex(size_t arg) {
+  (void)arg;
+  Value::Ptr value = popStack();
+  Value::Ptr index = popStack();
+  Value::Ptr collection = popStack();
 
-}
-
-void VirtualMachine::runStoreSlice(size_t arg) {
-
+  collection_index_assign(collection, index, value);
 }
 
 void VirtualMachine::runStoreDeref(size_t arg) {
@@ -264,11 +281,12 @@ void VirtualMachine::runBinaryOp(size_t arg) {
   Value::Ptr value = func.value()(collection, index);
 
   if (value) {
-    pushStack(std::move(value));
+    pushStack(value);
   }
 }
 
 void VirtualMachine::runUnaryOp(size_t arg) {
+  (void)arg;
   // Add Unary Registry or make BinaryOpRegistry or generel
 }
 
@@ -290,7 +308,7 @@ void VirtualMachine::runUnpackSequence(size_t arg) {
 
   auto iter = collection->iterInitialState();
   while (!iter->finished) {
-    pushStack(std::move(collection->nextFromIter(iter)));
+    pushStack(collection->nextFromIter(iter));
   }
 }
 
@@ -303,6 +321,7 @@ void VirtualMachine::runJumpBackwards(size_t arg) {
 }
 
 void VirtualMachine::runJumpIfFalse(size_t arg) {
+  (void)arg;
   Value::Ptr value = popStack();
   if (!value->toBool()) {
     f->ip += arg;
@@ -310,10 +329,44 @@ void VirtualMachine::runJumpIfFalse(size_t arg) {
 }
 
 void VirtualMachine::runCall(size_t arg) {
-  // TODO
+  std::vector<Value::Ptr> args(arg);
+  for (size_t i = 0; i < arg; ++i) {
+    args[arg - 1 - i] = popStack();
+  }
+
+  Value::Ptr self = popStack();
+  (void)self; // Will have more use when objects/classes are implemented
+  
+  Value::Ptr func_value = popStack();
+
+  if (func_value->type == Value::Type::BUILTIN_FUNCTION) {
+    auto func = Value::toDerived<BuiltinFunctionValue>(func_value);
+    Value::Ptr result = func->call(args);
+    pushStack(result);
+    return;
+  }
+
+  if (func_value->type != Value::Type::FUNCTION) {
+    throw std::runtime_error("Attempted to call non-function value");
+  }
+
+  std::shared_ptr<FunctionValue> func = Value::toDerived<FunctionValue>(func_value);
+  std::shared_ptr<CodeObject> code = func->code;
+
+  pushFrame(code->context);
+  f->vars.resize(code->context->vars.size());
+
+  for (size_t i = 0; i < arg && i < f->vars.size(); ++i) {
+    f->vars[i] = args[i];
+  }
+
+  if (!func->freevars.empty()) {
+    f->freevars = func->freevars;
+  }
 }
 
 void VirtualMachine::runToIter(size_t arg) {
+  (void)arg;
   Value::Ptr value = popStack();
 
   if (!value->isIterable()) {
@@ -323,9 +376,9 @@ void VirtualMachine::runToIter(size_t arg) {
   }
 
   auto iter_state = value->iterInitialState();
-  auto iter_value = std::make_shared<IterableValue>(value, std::move(iter_state));
+  auto iter_value = std::make_shared<IterableValue>(value, iter_state);
 
-  pushStack(std::move(iter_value));
+  pushStack(iter_value);
 }
 
 void VirtualMachine::runForIter(size_t arg) {
@@ -340,8 +393,8 @@ void VirtualMachine::runForIter(size_t arg) {
   if (iter->state->finished) {
     f->ip += arg;
   } else {
-    pushStack(std::move(value));
-    pushStack(std::move(iter->next()));
+    pushStack(value);
+    pushStack(iter->next());
   }
 }
 
@@ -353,7 +406,7 @@ void VirtualMachine::runBuildTuple(size_t arg) {
   }
 
   Value::Ptr value = std::make_shared<TupleValue>(std::move(elems));
-  pushStack(std::move(value));
+  pushStack(value);
 }
 
 void VirtualMachine::runBuildList(size_t arg) {
@@ -364,31 +417,31 @@ void VirtualMachine::runBuildList(size_t arg) {
   }
 
   Value::Ptr value = std::make_shared<ListValue>(std::move(elems));
-  pushStack(std::move(value));
+  pushStack(value);
 }
 
 void VirtualMachine::runBuildMap(size_t arg) {
-  std::map<Value::Ptr, Value::Ptr> map;
+  std::vector<std::pair<Value::Ptr, Value::Ptr>> pairs;
 
   for (size_t i = 0; i < arg; i++) {
     Value::Ptr key = popStack();
     Value::Ptr value = popStack();
-    map.insert({{key, value}});
+    pairs.emplace_back(key, value);
   }
 
-  Value::Ptr value = std::make_shared<MapValue>(std::move(map));
-  pushStack(std::move(value));
+  Value::Ptr value = std::make_shared<MapValue>(std::move(pairs));
+  pushStack(value);
 }
 
 void VirtualMachine::runBuildSet(size_t arg) {
-  std::set<Value::Ptr> elems;
+  std::vector<Value::Ptr> elems;
 
   for (size_t i = 0; i < arg; i++) {
-    elems.insert(std::move(popStack()));
+    elems.push_back(std::move(popStack()));
   }
 
   Value::Ptr value = std::make_shared<SetValue>(std::move(elems));
-  pushStack(std::move(value));
+  pushStack(value);
 }
 
 void VirtualMachine::runBuildSlice(size_t arg) {
@@ -418,33 +471,61 @@ void VirtualMachine::runBuildSlice(size_t arg) {
 
   Value::Ptr slice = std::make_shared<SliceValue>(start, end, step);
   pushStack(slice);
-
 }
 
 void VirtualMachine::runMakeClosure(size_t arg) {
+  (void)arg;
+  Value::Ptr func_value = popStack();
+  Value::Ptr cells_value = popStack();
 
+  if (func_value->type != Value::Type::FUNCTION) {
+    throw std::runtime_error("Make closure expects a function value as first argument");
+  }
+
+  if (cells_value->type != Value::Type::TUPLE) {
+    throw std::runtime_error("Make closure expects a tuple value as second argument");
+  }
+
+  std::shared_ptr<FunctionValue> func = Value::toDerived<FunctionValue>(func_value);
+  std::shared_ptr<TupleValue> cells = Value::toDerived<TupleValue>(cells_value);
+
+  func->setFreeVars(cells->elems);
+
+  pushStack(func_value);
 }
 
 void VirtualMachine::runPushNull(size_t arg) {
-
+  (void)arg;
+  pushStack(NoneValue::NONE);
 }
 
 void VirtualMachine::runPopTop(size_t arg) {
-
+  (void)arg;
+  popStack();
 }
 
 void VirtualMachine::runSwap(size_t arg) {
+  const size_t l = stack.size();
+  Value::Ptr value1 = stack[l-1];
+  Value::Ptr value2 = stack[l-1-arg];
 
+  stack[l-1] = value2;
+  stack[l-1-arg] = value1;
 }
 
 void VirtualMachine::runCopy(size_t arg) {
-
+  Value::Ptr value = stack.back();
+  for (size_t i = 0; i < arg; i++) {
+    pushStack(value);
+  }
 }
 
 void VirtualMachine::runPause(size_t arg) {
-
+  (void)arg;
+  // TODO later for debugging
 }
 
 void VirtualMachine::runReturn(size_t arg) {
-
+  (void)arg;
+  popFrame();
 }

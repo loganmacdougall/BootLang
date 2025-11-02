@@ -23,6 +23,6 @@ class TupleValue : public Value {
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
     virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
     virtual Value::Ptr clone() const override;
-    virtual std::string toCode() const override;
+    virtual std::string toString() const override;
   
 };

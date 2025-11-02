@@ -6,11 +6,12 @@
 #include "parser.hpp"
 #include "environment.hpp"
 #include "compiler.hpp"
+#include "virtual_machine.hpp"
 
 std::string samples_path = "../../samples/";
 
 int main() {
-  std::ifstream sample_file(samples_path + "example11.bl");
+  std::ifstream sample_file(samples_path + "example01.bl");
   std::stringstream code_buffer;
   code_buffer << sample_file.rdbuf();
   
@@ -42,6 +43,13 @@ int main() {
     Program program = Compiler().compile(ast);
     
     std::cout << program.toDisassembly() << std::endl;
+
+    Environment env;
+    env.loadDefaults(std::cout);
+
+    VirtualMachine vm(env);
+    vm.loadProgram(program);
+    vm.runProgram();
   } catch (std::exception &e) {
     std::cout << std::endl << e.what() << std::endl;
   }

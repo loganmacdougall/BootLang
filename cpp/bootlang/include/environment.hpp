@@ -2,21 +2,24 @@
 
 #include <unordered_map>
 #include <binaryop_registry.hpp>
+#include <ostream>
 #include "value.hpp"
+#include "operations/all_operations.hpp"
 #include "values/function_value.hpp"
 
-typedef std::unordered_map<std::string, std::shared_ptr<FunctionValue>> References;
+typedef std::unordered_map<std::string, std::shared_ptr<BuiltinFunctionValue>> BuiltinFuncMap;
 
 struct Environment {
-  References builtins;
-  References int_attributes;
-  References float_attributes;
-  References string_attributes;
-  References list_attributes;
-  References map_attributes;
-  References set_attributes;
-  References tuple_attributes;
+  BuiltinFuncMap builtins;
+  BuiltinFuncMap int_attributes;
+  BuiltinFuncMap float_attributes;
+  BuiltinFuncMap string_attributes;
+  BuiltinFuncMap list_attributes;
+  BuiltinFuncMap map_attributes;
+  BuiltinFuncMap set_attributes;
+  BuiltinFuncMap tuple_attributes;
   const BinaryOpRegistry& binaryOpRegistry;
 
   Environment();
+  void loadDefaults(std::ostream& print_stream);
 };

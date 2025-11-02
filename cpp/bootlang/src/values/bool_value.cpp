@@ -19,6 +19,6 @@ Value::Ptr BoolValue::clone() const {
     return std::make_shared<BoolValue>(BoolValue(value));
 }
 
-std::string BoolValue::toCode() const {
+std::string BoolValue::toString() const {
     return value ? "True" : "False";
 }

@@ -35,8 +35,8 @@ public:
   void pushStack(Value::Ptr value);
   Value::Ptr popStack();
   void loadProgram(Program& program);
-  void runProgram();
-  bool runProgramFunction(std::string name, bool global_reset);
+  void runProgram(bool reset_global = true);
+  bool runProgramFunction(std::string name, bool reset_global = true);
 
 private:
   void runContext(std::shared_ptr<Context> context);
@@ -56,7 +56,6 @@ private:
   void runStoreFast(size_t arg);
   void runStoreAttr(size_t arg);
   void runStoreIndex(size_t arg);
-  void runStoreSlice(size_t arg);
   void runStoreDeref(size_t arg);
   void runBinaryOp(size_t arg);
   void runUnaryOp(size_t arg);

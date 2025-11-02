@@ -54,7 +54,7 @@ Value::Ptr TupleValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_s
         base_state->finished = true;
     }
 
-    return elem;
+    return copy(elem);
 }
 
 std::shared_ptr<Value::IteratorState> TupleValue::iterInitialState() const {
@@ -76,14 +76,14 @@ Value::Ptr TupleValue::clone() const {
   std::vector<Value::Ptr> other_elems;
 
   for (size_t i = 0; i < elems.size(); i++) {
-    Value::Ptr copied = elems[i]->clone();
+    Value::Ptr copied = copy(elems[i]);
     other_elems.push_back(std::move(copied));
   }
 
   return std::make_shared<TupleValue>(TupleValue(std::move(other_elems)));
 }
 
-std::string TupleValue::toCode() const {
+std::string TupleValue::toString() const {
     std::string out = "(";
 
     for (auto it = elems.begin(); it != elems.end(); it++) {
@@ -96,7 +96,7 @@ std::string TupleValue::toCode() const {
             break;
         }
         
-        out += it->get()->toCode();
+        out += it->get()->toString();
     }
 
     out += ')';

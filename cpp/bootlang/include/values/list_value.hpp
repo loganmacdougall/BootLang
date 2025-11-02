@@ -19,5 +19,5 @@ public:
   virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> state) const override;
   virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;
   virtual Value::Ptr clone() const override;
-  virtual std::string toCode() const override;
+  virtual std::string toString() const override;
 };
