@@ -1,4 +1,4 @@
-input = get_input()
+input = 0
 
 if input > 0:
     print("Greater than zero")

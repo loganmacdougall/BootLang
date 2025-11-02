@@ -28,7 +28,7 @@ class Value {
         ITERATOR
     };
 
-    static const size_t LIST_DISPLAY_HALF_WIDTH = 16;
+    static const size_t LIST_DISPLAY_HALF_WIDTH = 128;
 
     Type type;
 

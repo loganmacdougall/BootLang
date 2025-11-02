@@ -53,5 +53,5 @@ Value::Ptr StringValue::clone() const {
 }
 
 std::string StringValue::toString() const {
-    return '"' + value + '"';
+    return value;
 }

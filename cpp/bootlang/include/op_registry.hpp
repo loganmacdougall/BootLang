@@ -9,22 +9,28 @@
 #include "operations/int.hpp"
 #include "operations/float.hpp"
 
-class BinaryOpRegistry {
+class OpRegistry {
 public:
   typedef Value::Ptr (*BinaryOpFn)(Value::Ptr, Value::Ptr);
+  typedef Value::Ptr (*UnaryOpFn)(Value::Ptr);
 
-  BinaryOpRegistry();
-  static const BinaryOpRegistry& GetInstance();
+  OpRegistry();
+  static const OpRegistry& GetInstance();
   std::optional<BinaryOpFn> get(Value::Type lhs, Value::Type rhs, Token::Type op) const;
+  std::optional<UnaryOpFn>  get(Value::Type rhs, Token::Type op) const;
   void reg(Value::Type lhs, Value::Type rhs, Token::Type op, BinaryOpFn fn);
+  void reg(Value::Type rhs, Token::Type op, UnaryOpFn fn);
 
   void throwNotFunction(Value::Type lhs, Value::Type rhs, Token::Type op) const;
+  void throwNotFunction(Value::Type rhs, Token::Type op) const;
 private:
   
   static constexpr size_t hash(Value::Type lhs, Value::Type rhs, Token::Type op);
-  std::unordered_map<size_t, BinaryOpFn> registry;
+  static constexpr size_t hash(Value::Type rhs, Token::Type op);
+  std::unordered_map<size_t, BinaryOpFn> binary_registry;
+  std::unordered_map<size_t, UnaryOpFn> unary_registry;
 
 public:
-  BinaryOpRegistry(BinaryOpRegistry const&) = delete;
-  void operator=(BinaryOpRegistry const&) = delete;
+  OpRegistry(OpRegistry const&) = delete;
+  void operator=(OpRegistry const&) = delete;
 };

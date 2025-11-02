@@ -150,7 +150,12 @@ void Compiler::compileBool(const BoolNode* node) {
 }
 
 void Compiler::compileInt(const IntNode* node) {
-    c->emit(INST::LOAD_INT, node->value);
+    if (node->value < 0) {
+        c->emit(INST::LOAD_INT, -node->value);
+        c->emit(INST::UNARY_OP, Token::Type::MINUS);
+    } else {
+        c->emit(INST::LOAD_INT, node->value);
+    }
 }
 
 void Compiler::compileFloat(const FloatNode* node) {
@@ -365,35 +370,37 @@ void Compiler::compileTernary(const TernaryNode* node) {
 
 void Compiler::compileIf(const IfNode* node) {
     std::vector<size_t> jump_to_end;
-    std::vector<size_t> jump_to_next;
+    std::vector<size_t> jump_next_ins;
+    std::vector<size_t> jump_next_pos;
     
     compileNode(node->if_block.first.get());
-    jump_to_next.push_back(c->emit(INST::JUMP_IF_FALSE));
+    jump_next_ins.push_back(c->emit(INST::JUMP_IF_FALSE));
     compileBlock(node->if_block.second.get());
     jump_to_end.push_back(c->emit(INST::JUMP));
+    jump_next_pos.push_back(c->len());
 
     for (auto& [elif_cond, elif_body] : node->elif_blocks) {
         compileNode(elif_cond.get());
-        jump_to_next.push_back(c->emit(INST::JUMP_IF_FALSE));
+        jump_next_ins.push_back(c->emit(INST::JUMP_IF_FALSE));
         compileBlock(elif_body.get());
         jump_to_end.push_back(c->emit(INST::JUMP));
+        jump_next_pos.push_back(c->len());
     }
 
     if (node->else_block) {
-        jump_to_next.push_back(c->len());
         compileBlock(node->else_block.value().get());
     }
 
     size_t end = c->len();
 
     for (size_t pos : jump_to_end) {
-        c->patch(pos, INST::JUMP, end - pos);
+        c->patch(pos, INST::JUMP, end - pos - 1);
     }
 
-    for (size_t i = 0; i < jump_to_next.size() - 1; i++) {
-        size_t pos = jump_to_next[i];
-        size_t next_pos = jump_to_next[i+1];
-        c->patch(pos, INST::JUMP_IF_FALSE, next_pos - pos);
+    for (size_t i = 0; i < jump_next_ins.size(); i++) {
+        size_t ins_pos = jump_next_ins[i];
+        size_t to_pos = jump_next_pos[i];
+        c->patch(ins_pos, INST::JUMP_IF_FALSE, to_pos - ins_pos - 1);
     }
 }
 
@@ -407,8 +414,8 @@ void Compiler::compileWhile(const WhileNode* node) {
     compileBlock(node->block.get());
     
     size_t last_inst = c->len();
-    c->emit(INST::JUMP_BACKWARDS, last_inst - loop_start);
-    c->patch(jump_to_end, INST::JUMP_IF_FALSE, last_inst - loop_start + 1);
+    c->emit(INST::JUMP_BACKWARDS, last_inst - loop_start + 1);
+    c->patch(jump_to_end, INST::JUMP_IF_FALSE, last_inst - loop_start);
     patchLoopControls(loop_start, last_inst + 1);
 }
 
@@ -425,10 +432,10 @@ void Compiler::compileFor(const ForNode* node) {
     compileBlock(node->block.get());
 
     jump_back = c->len();
-    c->emit(INST::JUMP_BACKWARDS, jump_back - start_for);
+    c->emit(INST::JUMP_BACKWARDS, jump_back - start_for + 1);
     end_for = c->emit(INST::POP_TOP);
 
-    c->patch(start_for, INST::FOR_ITER, end_for - start_for);
+    c->patch(start_for, INST::FOR_ITER, end_for - start_for - 1);
     patchLoopControls(start_for, end_for);
 }
 
@@ -509,10 +516,10 @@ void Compiler::patchLoopControls(size_t loop_start, size_t loop_end) {
     loop_stack.pop_back();
 
     for (size_t pos : frame.breaks) {
-        c->patch(pos, INST::JUMP, loop_end - pos);
+        c->patch(pos, INST::JUMP, loop_end - pos - 1);
     }
 
     for (size_t pos : frame.continues) {
-        c->patch(pos, INST::JUMP_BACKWARDS, pos - loop_start);
+        c->patch(pos, INST::JUMP_BACKWARDS, pos - loop_start + 1);
     }
 }

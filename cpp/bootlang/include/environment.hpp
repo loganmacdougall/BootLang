@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_map>
-#include <binaryop_registry.hpp>
+#include <op_registry.hpp>
 #include <ostream>
 #include "value.hpp"
 #include "operations/all_operations.hpp"
@@ -18,7 +18,7 @@ struct Environment {
   BuiltinFuncMap map_attributes;
   BuiltinFuncMap set_attributes;
   BuiltinFuncMap tuple_attributes;
-  const BinaryOpRegistry& binaryOpRegistry;
+  const OpRegistry& opRegistry;
 
   Environment();
   void loadDefaults(std::ostream& print_stream);

@@ -210,7 +210,7 @@ void VirtualMachine::runLoadBuiltin(size_t arg) {
   auto it = env.builtins.find(builtin_name);
 
   if (it == env.builtins.end()) {
-    std::runtime_error("variable " + builtin_name + " is undefined");
+    throw std::runtime_error("variable " + builtin_name + " is undefined");
   }
 
   pushStack(it->second);
@@ -268,17 +268,17 @@ void VirtualMachine::runStoreDeref(size_t arg) {
 }
 
 void VirtualMachine::runBinaryOp(size_t arg) {
-  Value::Ptr collection = popStack();
-  Value::Ptr index = popStack();
+  Value::Ptr rhs = popStack();
+  Value::Ptr lhs = popStack();
   Token::Type op = static_cast<Token::Type>(arg);
 
-  auto func = env.binaryOpRegistry.get(collection->type, index->type, op);
+  auto func = env.opRegistry.get(lhs->type, rhs->type, op);
 
   if (!func.has_value()) {
-    env.binaryOpRegistry.throwNotFunction(collection->type, index->type, op);
+    env.opRegistry.throwNotFunction(lhs->type, rhs->type, op);
   }
 
-  Value::Ptr value = func.value()(collection, index);
+  Value::Ptr value = func.value()(lhs, rhs);
 
   if (value) {
     pushStack(value);
@@ -286,8 +286,20 @@ void VirtualMachine::runBinaryOp(size_t arg) {
 }
 
 void VirtualMachine::runUnaryOp(size_t arg) {
-  (void)arg;
-  // Add Unary Registry or make BinaryOpRegistry or generel
+  Value::Ptr rhs = popStack();
+  Token::Type op = static_cast<Token::Type>(arg);
+
+  auto func = env.opRegistry.get(rhs->type, op);
+
+  if (!func.has_value()) {
+    env.opRegistry.throwNotFunction(rhs->type, op);
+  }
+
+  Value::Ptr value = func.value()(rhs);
+
+  if (value) {
+    pushStack(value);
+  }
 }
 
 void VirtualMachine::runUnpackSequence(size_t arg) {
@@ -336,7 +348,7 @@ void VirtualMachine::runCall(size_t arg) {
 
   Value::Ptr self = popStack();
   (void)self; // Will have more use when objects/classes are implemented
-  
+
   Value::Ptr func_value = popStack();
 
   if (func_value->type == Value::Type::BUILTIN_FUNCTION) {

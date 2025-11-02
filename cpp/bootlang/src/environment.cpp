@@ -1,7 +1,7 @@
 #include "environment.hpp"
 
 Environment::Environment()
-: binaryOpRegistry(BinaryOpRegistry::GetInstance()) {}
+: opRegistry(OpRegistry::GetInstance()) {}
 
 void Environment::loadDefaults(std::ostream& print_stream) {
   builtins.emplace("print",
