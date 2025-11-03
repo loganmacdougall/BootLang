@@ -4,12 +4,14 @@ SliceValue::SliceValue(std::optional<long> start, std::optional<long> end, std::
 : Value(Value::Type::SLICE), start(start), end(end), step(step) {}
 
 std::tuple<long, long, long> SliceValue::sliceValues(size_t length) const {
-  long _start = start.value_or(0);
-  long _end = end.value_or(length);
   long _step = step.value_or(1);
+  long _start = start.value_or((_step > 0) ? 0 : length - 1);
+  long _end = end.value_or((_step > 0) ? length - 1 : -1);
   
-  _start = _start < 0 ? length - _start : _start;
-  _end = _end < 0 ? length + _end : _end;
+  _start = (_start < 0) ? length - _start : _start;
+  if (end.has_value()) {
+    _end = (_end < 0) ? length + _end : _end;
+  }
 
   return std::tuple(_start, _end, _step);
 }

@@ -164,7 +164,7 @@ class TokenMetadata {
     };
     
     const std::vector<RegexPair> token_regexes{
-      RegexPair{Token::Type::NUMBER,          R"(-?\d+(?:\.\d+)?)"},
+      RegexPair{Token::Type::NUMBER,          R"(\d+(?:\.\d+)?)"},
       RegexPair{Token::Type::DEF,             R"(\bdef\b)"},
       RegexPair{Token::Type::IF,              R"(\bif\b)"},
       RegexPair{Token::Type::ELSE,            R"(\belse\b)"},

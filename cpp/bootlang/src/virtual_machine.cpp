@@ -491,14 +491,16 @@ void VirtualMachine::runBuildSet(size_t arg) {
 
 void VirtualMachine::runBuildSlice(size_t arg) {
   (void)arg;
-  long start = 0, end = -1, step = 1;
+  std::optional<long> start = std::nullopt;
+  std::optional<long> end = std::nullopt;
+  std::optional<long> step = std::nullopt;
 
   Value::Ptr step_value = popStack();
   if (step_value->type != Value::Type::NONE) {
     if (step_value->type != Value::Type::INT) {
       throw std::runtime_error("Slice arguments must be of type int");
     }
-    step = Value::toDerived<IntValue>(step_value)->value;
+    step.emplace(Value::toDerived<IntValue>(step_value)->value);
   }
 
   Value::Ptr end_value = popStack();
@@ -506,7 +508,7 @@ void VirtualMachine::runBuildSlice(size_t arg) {
     if (end_value->type != Value::Type::INT) {
       throw std::runtime_error("Slice arguments must be of type int");
     }
-    end = Value::toDerived<IntValue>(end_value)->value;
+    end.emplace(Value::toDerived<IntValue>(end_value)->value);
   }
 
   Value::Ptr start_value = popStack();
@@ -514,7 +516,7 @@ void VirtualMachine::runBuildSlice(size_t arg) {
     if (start_value->type != Value::Type::INT) {
       throw std::runtime_error("Slice arguments must be of type int");
     }
-    start = Value::toDerived<IntValue>(start_value)->value;
+    start.emplace(Value::toDerived<IntValue>(start_value)->value);
   }
 
   Value::Ptr slice = std::make_shared<SliceValue>(start, end, step);
