@@ -1,4 +1,4 @@
-input = 0
+input = -5
 
 if input > 0:
     print("Greater than zero")

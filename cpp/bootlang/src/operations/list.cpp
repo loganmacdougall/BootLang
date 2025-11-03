@@ -87,7 +87,7 @@ Value::Ptr collection_index(Value::Ptr a_base, Value::Ptr b_base) {
 
     case Value::Type::DICT:{
       std::shared_ptr<MapValue> a = Value::toDerived<MapValue>(a_base);
-      return Value::copy(a->getValue(a));
+      return Value::copy(a->getValue(b_base));
     }
 
     default:

@@ -77,6 +77,8 @@ OpRegistry::OpRegistry() {
   reg(V::INT, V::INT, T::SLASH_ASSIGN, int_divide_int);
   reg(V::INT, V::INT, T::DOUBLE_SLASH, int_int_divide_int);
   reg(V::INT, V::INT, T::DOUBLE_SLASH_ASSIGN, int_int_divide_int);
+  reg(V::INT, V::INT, T::PERCENT, int_mod_int);
+  reg(V::INT, V::INT, T::PERCENT_ASSIGN, int_mod_int);
   reg(V::INT, V::INT, T::GREATER_EQUAL, int_ge_int);
   reg(V::INT, V::INT, T::GREATER, int_g_int);
   reg(V::INT, V::INT, T::LESS_EQUAL, int_le_int);
@@ -94,6 +96,8 @@ OpRegistry::OpRegistry() {
   reg(V::INT, V::FLOAT, T::SLASH_ASSIGN, int_divide_float);
   reg(V::INT, V::FLOAT, T::DOUBLE_SLASH, int_int_divide_float);
   reg(V::INT, V::FLOAT, T::DOUBLE_SLASH_ASSIGN, int_int_divide_float);
+  reg(V::INT, V::FLOAT, T::PERCENT, int_mod_float);
+  reg(V::INT, V::FLOAT, T::PERCENT_ASSIGN, int_mod_float);
   reg(V::INT, V::FLOAT, T::GREATER_EQUAL, int_ge_float);
   reg(V::INT, V::FLOAT, T::GREATER, int_g_float);
   reg(V::INT, V::FLOAT, T::LESS_EQUAL, int_le_float);
@@ -111,6 +115,8 @@ OpRegistry::OpRegistry() {
   reg(V::FLOAT, V::INT, T::SLASH_ASSIGN, float_divide_int);
   reg(V::FLOAT, V::INT, T::DOUBLE_SLASH, float_int_divide_int);
   reg(V::FLOAT, V::INT, T::DOUBLE_SLASH_ASSIGN, float_int_divide_int);
+  reg(V::FLOAT, V::INT, T::PERCENT, float_mod_int);
+  reg(V::FLOAT, V::INT, T::PERCENT_ASSIGN, float_mod_int);
   reg(V::FLOAT, V::INT, T::GREATER_EQUAL, float_ge_int);
   reg(V::FLOAT, V::INT, T::GREATER, float_g_int);
   reg(V::FLOAT, V::INT, T::LESS_EQUAL, float_le_int);
@@ -128,6 +134,8 @@ OpRegistry::OpRegistry() {
   reg(V::FLOAT, V::FLOAT, T::SLASH_ASSIGN, float_divide_float);
   reg(V::FLOAT, V::FLOAT, T::DOUBLE_SLASH, float_int_divide_float);
   reg(V::FLOAT, V::FLOAT, T::DOUBLE_SLASH_ASSIGN, float_int_divide_float);
+  reg(V::FLOAT, V::FLOAT, T::PERCENT, float_mod_float);
+  reg(V::FLOAT, V::FLOAT, T::PERCENT_ASSIGN, float_mod_float);
   reg(V::FLOAT, V::FLOAT, T::GREATER_EQUAL, float_ge_float);
   reg(V::FLOAT, V::FLOAT, T::GREATER, float_g_float);
   reg(V::FLOAT, V::FLOAT, T::LESS_EQUAL, float_le_float);

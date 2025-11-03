@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <cmath>
 #include "values/all_values.hpp"
 #include "token.hpp"
 
@@ -16,6 +17,8 @@ Value::Ptr int_int_divide_int(Value::Ptr a_base, Value::Ptr b_base);
 Value::Ptr int_int_divide_float(Value::Ptr a_base, Value::Ptr b_base);
 Value::Ptr int_divide_int(Value::Ptr a_base, Value::Ptr b_base);
 Value::Ptr int_divide_float(Value::Ptr a_base, Value::Ptr b_base);
+Value::Ptr int_mod_int(Value::Ptr a_base, Value::Ptr b_base);
+Value::Ptr int_mod_float(Value::Ptr a_base, Value::Ptr b_base);
 Value::Ptr int_to_float(Value::Ptr a_base);
 
 Value::Ptr int_ge_int(Value::Ptr a_base, Value::Ptr b_base);

@@ -227,8 +227,8 @@ void VirtualMachine::runLoadAttr(size_t arg) {
 
 void VirtualMachine::runLoadIndex(size_t arg) {
   (void)arg;
-  Value::Ptr collection = popStack();
   Value::Ptr index = popStack();
+  Value::Ptr collection = popStack();
   
   Value::Ptr value = collection_index(collection, index);
   pushStack(value);

@@ -21,7 +21,7 @@ size_t SliceValue::sliceLength(size_t length) const {
   if (_step > 0 && _start >= _end) return 0;
   if (_step < 0 && _start <= _end ) return 0;
   
-  return (_end - _start + 1) / _step;
+  return (_end - _start + 2) / _step;
 }
 
 std::tuple<long, long> SliceValue::sliceRange(size_t length) const {
