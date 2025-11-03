@@ -48,6 +48,7 @@ public:
     Node::Type type;
 
     Node(size_t lineno, size_t col, Node::Type type);
+    const std::string& typeString() const;
     virtual ~Node() = default;
 
     template<typename T>

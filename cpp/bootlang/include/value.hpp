@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <array>
 #include <stdexcept>
 #include <memory>
 #include <any>
@@ -28,6 +29,7 @@ class Value {
         ITERATOR
     };
 
+    static const size_t VALUE_COUNT = static_cast<size_t>(Type::ITERATOR) + 1;
     static const size_t LIST_DISPLAY_HALF_WIDTH = 128;
 
     Type type;
@@ -50,6 +52,7 @@ class Value {
     virtual size_t len() const;
     virtual Value::Ptr clone() const;
     virtual std::string toString() const;
+    const std::string& typeString() const;
 
     static Value::Ptr copy(Value::Ptr);
 
@@ -74,4 +77,27 @@ class Value {
     }
 
     virtual ~Value() = default;
+};
+
+class ValueMetadata {
+  public:
+    typedef std::pair<Value::Type, std::string> RegexPair;
+    
+  public:
+    static const ValueMetadata& GetInstance();
+    const std::string& GetValueName(Value::Type token) const;
+    
+  private:
+    ValueMetadata() = default;
+
+    const std::array<std::string, Value::VALUE_COUNT> value_names{
+        "NONE", "INT", "FLOAT", "CHAR", "STRING", "BOOL",
+        "FUNCTION", "BUILTIN_FUNCTION", "BUILTIN_GENERATOR",
+        "LIST", "SLICE", "DICT", "SET", "TUPLE",
+        "GENERATOR", "ITERATOR"
+    };
+    
+  public:
+    ValueMetadata(ValueMetadata const&) = delete;
+    void operator=(ValueMetadata const&) = delete;
 };

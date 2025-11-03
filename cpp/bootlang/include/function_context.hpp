@@ -27,7 +27,7 @@ public:
   size_t idCellVar(const std::string& name);
   size_t getCellVarId(const std::string& name) const;
 
-  virtual void loadIdentifier(const std::string& name) override;
-  virtual void storeIdentifier(const std::string& name) override;
+  virtual Instruction loadIdentifierInstruction(const std::string& name) override;
+  virtual Instruction storeIdentifierInstruction(const std::string& name) override;
   virtual std::string toDisassembly() const override;
 };

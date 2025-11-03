@@ -2,8 +2,8 @@
 #include "operations/list.hpp"
 
 CallFrame::CallFrame(std::shared_ptr<Context> context, size_t bp, bool top_level)
-: context(context), vars(context->vars.size()),
-freevars(context->vars.size()), cellvars(context->vars.size()),
+: context(context), vars(context->names.size()),
+freevars(context->names.size()), cellvars(context->names.size()),
 bp(bp), top_level(top_level) {}
 
 Instruction CallFrame::fetch() {
@@ -221,8 +221,20 @@ void VirtualMachine::runLoadFast(size_t arg) {
 }
 
 void VirtualMachine::runLoadAttr(size_t arg) {
-  (void)arg;
-  // TODO:
+    // 1. Get attribute name from program constants
+    const std::string& attr_name = f->context->names[arg];
+
+    Value::Ptr obj = popStack();
+
+    auto builtin_func = env.getAttribute(obj->type, attr_name);
+    if (!builtin_func) {
+        std::ostringstream err;
+        err << "AttributeError: type '" << obj->type
+            << "' has no attribute '" << attr_name << "'";
+        throw std::runtime_error(err.str());
+    }
+
+    pushStack(builtin_func);
 }
 
 void VirtualMachine::runLoadIndex(size_t arg) {
@@ -349,13 +361,12 @@ void VirtualMachine::runCall(size_t arg) {
   }
 
   Value::Ptr self = popStack();
-  (void)self; // Will have more use when objects/classes are implemented
 
   Value::Ptr func_value = popStack();
 
   if (func_value->type == Value::Type::BUILTIN_FUNCTION) {
     auto func = Value::toDerived<BuiltinFunctionValue>(func_value);
-    Value::Ptr result = func->call(args);
+    Value::Ptr result = func->call(self, args);
     pushStack(result);
     return;
   }
@@ -368,7 +379,7 @@ void VirtualMachine::runCall(size_t arg) {
   std::shared_ptr<CodeObject> code = func->code;
 
   pushFrame(code->context);
-  f->vars.resize(code->context->vars.size());
+  f->vars.resize(code->context->names.size());
 
   for (size_t i = 0; i < arg && i < f->vars.size(); ++i) {
     f->vars[i] = args[i];
@@ -376,6 +387,13 @@ void VirtualMachine::runCall(size_t arg) {
 
   if (!func->freevars.empty()) {
     f->freevars = func->freevars;
+  }
+
+  if (self->type != Value::Type::NONE && code->parameters.front() == "self") {
+    auto it = f->context->getNameId("self");
+    if (it != Context::NOT_FOUND) {
+      f->vars[it] = self;
+    }
   }
 }
 

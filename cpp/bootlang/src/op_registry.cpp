@@ -35,8 +35,13 @@ void OpRegistry::reg(Value::Type rhs, Token::Type op, OpRegistry::UnaryOpFn fn) 
 
 void OpRegistry::throwNotFunction(Value::Type lhs, Value::Type rhs, Token::Type op) const {
   std::ostringstream out;
+
+  const std::string& lhs_str = ValueMetadata::GetInstance().GetValueName(lhs);
+  const std::string& rhs_str = ValueMetadata::GetInstance().GetValueName(rhs);
+  const std::string& op_str = Token::typeString(op);
+
   out << "No support for binary operator ";
-  out << lhs << " " << op << " " << rhs;
+  out << lhs_str << " " << op_str << " " << rhs_str;
 
   throw std::runtime_error(out.str());
 }
@@ -146,4 +151,7 @@ OpRegistry::OpRegistry() {
   reg(V::STRING, V::STRING, T::EQUAL, string_eq_string);
   reg(V::STRING, V::STRING, T::PLUS, string_add_string);
   reg(V::STRING, V::STRING, T::PLUS_ASSIGN, string_add_string);
+
+  reg(V::BOOL, V::BOOL, T::OR, bool_or_bool);
+  reg(V::BOOL, V::BOOL, T::AND, bool_and_bool);
 }

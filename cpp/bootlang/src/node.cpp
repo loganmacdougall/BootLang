@@ -2,6 +2,10 @@
 
 Node::Node(size_t lineno, size_t col, Node::Type type) : lineno(lineno), col(col), type(type) {}
 
+const std::string& Node::typeString() const {
+    return NodeMetadata::GetInstance().GetNodeName(type);
+}
+
 std::string Node::toCode(int indent) const {
     (void)indent;
     return "";

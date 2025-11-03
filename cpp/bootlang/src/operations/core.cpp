@@ -1,6 +1,6 @@
 #include "operations/core.hpp"
 
-std::string core_print(const std::vector<Value::Ptr>& args) {
+std::string core_print(const std::vector<Value::Ptr>& args) {  
   std::ostringstream out;
   bool empty = true;
 
@@ -19,7 +19,9 @@ std::string core_print(const std::vector<Value::Ptr>& args) {
   return out.str();
 }
 
-Value::Ptr core_range(const std::vector<Value::Ptr>& args) {
+Value::Ptr core_range(Value::Ptr& self, const std::vector<Value::Ptr>& args) {
+  (void)self;
+
   std::vector<Value::Ptr> args_copy;
 
   for (auto arg : args) {
@@ -78,4 +80,20 @@ Value::Ptr core_range_next(std::shared_ptr<Value::IteratorState> base_state) {
   if (state->step > 0 && state->start >= state->end) state->finished = true;
   if (state->step < 0 && state->start <= state->end) state->finished = true;
   return next;
+}
+
+Value::Ptr core_len(Value::Ptr& self, const std::vector<Value::Ptr>& args) {
+  (void)self;
+
+  if (args.size() != 1) {
+    throw std::runtime_error("Length expects one argument");
+  }
+
+  Value::Ptr collection = args.back();
+
+  if (!collection->hasLength()) {
+    throw std::runtime_error("Value isn't of type collection");
+  }
+
+  return std::make_shared<IntValue>(collection->len());
 }

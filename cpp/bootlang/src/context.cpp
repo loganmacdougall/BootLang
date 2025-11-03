@@ -5,6 +5,11 @@ size_t Context::emit(Instruction::Type type, size_t arg) {
     return instructions.size() - 1;
 }
 
+size_t Context::emit(Instruction instruction) {
+    instructions.push_back(instruction);
+    return instructions.size() - 1;
+}
+
 Instruction Context::burn() {
     Instruction inst = instructions.back();
     instructions.pop_back();
@@ -23,21 +28,21 @@ const Instruction& Context::get(size_t index) const {
   return instructions[index];
 }
 
-size_t Context::idVar(const std::string& name) {
-  auto it = vars_map.find(name);
-  if (it != vars_map.end()) {
+size_t Context::idName(const std::string& name) {
+  auto it = names_map.find(name);
+  if (it != names_map.end()) {
       return it->second;
   }
 
-  size_t index = vars.size();
-  vars.push_back(name);
-  vars_map[name] = index;
+  size_t index = names.size();
+  names.push_back(name);
+  names_map[name] = index;
   return index;
 }
 
-size_t Context::getVarId(const std::string& name) const {
-  auto it = vars_map.find(name);
-  if (it != vars_map.end()) {
+size_t Context::getNameId(const std::string& name) const {
+  auto it = names_map.find(name);
+  if (it != names_map.end()) {
       return it->second;
   }
 
@@ -78,13 +83,23 @@ size_t Context::getConstantId(const Value* value) const {
 }
 
 void Context::loadIdentifier(const std::string& name) {
-    (void)name;
-    throw std::runtime_error("Base context doesn't support loadIdentifier");
+    Instruction inst = loadIdentifierInstruction(name);
+    emit(inst);
 }
 
 void Context::storeIdentifier(const std::string& name) {
+    Instruction inst = storeIdentifierInstruction(name);
+    emit(inst);
+}
+
+Instruction Context::loadIdentifierInstruction(const std::string& name) {
     (void)name;
-    throw std::runtime_error("Base context doesn't support storeIdentifier");
+    throw std::runtime_error("Base context doesn't support loadIdentifierInstruction");
+}
+
+Instruction Context::storeIdentifierInstruction(const std::string& name) {
+    (void)name;
+    throw std::runtime_error("Base context doesn't support storeIdentifierInstruction");
 }
 
 std::string Context::toDisassembly() const {

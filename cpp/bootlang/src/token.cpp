@@ -1,5 +1,9 @@
 #include "token.hpp"
 
+const std::string& Token::typeString(Token::Type type) {
+  return TokenMetadata::GetInstance().GetTokenString(type);
+}
+
 const TokenMetadata& TokenMetadata::GetInstance() {
   static TokenMetadata instance;
   return instance;

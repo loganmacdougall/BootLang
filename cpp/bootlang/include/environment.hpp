@@ -15,11 +15,12 @@ struct Environment {
   BuiltinFuncMap float_attributes;
   BuiltinFuncMap string_attributes;
   BuiltinFuncMap list_attributes;
-  BuiltinFuncMap map_attributes;
+  BuiltinFuncMap dict_attributes;
   BuiltinFuncMap set_attributes;
   BuiltinFuncMap tuple_attributes;
   const OpRegistry& opRegistry;
 
   Environment();
+  std::shared_ptr<BuiltinFunctionValue> getAttribute(Value::Type type, std::string name) const;
   void loadDefaults(std::ostream& print_stream);
 };

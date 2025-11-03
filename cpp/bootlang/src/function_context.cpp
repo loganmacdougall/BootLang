@@ -30,8 +30,8 @@ size_t FunctionContext::idCellVar(const std::string& name) {
     return cell_it->second;
   }
 
-  auto var_it = vars_map.find(name);
-  if (var_it != vars_map.end()) {  
+  auto var_it = names_map.find(name);
+  if (var_it != names_map.end()) {  
     size_t index = cellvars.size();
     cellvars.push_back(name);
     cellvars_map[name] = index;
@@ -54,54 +54,48 @@ size_t FunctionContext::getCellVarId(const std::string& name) const {
   return Context::NOT_FOUND;
 }
 
-void FunctionContext::loadIdentifier(const std::string& name) {
-  size_t var_id = getVarId(name);
+Instruction FunctionContext::loadIdentifierInstruction(const std::string& name) {
+size_t var_id = getNameId(name);
   if (var_id != Context::NOT_FOUND) {
-    emit(Instruction::LOAD_FAST, var_id);
-    return;
+    return Instruction(Instruction::LOAD_FAST, var_id);
   }
 
   size_t free_id = getFreeVarId(name);
   if (free_id != Context::NOT_FOUND) {
-    emit(Instruction::LOAD_DEREF, free_id);
-    return;
+    return Instruction(Instruction::LOAD_DEREF, free_id);
   }
 
   if (parent != nullptr) {
     free_id = parent->idCellVar(name);
     if (free_id != Context::NOT_FOUND) {
       size_t local_free_id = idFreeVar(name);
-      emit(Instruction::LOAD_DEREF, local_free_id);
-      return;
+      return Instruction(Instruction::LOAD_DEREF, local_free_id);
     }
   }
   
-  size_t id = top_context->idVar(name);
-  emit(Instruction::LOAD_GLOBAL, id);
+  return top_context->loadIdentifierInstruction(name);
 }
 
-void FunctionContext::storeIdentifier(const std::string& name) {
-  size_t var_id = getVarId(name);
+Instruction FunctionContext::storeIdentifierInstruction(const std::string& name) {
+  size_t var_id = getNameId(name);
   if (var_id != Context::NOT_FOUND) {
-    emit(Instruction::STORE_FAST, var_id);
-    return;
+    return Instruction(Instruction::STORE_FAST, var_id);
   }
 
   size_t free_id = getFreeVarId(name);
   if (free_id != Context::NOT_FOUND) {
-    emit(Instruction::STORE_DEREF, free_id);
-    return;
+    return Instruction(Instruction::STORE_DEREF, free_id);
   }
 
-  size_t global_id = top_context->getVarId(name);
+  size_t global_id = top_context->getNameId(name);
   if (global_id != Context::NOT_FOUND) {
-    emit(Instruction::STORE_GLOBAL, global_id);
-    return;
+    return Instruction(Instruction::STORE_GLOBAL, global_id);
   }
 
-  size_t new_id = idVar(name);
-  emit(Instruction::STORE_FAST, new_id);
+  size_t new_id = idName(name);
+  return Instruction(Instruction::STORE_FAST, new_id);
 }
+
 
 std::string FunctionContext::toDisassembly() const {
   std::ostringstream out;
@@ -134,7 +128,7 @@ std::string FunctionContext::toDisassembly() const {
         case Instruction::Type::LOAD_GLOBAL:
         case Instruction::Type::STORE_GLOBAL:
             out << "(";
-            out << ((inst.arg < top_context->vars.size()) ? top_context->vars[inst.arg] : "???");
+            out << ((inst.arg < top_context->names.size()) ? top_context->names[inst.arg] : "???");
             out << ")";
             break;
         case Instruction::Type::LOAD_BUILTIN:
@@ -143,16 +137,16 @@ std::string FunctionContext::toDisassembly() const {
             out << ")";
             break;
         case Instruction::Type::LOAD_CONST:
-        case Instruction::Type::LOAD_ATTR:
-        case Instruction::Type::STORE_ATTR:
             out << "(";
             out << ((inst.arg < constants.size()) ? constants[inst.arg].get()->toString() : "???");
             out << ")";
             break;
         case Instruction::Type::LOAD_FAST:
         case Instruction::Type::STORE_FAST:
+        case Instruction::Type::LOAD_ATTR:
+        case Instruction::Type::STORE_ATTR:
             out << "(";
-            out << ((inst.arg < vars.size()) ? vars[inst.arg] : "???");
+            out << ((inst.arg < names.size()) ? names[inst.arg] : "???");
             out << ")";
             break;
         case Instruction::Type::LOAD_DEREF:

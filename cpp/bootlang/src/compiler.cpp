@@ -173,8 +173,7 @@ void Compiler::compileString(const StringNode* node) {
 void Compiler::compilePropertyAccess(const PropertyAccessNode* node) {
     compileNode(node->left.get());
     
-    StringValue value = StringValue(node->property);
-    size_t id = c->idConstant(&value);
+    size_t id = c->idName(node->property);
     c->emit(INST::LOAD_ATTR, id);
 }
 
@@ -297,7 +296,7 @@ void Compiler::compileAssignIdent(const Node* node, Token::Type op) {
         case Node::Type::PROPERTY_ACCESS: {
             compileNode(node);
             Instruction false_load = c->burn();
-            c->emit(INST::LOAD_ATTR, false_load.arg);
+            c->emit(INST::STORE_ATTR, false_load.arg);
 
             break;
         }
@@ -339,10 +338,17 @@ void Compiler::compileAssignIdent(const Node* node, Token::Type op) {
 }
 
 void Compiler::compileCall(const CallNode* node) {
-    compileNode(node->left.get());
-
     if (node->left->type != Node::Type::PROPERTY_ACCESS) {
+        compileNode(node->left.get());
         c->emit(INST::PUSH_NULL);
+    } else {
+        auto prop_access = Node::toDerived<PropertyAccessNode>(node->left.get());
+        compileNode(prop_access->left.get());
+        c->emit(INST::COPY, 1);
+        
+        size_t id = c->idName(prop_access->property);
+        c->emit(INST::LOAD_ATTR, id);
+        c->emit(INST::SWAP, 1);
     }
     
     for (auto &arg : node->args) {
@@ -364,8 +370,8 @@ void Compiler::compileTernary(const TernaryNode* node) {
     compileNode(node->right.get());
     end = c->len();
 
-    c->patch(jump_to_else, INST::JUMP_IF_FALSE, jump_to_end - jump_to_else + 1);
-    c->patch(jump_to_end, INST::JUMP, end - jump_to_end);
+    c->patch(jump_to_else, INST::JUMP_IF_FALSE, jump_to_end - jump_to_else);
+    c->patch(jump_to_end, INST::JUMP, end - jump_to_end - 1);
 }
 
 void Compiler::compileIf(const IfNode* node) {
@@ -415,7 +421,7 @@ void Compiler::compileWhile(const WhileNode* node) {
     
     size_t last_inst = c->len();
     c->emit(INST::JUMP_BACKWARDS, last_inst - loop_start + 1);
-    c->patch(jump_to_end, INST::JUMP_IF_FALSE, last_inst - loop_start);
+    c->patch(jump_to_end, INST::JUMP_IF_FALSE, last_inst - jump_to_end);
     patchLoopControls(loop_start, last_inst + 1);
 }
 
@@ -454,7 +460,7 @@ void Compiler::compileFunction(const FunctionDefinitionNode* node) {
     funcs->push_back(code);
 
     for (std::string arg : node->args) {
-        func_context->idVar(arg);
+        func_context->idName(arg);
     }
     
     std::shared_ptr<Context> parent_context = c;

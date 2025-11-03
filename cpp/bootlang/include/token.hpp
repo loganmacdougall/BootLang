@@ -63,6 +63,7 @@ namespace Token {
     PERCENT_ASSIGN
   };
 
+  const std::string& typeString(Token::Type type);
   static const size_t TOKEN_COUNT = static_cast<size_t>(Type::PERCENT_ASSIGN) + 1;
 };
 

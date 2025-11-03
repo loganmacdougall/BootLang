@@ -34,9 +34,22 @@ std::string Value::toString() const {
     throw std::runtime_error("toCode not implemented for this Value type");
 }
 
+const std::string& Value::typeString() const {
+    return ValueMetadata::GetInstance().GetValueName(type);
+}
+
 Value::Ptr Value::copy(Value::Ptr value) {
     if (value->isPrimitive()) {
         return value->clone();
     }
     return value;
+}
+
+const ValueMetadata& ValueMetadata::GetInstance() {
+  static ValueMetadata instance;
+  return instance;
+}
+
+const std::string& ValueMetadata::GetValueName(Value::Type value) const {
+  return value_names[static_cast<size_t>(value)];
 }

@@ -6,13 +6,13 @@
 
 class BuiltinFunctionValue : public Value {
 public:
-  using Definition = std::function<Value::Ptr(const std::vector<Value::Ptr>&)>;
+  using Definition = std::function<Value::Ptr(Value::Ptr& self, const std::vector<Value::Ptr>&)>;
 
   Definition function;
   std::string doc;
 
   BuiltinFunctionValue(Definition function, std::string doc = "");
-  Value::Ptr call(const std::vector<Value::Ptr>& args) const;
+  Value::Ptr call(Value::Ptr& self, const std::vector<Value::Ptr>& args) const;
 
   virtual std::size_t hash() const override;
   virtual bool equal(const Value& other) const override;

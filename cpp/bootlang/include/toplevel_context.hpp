@@ -18,7 +18,7 @@ public:
   size_t idBuiltin(std::string name);
   size_t getBuiltinId(std::string name) const;
   virtual inline bool topLevel() override { return true; }
-  virtual void loadIdentifier(const std::string& name) override;
-  virtual void storeIdentifier(const std::string& name) override;
+  virtual Instruction loadIdentifierInstruction(const std::string& name) override;
+  virtual Instruction storeIdentifierInstruction(const std::string& name) override;
   virtual std::string toDisassembly() const override;
 };

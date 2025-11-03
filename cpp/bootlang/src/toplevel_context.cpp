@@ -21,22 +21,22 @@ size_t TopLevelContext::getBuiltinId(std::string name) const {
     }
 }
 
-void TopLevelContext::loadIdentifier(const std::string& name) {
-    size_t id = getVarId(name);
+Instruction TopLevelContext::loadIdentifierInstruction(const std::string& name) {
+    size_t id = getNameId(name);
 
     if (id != Context::NOT_FOUND) {
-        emit(Instruction::LOAD_GLOBAL, id);
+        return Instruction(Instruction::LOAD_GLOBAL, id);
     } else {
         size_t builtin_id = idBuiltin(name);
-        emit(Instruction::LOAD_BUILTIN, builtin_id);
+        return Instruction(Instruction::LOAD_BUILTIN, builtin_id);
     }
-
 }
 
-void TopLevelContext::storeIdentifier(const std::string& name) {
-    size_t id = idVar(name);
-    emit(Instruction::STORE_GLOBAL, id);
+Instruction TopLevelContext::storeIdentifierInstruction(const std::string& name) {
+    size_t id = idName(name);
+    return Instruction(Instruction::STORE_GLOBAL, id);
 }
+
 
 std::string TopLevelContext::toDisassembly() const {
   std::ostringstream out;
@@ -59,8 +59,10 @@ std::string TopLevelContext::toDisassembly() const {
             break;
         case Instruction::Type::LOAD_GLOBAL:
         case Instruction::Type::STORE_GLOBAL:
+        case Instruction::Type::LOAD_ATTR:
+        case Instruction::Type::STORE_ATTR:
             out << "(";
-            out << ((inst.arg < vars.size()) ? vars[inst.arg] : "???");
+            out << ((inst.arg < names.size()) ? names[inst.arg] : "???");
             out << ")";
             break;
         case Instruction::Type::LOAD_BUILTIN:
@@ -69,8 +71,6 @@ std::string TopLevelContext::toDisassembly() const {
             out << ")";
             break;
         case Instruction::Type::LOAD_CONST:
-        case Instruction::Type::LOAD_ATTR:
-        case Instruction::Type::STORE_ATTR:
             out << "(";
             out << ((inst.arg < constants.size()) ? constants[inst.arg].get()->toString() : "???");
             out << ")";
