@@ -9,3 +9,9 @@ def func1(a, b):
 
         def func3(j, k):
             print(d, j, e, y)
+
+        func3(8, a)
+        func3(d, 33)
+    func2(b, 14)
+func1(24, 1)
+func1(16, 53)

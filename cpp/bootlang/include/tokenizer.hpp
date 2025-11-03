@@ -19,5 +19,5 @@ class Tokenizer {
   public:
     explicit Tokenizer(std::string code);
 
-    std::optional<std::vector<TokenData>> tokenize();
+    std::vector<TokenData> tokenize();
 };

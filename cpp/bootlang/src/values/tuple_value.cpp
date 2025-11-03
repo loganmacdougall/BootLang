@@ -88,7 +88,7 @@ std::string TupleValue::toString() const {
 
     for (auto it = elems.begin(); it != elems.end(); it++) {
         if (it != elems.begin()) {
-            out += ',';
+            out += ", ";
         }
 
         if (out.size() > Value::LIST_DISPLAY_HALF_WIDTH) {

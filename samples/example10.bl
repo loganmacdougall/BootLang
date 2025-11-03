@@ -1,5 +1,0 @@
-a = 5
-
-s = "FIVE" if a == 5 else "NOT FIVE"
-
-print(s)

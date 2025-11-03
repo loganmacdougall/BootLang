@@ -1,0 +1,14 @@
+input = -5
+
+def check(x):
+    if x > 0:
+        print("Greater than zero")
+    elif x < 0:
+        print("Less than zero")
+    else:
+        print("Zero")
+
+check(2)
+check(-5)
+check(0)
+

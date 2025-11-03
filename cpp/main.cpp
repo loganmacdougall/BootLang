@@ -1,6 +1,8 @@
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <fstream>
+#include <filesystem>
 #include "token.hpp"
 #include "tokenizer.hpp"
 #include "parser.hpp"
@@ -8,51 +10,84 @@
 #include "compiler.hpp"
 #include "virtual_machine.hpp"
 
-std::string samples_path = "../../samples/";
+std::string input_path = "../../tests/inputs/";
+std::string expected_path = "../../tests/outputs/";
+
+bool run_test(std::string filename);
 
 int main() {
-  std::ifstream sample_file(samples_path + "example14.bl");
-  std::stringstream code_buffer;
-  code_buffer << sample_file.rdbuf();
+  bool all_passed = true;
+
+  for (const auto &entry : std::filesystem::directory_iterator(input_path)) {
+    std::string filename = entry.path().stem().string();
+    std::cout << "Running test " << filename << "... ";
+    if (!run_test(filename)) {
+      std::cout << std::endl << "test " << filename << " failed!" << std::endl;
+      all_passed = false;
+      break;
+    }
+    std::cout << "Passed!" << std::endl;
+  }
+
+  if (all_passed) {
+    std::cout << std::endl << "All tests pass!" << std::endl;
+  }
+    
+  return 0;
+}
+
+bool run_test(std::string filename) {
+  std::stringstream debug, out, expected, code;
+
+  std::ifstream input_file(input_path + filename + ".bl");
+  code << input_file.rdbuf();
   
   try {
-    Tokenizer tokenizer(code_buffer.str());
+    Tokenizer tokenizer(code.str());
     auto tokens = tokenizer.tokenize();
     
-    if (!tokens) {
-      std::cout << "Syntax Error when tokenizing the code" << std::endl;
-      return 0;
-    } else {
-      size_t lineno = -1;
-      for (size_t i = 0; i < tokens->size(); i++) {
-        if (tokens->at(i).lineno != lineno) {
-          lineno = tokens->at(i).lineno;
-          if (i > 0) std::cout << std::endl;
-          std::cout << lineno << ":\t ";
-        }
-        std::cout << TokenMetadata::GetInstance().GetTokenName(tokens->at(i).token) << " ";
+    size_t lineno = -1;
+    for (size_t i = 0; i < tokens.size(); i++) {
+      if (tokens.at(i).lineno != lineno) {
+        lineno = tokens.at(i).lineno;
+        if (i > 0) debug << std::endl;
+        debug << lineno << ":\t ";
       }
-      std::cout << std::endl << std::endl;
+      debug << TokenMetadata::GetInstance().GetTokenName(tokens.at(i).token) << " ";
     }
+    debug << std::endl << std::endl;
     
-    Parser parser(tokens.value());
+    Parser parser(tokens);
     BlockNodePtr ast = parser.parse();
     
-    std::cout << ast->toCode(0) << std::endl << std::endl;
+    debug << ast->toCode(0) << std::endl << std::endl;
     
     Program program = Compiler().compile(ast);
     
-    std::cout << program.toDisassembly() << std::endl;
+    debug << program.toDisassembly() << std::endl;
 
     Environment env;
-    env.loadDefaults(std::cout);
+    env.loadDefaults(out);
 
     VirtualMachine vm(env);
     vm.loadProgram(program);
     vm.runProgram();
   } catch (std::exception &e) {
-    std::cout << std::endl << e.what() << std::endl;
+    std::cout << debug.rdbuf() << std::endl;
+    std::cout << out.rdbuf() << std::endl;
+    std::cout << e.what() << std::endl;
+    return false;
   }
-    
-  return 0;
+
+  std::ifstream expected_file(expected_path + filename + ".out");
+  expected << expected_file.rdbuf();
+
+  if (out.str() != expected.str()) {
+    std::cout << std::endl << debug.rdbuf() << std::endl;
+    std::cout << "Expected:" << std::endl << expected.rdbuf() << std::endl;
+    std::cout << "Actual:" << std::endl << out.rdbuf() << std::endl;
+    return false;
+  }
+
+  return true;
 }

@@ -29,7 +29,7 @@ std::string build_combined_pattern(std::vector<TokenMetadata::RegexPair> regex_p
 Tokenizer::Tokenizer(std::string code) :
   code(std::move(code)) {}
 
-  std::optional<std::vector<TokenData>> Tokenizer::tokenize() {
+  std::vector<TokenData> Tokenizer::tokenize() {
   std::vector<TokenData> tokens;
   std::vector<size_t> indent_stack{0};
 
@@ -60,7 +60,7 @@ Tokenizer::Tokenizer(std::string code) :
     }
 
     if (token == Token::Type::INVALID_TOKEN) {
-      return std::nullopt;
+      throw std::runtime_error("Received invalid token \"" + text + "\"");
     }
 
     size_t col = static_cast<size_t>(match.position() - line_start + 1);
@@ -95,7 +95,10 @@ Tokenizer::Tokenizer(std::string code) :
       }
 
       if (indent_count != indent_stack[indent_stack.size() - 1]) {
-        return std::nullopt;
+        std::stringstream err;
+        err << "Recieved DEDENT of size " << indent_count;
+        err << " when expected DEDENT of size" << indent_stack[indent_stack.size() - 1];
+        throw std::runtime_error(err.str());
       }
 
       continue;

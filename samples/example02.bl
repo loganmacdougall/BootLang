@@ -1,9 +1,0 @@
-input = -5
-
-if input > 0:
-    print("Greater than zero")
-elif input < 0:
-    print("Less than zero")
-else:
-    print("Zero")
-

@@ -94,7 +94,7 @@ std::string SetValue::toString() const {
 
     for (auto it = keys.begin(); it != keys.end(); it++) {
         if (it != keys.begin()) {
-            out += ',';
+            out += ", ";
         }
 
         if (out.size() > Value::LIST_DISPLAY_HALF_WIDTH) {

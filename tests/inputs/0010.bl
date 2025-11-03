@@ -1,0 +1,8 @@
+a = 5
+b = 4
+
+s1 = "FIVE" if a == 5 else "NOT FIVE"
+s2 = "FIVE" if b == 5 else "NOT FIVE"
+
+print(s1)
+print(s2)

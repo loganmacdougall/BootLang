@@ -109,7 +109,7 @@ std::string MapValue::toString() const {
 
     for (auto it = values.begin(); it != values.end(); it++) {
         if (it != values.begin()) {
-            out += ',';
+            out += ", ";
         }
 
         Value::Ptr key = keys.at(it->first);

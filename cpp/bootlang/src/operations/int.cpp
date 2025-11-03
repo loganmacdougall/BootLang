@@ -65,7 +65,7 @@ Value::Ptr int_divide_int(Value::Ptr a_base, Value::Ptr b_base) {
   if (b->value == 0) {
     throw std::runtime_error("Division by zero");
   }
-  return std::make_shared<IntValue>(a->value / b->value);
+  return std::make_shared<FloatValue>(static_cast<double>(a->value) / static_cast<double>(b->value));
 }
 
 Value::Ptr int_divide_float(Value::Ptr a_base, Value::Ptr b_base) {
