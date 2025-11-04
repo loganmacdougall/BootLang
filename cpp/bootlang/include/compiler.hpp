@@ -25,15 +25,17 @@ class Compiler {
     std::shared_ptr<std::unordered_map<size_t, size_t>> line_numbers = nullptr;
 
     std::vector<LoopFrame> loop_stack;
+    const OpRegistry& opRegistry;
 
 public:
-    Compiler() = default;
+    Compiler();
     Program compile(const BlockNodePtr &ast);
 
 private:    
     void compileTopBlock(const BlockNodePtr &ast);
     void compileNode(const Node* node);
     void compileToplevelNode(const Node* node);
+
     void compileBlock(const BlockNode* node);
     void compileVar(const VarNode* node);
     void compileBool(const BoolNode* node);
@@ -53,7 +55,11 @@ private:
     
     void compileBinaryOp(const BinaryOpNode* node);
     void compileUnaryOp(const UnaryOpNode* node);
-    
+    Value::Ptr createConstant(const Node* node);
+    Value::Ptr createConstantBinaryOp(const BinaryOpNode* node);
+    Value::Ptr createConstantUnaryOp(const UnaryOpNode* node);
+    void compileConstantAtom(Value::Ptr value);
+
     void compileAssign(const AssignNode* node);
     void compileAssignIdent(const Node* node, Token::Type op = Token::ASSIGN);
 

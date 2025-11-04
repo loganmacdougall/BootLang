@@ -2,6 +2,8 @@
 
 using INST = Instruction::Type;
 
+Compiler::Compiler() : opRegistry(OpRegistry::GetInstance()) {}
+
 Program Compiler::compile(const BlockNodePtr &ast) {
     top_context = std::make_shared<TopLevelContext>();
     c = top_context;
@@ -246,6 +248,14 @@ void Compiler::compileMapLiteral(const ListLiteralNode* node) {
 }
 
 void Compiler::compileBinaryOp(const BinaryOpNode* node) {
+    if (node->constant) {
+        Value::Ptr value = createConstant(node);
+        if (value != nullptr) {
+            compileConstantAtom(value);
+            return;
+        }
+    }
+
     compileNode(node->left.get());
     compileNode(node->right.get());
     
@@ -253,9 +263,86 @@ void Compiler::compileBinaryOp(const BinaryOpNode* node) {
 }
 
 void Compiler::compileUnaryOp(const UnaryOpNode* node) {
+    if (node->constant) {
+        Value::Ptr value = createConstant(node);
+        if (value != nullptr) {
+            compileConstantAtom(value);
+            return;
+        }
+    }
+    
     compileNode(node->right.get());
-
     c->emit(INST::UNARY_OP, node->op);
+}
+
+Value::Ptr Compiler::createConstant(const Node* node) {
+    switch (node->type) {
+        case Node::Type::BINARY_OP:
+            return createConstantBinaryOp(Node::toDerived<BinaryOpNode>(node));
+        case Node::Type::UNARY_OP:
+            return createConstantUnaryOp(Node::toDerived<UnaryOpNode>(node));
+        case Node::Type::INT:
+            return std::make_unique<IntValue>(Node::toDerived<IntNode>(node)->value);
+        case Node::Type::FLOAT:
+            return std::make_unique<FloatValue>(Node::toDerived<FloatNode>(node)->value);
+        case Node::Type::BOOL:
+            return std::make_unique<BoolValue>(Node::toDerived<BoolNode>(node)->value);
+        case Node::Type::STRING:
+            return std::make_unique<StringValue>(Node::toDerived<StringNode>(node)->value);
+        default:
+            return nullptr;
+    }
+}
+
+Value::Ptr Compiler::createConstantBinaryOp(const BinaryOpNode* node) {
+    Value::Ptr left_const = createConstant(node->left.get());
+    if (left_const == nullptr) return nullptr;
+    
+    Value::Ptr right_const = createConstant(node->right.get());
+    if (right_const == nullptr) return nullptr;
+
+    auto func = opRegistry.get(left_const->type, right_const->type, node->op);
+    if (!func.has_value()) {
+        opRegistry.throwNotFunction(left_const->type, right_const->type, node->op);
+    }
+    
+    return func.value()(left_const, right_const);
+}
+
+Value::Ptr Compiler::createConstantUnaryOp(const UnaryOpNode* node) {
+    Value::Ptr right_const = createConstant(node->right.get());
+    if (right_const == nullptr) return nullptr;
+
+    auto func = opRegistry.get(right_const->type, node->op);
+    if (!func.has_value()) {
+        opRegistry.throwNotFunction(right_const->type, node->op);
+    }
+    
+    return func.value()(right_const);
+}
+
+void Compiler::compileConstantAtom(Value::Ptr base_value) {
+    switch (base_value->type) {
+        case Value::Type::INT: {
+            long value = Value::toDerived<IntValue>(base_value)->value;
+            if (value < 0) {
+                c->emit(INST::LOAD_INT, -value);
+                c->emit(INST::UNARY_OP, Token::Type::MINUS);
+            } else {
+                c->emit(INST::LOAD_INT, value);
+            }
+            break;
+        }
+        case Value::Type::FLOAT:
+        case Value::Type::BOOL:
+        case Value::Type::STRING: {
+            size_t id = c->idConstant(base_value.get());
+            c->emit(INST::LOAD_CONST, id);
+            break;
+        }
+        default:
+            throw std::runtime_error("Attempted to compile non-constant atom as constant atom");
+    }
 }
 
 void Compiler::compileAssign(const AssignNode* node) {
