@@ -1,6 +1,7 @@
 #include "node.hpp"
 
-Node::Node(size_t lineno, size_t col, Node::Type type) : lineno(lineno), col(col), type(type) {}
+Node::Node(size_t lineno, size_t col, Node::Type type, bool constant)
+: lineno(lineno), col(col), type(type), constant(constant) {}
 
 const std::string& Node::typeString() const {
     return NodeMetadata::GetInstance().GetNodeName(type);

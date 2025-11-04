@@ -265,7 +265,7 @@ void VirtualMachine::runLoadBuiltin(size_t arg) {
   auto it = env.builtins.find(builtin_name);
 
   if (it == env.builtins.end()) {
-    throw std::runtime_error("variable " + builtin_name + " is undefined");
+    throw std::runtime_error("Variable \"" + builtin_name + "\" is undefined");
   }
 
   pushStack(it->second);

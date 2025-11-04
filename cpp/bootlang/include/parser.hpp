@@ -34,6 +34,7 @@ class Parser {
         BlockNodePtr parseBlock();
         NodePtr parseStatement();
         NodePtr parseIdentifier();
+        NodePtr parsePostfix(NodePtr node);
         
         std::unique_ptr<CallNode> parseCall(NodePtr&& left);
         NodePtr parseIndexOrSlice(NodePtr&& left);

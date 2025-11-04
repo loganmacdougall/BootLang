@@ -1,0 +1,3 @@
+A = ["Hello there", "Nice to meet ya", "I'm lost"]
+
+print("...  ".join(A))

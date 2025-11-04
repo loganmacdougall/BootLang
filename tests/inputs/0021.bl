@@ -1,0 +1,39 @@
+personA = {
+  "name": "Mr. Test",
+  "age": 45,
+  "likes_sushi": True,
+  "steps": 7000
+}
+
+personB = {
+  "name": "Test Junior",
+  "age": 16,
+  "likes_sushi": True,
+  "steps": 14000
+}
+
+def check_prop(fn, prop):
+  def check_fn(obj):
+    return fn(obj[prop])
+  return check_fn
+
+def check_ge(b):
+  def fn(a):
+    return a >= b
+  return fn
+
+def confirm_false(value):
+  return not value
+
+check_age = check_prop(check_ge(18), "age")
+check_steps = check_prop(check_ge(10000), "steps")
+check_hates_sushi = check_prop(confirm_false, "likes_sushi")
+
+print(check_age(personA))
+print(check_age(personB))
+
+print(check_steps(personA))
+print(check_steps(personB))
+
+print(check_hates_sushi(personA))
+print(check_hates_sushi(personB))

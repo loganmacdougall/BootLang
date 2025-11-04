@@ -165,3 +165,29 @@ void collection_index_assign(Value::Ptr a_base, Value::Ptr b_base, Value::Ptr va
     a->elems[i] = value->nextFromIter(iter_state);
   }
 }
+
+Value::Ptr to_list(Value::CallableInfo& info) {
+  if (info.args.size() != 1) {
+    throw std::runtime_error("Function expects one argument");
+  }
+
+  if (!info.args.at(0)->isIterable()) {
+    throw std::runtime_error("Expected iterable");
+  }
+  
+  Value::Ptr iterable = info.args.at(0);
+
+  if (iterable->type == Value::Type::LIST) {
+    return iterable;
+  }
+
+  auto iter = iterable->iterInitialState();
+  auto list = std::make_shared<ListValue>();
+
+  while (!iter->finished) {
+    Value::Ptr value = iterable->nextFromIter(iter);
+    list->pushValue(value);
+  }
+
+  return list;
+}

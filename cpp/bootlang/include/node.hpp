@@ -46,8 +46,9 @@ public:
     size_t lineno;
     size_t col;
     Node::Type type;
+    bool constant;
 
-    Node(size_t lineno, size_t col, Node::Type type);
+    Node(size_t lineno, size_t col, Node::Type type, bool constant = false);
     const std::string& typeString() const;
     virtual ~Node() = default;
 

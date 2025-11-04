@@ -1,8 +1,12 @@
 #include "nodes/slice_node.hpp"
 
 SliceNode::SliceNode(size_t lineno, size_t col, NodePtr&& left, std::optional<NodePtr>&& start, std::optional<NodePtr>&& end, std::optional<NodePtr>&& step)
-: Node(lineno, col, Node::Type::SLICE), left(std::move(left)),
-  start(std::move(start)), end(std::move(end)), step(std::move(step)) {}
+: Node(lineno, col, Node::Type::SLICE, true), left(std::move(left)),
+  start(std::move(start)), end(std::move(end)), step(std::move(step)) {
+    constant &= start.has_value() ? start.value()->constant : true;
+    constant &= end.has_value() ? end.value()->constant : true;
+    constant &= step.has_value() ? step.value()->constant : true;
+  }
 
 std::string SliceNode::toCode(int indent) const {
     (void)indent; 

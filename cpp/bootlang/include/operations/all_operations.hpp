@@ -8,3 +8,4 @@
 #include "operations/list.hpp"
 #include "operations/set.hpp"
 #include "operations/string.hpp"
+#include "operations/tuple.hpp"

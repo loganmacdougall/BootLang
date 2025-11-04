@@ -1,7 +1,14 @@
 #include "nodes/setliteral_node.hpp"
 
 SetLiteralNode::SetLiteralNode(size_t lineno, size_t col, std::vector<NodePtr>&& elems)
-: Node(lineno, col, Node::Type::SET_LITERAL), elems(std::move(elems)) {}
+: Node(lineno, col, Node::Type::SET_LITERAL, true), elems(std::move(elems)) {
+    for (auto &elem : elems) {
+        if (!elem->constant) {
+            constant = false;
+            break;
+        }
+    }
+}
 
 std::string SetLiteralNode::toCode(int indent) const {
     (void)indent; 

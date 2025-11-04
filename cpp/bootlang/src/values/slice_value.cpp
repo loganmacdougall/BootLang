@@ -6,7 +6,7 @@ SliceValue::SliceValue(std::optional<long> start, std::optional<long> end, std::
 std::tuple<long, long, long> SliceValue::sliceValues(size_t length) const {
   long _step = step.value_or(1);
   long _start = start.value_or((_step > 0) ? 0 : length - 1);
-  long _end = end.value_or((_step > 0) ? length - 1 : -1);
+  long _end = end.value_or((_step > 0) ? length : -1);
   
   _start = (_start < 0) ? length - _start : _start;
   if (end.has_value()) {
@@ -23,7 +23,7 @@ size_t SliceValue::sliceLength(size_t length) const {
   if (_step > 0 && _start >= _end) return 0;
   if (_step < 0 && _start <= _end ) return 0;
   
-  return (_end - _start + 2) / _step;
+  return (_end - _start + 1) / _step;
 }
 
 std::tuple<long, long> SliceValue::sliceRange(size_t length) const {

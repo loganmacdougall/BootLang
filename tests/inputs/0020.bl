@@ -1,0 +1,10 @@
+# https://github.com/Chalarangelo/30-seconds-of-python/blob/master/snippets/capitalize.md
+
+def capitalize(s, lower_rest):
+  return ''.join([s[:1].upper(), (s[1:].lower() if lower_rest else s[1:])])
+
+v1 = capitalize('fooBar', False) # 'FooBar'
+v2 = capitalize('fooBar', True) # 'Foobar'
+
+print(v1)
+print(v2)

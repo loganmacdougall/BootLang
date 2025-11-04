@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "values/all_values.hpp"
 
 Value::Ptr string_eq_string(Value::Ptr a_base, Value::Ptr b_base);
@@ -9,3 +10,9 @@ Value::Ptr string_add_value(Value::Ptr a_base, Value::Ptr b_base) {
     std::shared_ptr<T> b = Value::toDerived<T>(b_base);
     return std::make_shared<StringValue>(a->value + b->toString());
 }
+
+Value::Ptr to_string(Value::CallableInfo& info);
+Value::Ptr string_join(Value::CallableInfo& info);
+Value::Ptr string_upper(Value::CallableInfo& info);
+Value::Ptr string_lower(Value::CallableInfo& info);
+Value::Ptr string_title(Value::CallableInfo& info);

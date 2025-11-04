@@ -48,8 +48,12 @@ void OpRegistry::throwNotFunction(Value::Type lhs, Value::Type rhs, Token::Type 
 
 void OpRegistry::throwNotFunction(Value::Type rhs, Token::Type op) const {
   std::ostringstream out;
-  out << "No support for binary operator ";
-  out << op << " " << rhs;
+
+  const std::string& rhs_str = ValueMetadata::GetInstance().GetValueName(rhs);
+  const std::string& op_str = Token::typeString(op);
+
+  out << "No support for unary operator ";
+  out << op_str << " " << rhs_str;
 
   throw std::runtime_error(out.str());
 }
@@ -154,4 +158,22 @@ OpRegistry::OpRegistry() {
 
   reg(V::BOOL, V::BOOL, T::OR, bool_or_bool);
   reg(V::BOOL, V::BOOL, T::AND, bool_and_bool);
+
+  reg(V::NONE, T::NOT, not_bool);
+  reg(V::INT, T::NOT, not_bool);
+  reg(V::FLOAT, T::NOT, not_bool);
+  reg(V::CHAR, T::NOT, not_bool);
+  reg(V::STRING, T::NOT, not_bool);
+  reg(V::BOOL, T::NOT, not_bool);
+  reg(V::FUNCTION, T::NOT, not_bool);
+  reg(V::BUILTIN_FUNCTION, T::NOT, not_bool);
+  reg(V::BUILTIN_GENERATOR, T::NOT, not_bool);
+  reg(V::LIST, T::NOT, not_bool);
+  reg(V::SLICE, T::NOT, not_bool);
+  reg(V::DICT, T::NOT, not_bool);
+  reg(V::SET, T::NOT, not_bool);
+  reg(V::TUPLE, T::NOT, not_bool);
+  reg(V::GENERATOR, T::NOT, not_bool);
+  reg(V::ITERATOR, T::NOT, not_bool);
+
 }

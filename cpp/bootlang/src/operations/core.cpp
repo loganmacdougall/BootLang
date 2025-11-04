@@ -186,7 +186,7 @@ Value::Ptr core_sum(Value::CallableInfo& info) {
   Value::Ptr toAdd = nullptr;
 
   while (!iter->finished && !use_float) {
-    Value::Ptr toAdd = iterable->nextFromIter(iter);
+    toAdd = iterable->nextFromIter(iter);
     if (toAdd->type == Value::Type::INT) {
       isum += Value::toDerived<IntValue>(toAdd)->value;
     } else {
@@ -209,7 +209,7 @@ Value::Ptr core_sum(Value::CallableInfo& info) {
   }
 
   while (!iter->finished) {
-    Value::Ptr toAdd = iterable->nextFromIter(iter);
+    toAdd = iterable->nextFromIter(iter);
     if (toAdd->type == Value::Type::INT) {
       fsum += Value::toDerived<IntValue>(toAdd)->value;
     } else if (toAdd->type == Value::Type::FLOAT) {

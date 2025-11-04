@@ -10,3 +10,5 @@ void list_extend(std::shared_ptr<ListValue> a, Value::Ptr b);
 Value::Ptr collection_index(Value::Ptr a_base, Value::Ptr b_base);
 void collection_index_assign(Value::Ptr a_base, Value::Ptr b_base, Value::Ptr value);
 
+Value::Ptr to_list(Value::CallableInfo& info);
+

@@ -12,6 +12,10 @@ Value::Ptr bool_and_bool(Value::Ptr a_base, Value::Ptr b_base) {
   return std::make_shared<BoolValue>(a->value && b->value);
 }
 
+Value::Ptr not_bool(Value::Ptr a_base) {
+  return std::make_shared<BoolValue>(!a_base->toBool());
+}
+
 Value::Ptr to_bool(Value::CallableInfo& info) {
   if (info.args.size() != 1) {
     throw std::runtime_error("Function expects one argument");

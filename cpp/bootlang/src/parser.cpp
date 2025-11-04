@@ -141,9 +141,13 @@ NodePtr Parser::parseIdentifier() {
         node = std::make_unique<VarNode>(VarNode(token.lineno, token.col, token.text));
     }
 
+    return node;
+}
 
-    while (true) {
-        token = look();
+NodePtr Parser::parsePostfix(NodePtr node) {
+    while (more()) {
+        TokenData token = look();
+
         if (token.token == Token::Type::LPAREN) {
             node = parseCall(std::move(node));
         } else if (token.token == Token::Type::LBRACK) {
@@ -154,7 +158,6 @@ NodePtr Parser::parseIdentifier() {
             break;
         }
     }
-
     return node;
 }
 
@@ -248,14 +251,14 @@ std::vector<std::string> Parser::parseIdentifierList() {
 }
 
 NodePtr Parser::parseIdentifierOrTuple() {
-    NodePtr first = parseIdentifier();
+    NodePtr first = parsePostfix(parseIdentifier());
     if (more() && look().token == Token::Type::COMMA) {
         std::vector<NodePtr> elems;
         elems.push_back(std::move(first));
         
         while (more() && look().token == Token::Type::COMMA) {
             consume(optType(Token::Type::COMMA));
-            NodePtr elem = parseIdentifier();
+            NodePtr elem = parsePostfix(parseIdentifier());
             elems.push_back(std::move(elem));
         }
 
@@ -437,32 +440,41 @@ NodePtr Parser::parseAtom() {
         case Token::Type::NUMBER:
             consume();
             if (token.text.find('.') != std::string::npos) {
-                return std::make_unique<FloatNode>(FloatNode(token.lineno, token.col, std::stof(token.text)));
+                node = std::make_unique<FloatNode>(FloatNode(token.lineno, token.col, std::stof(token.text)));
+            } else {
+                node = std::make_unique<IntNode>(IntNode(token.lineno, token.col, std::stoi(token.text)));
             }
-            return std::make_unique<IntNode>(IntNode(token.lineno, token.col, std::stoi(token.text)));
+            break;
         case Token::Type::STRING:
             consume();
             unescaped = unescapeString(token.text.substr(1, token.text.size() - 2));
-            return std::make_unique<StringNode>(StringNode(token.lineno, token.col, unescaped));
+            node = std::make_unique<StringNode>(StringNode(token.lineno, token.col, unescaped));
+            break;
         case Token::Type::TRUE:
         case Token::Type::FALSE:
             consume();
-            return std::make_unique<BoolNode>(BoolNode(token.lineno, token.col, token.token == Token::Type::TRUE));
+            node = std::make_unique<BoolNode>(BoolNode(token.lineno, token.col, token.token == Token::Type::TRUE));
+            break;
         case Token::Type::IDENT:
-            return parseIdentifier();
+            node = parseIdentifier();
+            break;
         case Token::Type::LPAREN:
             consume(optType(Token::Type::LPAREN));
             node = parseExpression();
             consume(optType(Token::Type::RPAREN));
-            return node;
+            break;
         case Token::Type::LBRACK:
-            return parseListLiteral();
+            node = parseListLiteral();
+            break;
         case Token::Type::LBRACE:
-            return parseDictOrSetLiteral();
+            node = parseDictOrSetLiteral();
+            break;
         default:
             std::string token_name = TokenMetadata::GetInstance().GetTokenName(token.token);
             throw std::runtime_error("Unexpected token: " + token_name);
     }
+
+    return parsePostfix(std::move(node));
 }
 
 std::unique_ptr<ListLiteralNode> Parser::parseListLiteral() {

@@ -1,7 +1,7 @@
 #include "nodes/unaryop_node.hpp"
 
 UnaryOpNode::UnaryOpNode(size_t lineno, size_t col, NodePtr&& right, Token::Type op)
-    : Node(lineno, col, Node::Type::UNARY_OP), right(std::move(right)), op(op) {}
+    : Node(lineno, col, Node::Type::UNARY_OP, right->constant), right(std::move(right)), op(op) {}
 
 std::string UnaryOpNode::toCode(int indent) const {
     (void)indent;

@@ -57,7 +57,15 @@ void Environment::loadDefaults(std::ostream& print_stream) {
   builtins.emplace("sum", MSBF(core_sum));
 
   builtins.emplace("set", MSBF(to_set));
+  builtins.emplace("str", MSBF(to_string));
+  builtins.emplace("list", MSBF(to_list));
+  builtins.emplace("tuple", MSBF(to_tuple));
   builtins.emplace("bool", MSBF(to_bool));
 
   dict_attributes.emplace("items", MSBF(dict_items));
+
+  string_attributes.emplace("join", MSBF(string_join));
+  string_attributes.emplace("lower", MSBF(string_lower));
+  string_attributes.emplace("upper", MSBF(string_upper));
+  string_attributes.emplace("title", MSBF(string_title));
 }
