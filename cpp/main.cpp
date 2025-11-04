@@ -71,10 +71,11 @@ bool run_test(std::string filename) {
 
     VirtualMachine vm(env);
     vm.loadProgram(program);
+    vm.setInstructionLimit(100000);
     vm.runProgram();
   } catch (std::exception &e) {
-    std::cout << debug.rdbuf() << std::endl;
-    std::cout << out.rdbuf() << std::endl;
+    std::cout << debug.str() << std::endl;
+    std::cout << out.str() << std::endl;
     std::cout << e.what() << std::endl;
     return false;
   }
@@ -83,9 +84,9 @@ bool run_test(std::string filename) {
   expected << expected_file.rdbuf();
 
   if (out.str() != expected.str()) {
-    std::cout << std::endl << debug.rdbuf() << std::endl;
-    std::cout << "Expected:" << std::endl << expected.rdbuf() << std::endl;
-    std::cout << "Actual:" << std::endl << out.rdbuf() << std::endl;
+    std::cout << std::endl << debug.str() << std::endl;
+    std::cout << "Expected:" << std::endl << expected.str() << std::endl;
+    std::cout << "Actual:" << std::endl << out.str() << std::endl;
     return false;
   }
 

@@ -18,6 +18,7 @@ class MapValue : public Value {
     };
 
     MapValue(std::vector<std::pair<Value::Ptr, Value::Ptr>>&& map_pairs);
+    MapValue();
     std::pair<size_t, size_t> getKeyId(Value::Ptr key);
     void storeValue(Value::Ptr key, Value::Ptr value);
     bool hasValue(Value::Ptr key);

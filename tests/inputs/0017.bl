@@ -1,0 +1,10 @@
+# https://github.com/Chalarangelo/30-seconds-of-python/blob/master/snippets/average-by.md
+
+def fn(x):
+  return x
+
+def average_by(lst, fn):
+  return sum(map(fn, lst), 0.0) / len(lst)
+
+v = average_by([3, 5, 6, 4, 7, 9, 4, 6, 5, 3, 4, 2, 5, 3, 4], fn)
+print(v)

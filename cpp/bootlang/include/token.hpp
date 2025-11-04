@@ -213,6 +213,7 @@ class TokenMetadata {
       RegexPair{Token::Type::DOT,             R"(\.)"},
       RegexPair{Token::Type::NEWLINE,         R"(\n)"},
       RegexPair{Token::Type::WHITESPACE,      R"([ \t]+)"},
+      RegexPair{Token::Type::COMMENT,         R"(#[^\n]*)"},
       RegexPair{Token::Type::INVALID_TOKEN,   R"(.+)"}
     };
     

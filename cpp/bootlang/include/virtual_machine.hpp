@@ -27,6 +27,9 @@ private:
   Program* program = nullptr;
   CallFrame *f = nullptr, *global = nullptr;
   std::vector<Value::Ptr> stack;
+  size_t frame_count = 0;
+  size_t instructions_ran = 0;
+  size_t insrtuction_limit = static_cast<size_t>(-1);
 
 public:
   VirtualMachine(Environment& env);
@@ -34,13 +37,15 @@ public:
   void popFrame();
   void pushStack(Value::Ptr value);
   Value::Ptr popStack();
+  void setInstructionLimit(size_t max_instructions);
   void loadProgram(Program& program);
   void runProgram(bool reset_global = true);
-  bool runProgramFunction(std::string name, bool reset_global = true);
+  Value::Ptr runProgramFunction(std::string name, bool reset_global = true);
 
 private:
-  void runContext(std::shared_ptr<Context> context);
-  void run();
+  Value::Ptr runContext(std::shared_ptr<Context> context);
+  Value::Ptr run();
+  Value::Ptr runCallable(Value::Ptr func_value, Value::Ptr self, std::vector<Value::Ptr>&& args);
   void runInstruction(const Instruction& instruction);
 
   void runLoadConst(size_t arg);

@@ -3,6 +3,8 @@
 TupleValue::TupleValue(std::vector<Value::Ptr>&& elems)
     : Value(Value::Type::TUPLE), elems(std::move(elems)) {}
 
+TupleValue::TupleValue() : Value(Value::Type::TUPLE) {}
+
 std::size_t TupleValue::hash() const {
   size_t h = elems.size() ^ 0x5475706c65;
   for (const auto& elem : elems) {

@@ -3,6 +3,8 @@
 ListValue::ListValue(std::vector<Value::Ptr>&& elems)
     : Value(Value::LIST), elems(std::move(elems)) {}
 
+ListValue::ListValue() : Value(Value::LIST) {}
+
 Value::Ptr ListValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
     if (base_state->finished) {
         return NoneValue::NONE;

@@ -3,8 +3,8 @@
 BuiltinFunctionValue::BuiltinFunctionValue(Definition function, std::string doc)
 : Value(Value::Type::BUILTIN_FUNCTION), function(function), doc(doc) {}
 
-Value::Ptr BuiltinFunctionValue::call(Value::Ptr& self, const std::vector<Value::Ptr>& args) const {
-  return function(self, args);
+Value::Ptr BuiltinFunctionValue::call(Value::CallableInfo& info) {
+  return function(info);
 }
 
 std::size_t BuiltinFunctionValue::hash() const {

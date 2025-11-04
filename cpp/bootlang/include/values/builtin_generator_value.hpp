@@ -7,14 +7,14 @@
 
 class BuiltinGeneratorValue : public Value {
 public:
-  using InitialDefintion = std::function<std::shared_ptr<IteratorState>(const std::vector<Value::Ptr>&)>;
+  using InitialDefintion = std::function<std::shared_ptr<IteratorState>(const Value::CallableInfo&)>;
   using NextDefinition = std::function<Value::Ptr(std::shared_ptr<Value::IteratorState>)>;
 
   InitialDefintion init_function;
   NextDefinition next_function;
-  std::vector<Value::Ptr> args;
+  const Value::CallableInfo info;
 
-  BuiltinGeneratorValue(InitialDefintion init_function, NextDefinition next_function, std::vector<Value::Ptr> args);
+  BuiltinGeneratorValue(InitialDefintion init_function, NextDefinition next_function, Value::CallableInfo&& info);
   virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> state) const override;
   virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;
   bool isIterable() const override { return true; }

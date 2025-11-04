@@ -32,12 +32,16 @@ void VirtualMachine::pushFrame(std::shared_ptr<Context> context) {
   } else {
     f = next_f;
   }
+
+  frame_count += 1;
 }
 
 void VirtualMachine::popFrame() {
   if (!f) {
     return;
   }
+
+  frame_count -= 1;
 
   if (!f->parent) {
     if (!f->top_level) {
@@ -54,6 +58,10 @@ void VirtualMachine::popFrame() {
 
 void VirtualMachine::pushStack(Value::Ptr value) {
   stack.push_back(value);
+}
+
+void VirtualMachine::setInstructionLimit(size_t insrtuction_limit) {
+  this->insrtuction_limit = insrtuction_limit;
 }
 
 Value::Ptr VirtualMachine::popStack() {
@@ -81,6 +89,9 @@ void VirtualMachine::runProgram(bool reset_global) {
     f = global;
   }
 
+  frame_count = 1;
+  instructions_ran = 0;
+
   if (reset_global) {
     global->reset();
   }
@@ -88,7 +99,7 @@ void VirtualMachine::runProgram(bool reset_global) {
   run();
 }
 
-bool VirtualMachine::runProgramFunction(std::string name, bool reset_global) {
+Value::Ptr VirtualMachine::runProgramFunction(std::string name, bool reset_global) {
   if (program == nullptr) {
     throw std::runtime_error("Attempted to run program before load");
   }
@@ -96,7 +107,7 @@ bool VirtualMachine::runProgramFunction(std::string name, bool reset_global) {
   auto it = program->func_map.find(name);
   
   if (it == program->func_map.end()) {
-    return false;
+    return nullptr;
   }
 
   while (f) {
@@ -109,14 +120,15 @@ bool VirtualMachine::runProgramFunction(std::string name, bool reset_global) {
 
   const std::shared_ptr<CodeObject> code = program->funcs->at(it->second);
 
-
   f = new CallFrame(code->context, 0);
-  run();
   
-  return true;
+  frame_count = 1;
+  instructions_ran = 0;
+
+  return run();
 }
 
-void VirtualMachine::run() {
+Value::Ptr VirtualMachine::run() {
   if (program == nullptr) {
     throw std::runtime_error("Attempted to run program before load");
   }
@@ -125,17 +137,60 @@ void VirtualMachine::run() {
     throw std::runtime_error("Attempted to run with incomplete call stack");
   }
 
+  size_t base_frame_count = frame_count;
+
   Value::Ptr result = nullptr;
 
-  while (f) {
-    if (f->ip >= f->context->instructions.size()) {
-      popFrame();
-      continue;
-    }
-
+  while (base_frame_count <= frame_count && instructions_ran < insrtuction_limit) {
     const Instruction& inst = f->fetch();
     runInstruction(inst);
+    instructions_ran += 1;
   }
+
+  if (instructions_ran >= insrtuction_limit) {
+    throw std::runtime_error("Exceeded the instruction execution limit");
+  }
+
+  return popStack();
+}
+
+Value::Ptr VirtualMachine::runCallable(Value::Ptr func_value, Value::Ptr self, std::vector<Value::Ptr>&& args) {
+  if (func_value->type == Value::Type::BUILTIN_FUNCTION) {
+    Value::CallableInfo info(
+      func_value, self, std::move(args), [this](Value::Ptr func_value, Value::Ptr self, std::vector<Value::Ptr>&& args) {
+        return this->runCallable(func_value, self, std::move(args));
+      }
+    );
+
+    return func_value->call(info);
+  }
+
+  if (func_value->type != Value::Type::FUNCTION) {
+    throw std::runtime_error("Attempted to call non-function value");
+  }
+
+  std::shared_ptr<FunctionValue> func = Value::toDerived<FunctionValue>(func_value);
+  std::shared_ptr<CodeObject> code = func->code;
+
+  pushFrame(code->context);
+  f->vars.resize(code->context->names.size());
+
+  for (size_t i = 0; i < args.size() && i < f->vars.size(); ++i) {
+    f->vars[i] = args[i];
+  }
+
+  if (!func->freevars.empty()) {
+    f->freevars = func->freevars;
+  }
+
+  if (self->type != Value::Type::NONE && code->parameters.front() == "self") {
+    auto it = f->context->getNameId("self");
+    if (it != Context::NOT_FOUND) {
+      f->vars[it] = self;
+    }
+  }
+
+  return run();
 }
 
 void VirtualMachine::runInstruction(const Instruction& instruction) {
@@ -364,37 +419,9 @@ void VirtualMachine::runCall(size_t arg) {
 
   Value::Ptr func_value = popStack();
 
-  if (func_value->type == Value::Type::BUILTIN_FUNCTION) {
-    auto func = Value::toDerived<BuiltinFunctionValue>(func_value);
-    Value::Ptr result = func->call(self, args);
-    pushStack(result);
-    return;
-  }
+  Value::Ptr result = runCallable(func_value, self, std::move(args));
 
-  if (func_value->type != Value::Type::FUNCTION) {
-    throw std::runtime_error("Attempted to call non-function value");
-  }
-
-  std::shared_ptr<FunctionValue> func = Value::toDerived<FunctionValue>(func_value);
-  std::shared_ptr<CodeObject> code = func->code;
-
-  pushFrame(code->context);
-  f->vars.resize(code->context->names.size());
-
-  for (size_t i = 0; i < arg && i < f->vars.size(); ++i) {
-    f->vars[i] = args[i];
-  }
-
-  if (!func->freevars.empty()) {
-    f->freevars = func->freevars;
-  }
-
-  if (self->type != Value::Type::NONE && code->parameters.front() == "self") {
-    auto it = f->context->getNameId("self");
-    if (it != Context::NOT_FOUND) {
-      f->vars[it] = self;
-    }
-  }
+  pushStack(result);
 }
 
 void VirtualMachine::runToIter(size_t arg) {

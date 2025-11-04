@@ -1,18 +1,17 @@
 #include "operations/dict.hpp"
 
-Value::Ptr dict_items(Value::Ptr& self, const std::vector<Value::Ptr>& args) {
-  (void)args;
-
-  std::vector<Value::Ptr> self_vec;
-  self_vec.push_back(self);
+Value::Ptr dict_items(Value::CallableInfo& info) {
+  if (info.self->type != Value::Type::DICT) {
+    throw std::runtime_error("Expected self to be of type Dict");
+  }
 
   return std::make_shared<BuiltinGeneratorValue>(
-    dict_items_init, dict_items_next, self_vec
+    dict_items_init, dict_items_next, std::move(info)
   );
 }
 
-std::shared_ptr<Value::IteratorState> dict_items_init(const std::vector<Value::Ptr>& args) {
-  std::shared_ptr<MapValue> dict = Value::toDerived<MapValue>(args.back());
+std::shared_ptr<Value::IteratorState> dict_items_init(const Value::CallableInfo& info) {
+  std::shared_ptr<MapValue> dict = Value::toDerived<MapValue>(info.self);
   
   auto iter_state = std::make_shared<DictItemsIterState>();
   iter_state->dict = dict;

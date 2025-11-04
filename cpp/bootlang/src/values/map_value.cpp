@@ -7,6 +7,8 @@ MapValue::MapValue(std::vector<std::pair<Value::Ptr, Value::Ptr>>&& map_pairs)
     }
 }
 
+MapValue::MapValue() : Value(Value::DICT) {}
+
 std::pair<size_t, size_t> MapValue::getKeyId(Value::Ptr key) {
     if (!key->isHashable()) {
         throw std::runtime_error("Attempted to use an unhashable value as dict key");

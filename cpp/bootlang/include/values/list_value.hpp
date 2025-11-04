@@ -14,6 +14,9 @@ public:
   };
 
   ListValue(std::vector<Value::Ptr>&& elems);
+  ListValue();
+  void pushValue(Value::Ptr v) { elems.push_back(Value::copy(v)); }
+
   virtual bool hasLength() const override { return true; }
   bool isIterable() const override { return true; }
   virtual bool toBool() const { return !elems.empty(); }

@@ -1,0 +1,18 @@
+def A(a, b, c):
+  return a + b * c
+
+def B(a, b, c):
+  return a*a + b*b + c*c
+
+def C(a, b, c):
+  if (c != 0):
+    return a+b / c
+  return 0
+
+LA = range(10)
+LB = [4, 6, 2, 5, 3, 8, 7, 9, 2]
+LC = LB[::-1]
+
+print(list(map(A, LA, LB, LC)))
+print(tuple(map(B, LA, LB, LC)))
+print(list(map(C, LA, LB, LC)))

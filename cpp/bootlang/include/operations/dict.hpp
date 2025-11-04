@@ -4,8 +4,8 @@
 #include "values/tuple_value.hpp"
 #include "values/builtin_generator_value.hpp"
 
-Value::Ptr dict_items(Value::Ptr& self, const std::vector<Value::Ptr>& args);
-std::shared_ptr<Value::IteratorState> dict_items_init(const std::vector<Value::Ptr>& args);
+Value::Ptr dict_items(Value::CallableInfo& info);
+std::shared_ptr<Value::IteratorState> dict_items_init(const Value::CallableInfo& info);
 Value::Ptr dict_items_next(std::shared_ptr<Value::IteratorState> base_state);
 
 class DictItemsIterState : public Value::IteratorState {

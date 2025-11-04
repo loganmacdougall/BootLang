@@ -6,4 +6,5 @@
 #include "operations/float.hpp"
 #include "operations/int.hpp"
 #include "operations/list.hpp"
+#include "operations/set.hpp"
 #include "operations/string.hpp"

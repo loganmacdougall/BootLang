@@ -1,0 +1,9 @@
+# https://github.com/Chalarangelo/30-seconds-of-python/blob/master/snippets/all-equal.md
+
+def all_equal(lst):
+  return len(set(lst)) == 1
+
+print(all_equal([1, 2, 3, 4, 5, 6]))
+print(all_equal([1, 1, 1, 1]))
+print(all_equal(["a", "b", "aa", "ab"]))
+print(all_equal(["ab", "ab", "ab", "ab"]))

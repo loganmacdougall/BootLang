@@ -7,6 +7,8 @@ SetValue::SetValue(std::vector<Value::Ptr>&& elems)
     }
 }
 
+SetValue::SetValue() : Value(Value::SET) {}
+
 std::pair<size_t, size_t> SetValue::getKeyId(Value::Ptr key) {
     if (!key->isHashable()) {
         throw std::runtime_error("Attempted to use an unhashable value as set element");

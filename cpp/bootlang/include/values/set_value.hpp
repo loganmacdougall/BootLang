@@ -16,6 +16,7 @@ class SetValue : public Value {
     };
 
     SetValue(std::vector<Value::Ptr>&& elems);
+    SetValue();
     std::pair<size_t, size_t> getKeyId(Value::Ptr key);
     void storeKey(Value::Ptr key);
     bool hasKey(Value::Ptr key);

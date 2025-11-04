@@ -2,6 +2,8 @@
 
 #include <string>
 #include <array>
+#include <vector>
+#include <functional>
 #include <stdexcept>
 #include <memory>
 #include <any>
@@ -9,6 +11,7 @@
 class Value {
   public:
     typedef std::shared_ptr<Value> Ptr;
+    typedef std::function<Value::Ptr(Value::Ptr func, Value::Ptr self, std::vector<Value::Ptr>&& args)> VMCallback;
 
     enum Type {
         NONE,
@@ -39,12 +42,28 @@ class Value {
         virtual ~IteratorState() = default;
     };
 
+    struct CallableInfo {
+      Value::Ptr func_pointer;
+      Value::Ptr self;
+      std::vector<Value::Ptr> args;
+      VMCallback vm_call;
+
+      CallableInfo(
+        Value::Ptr func_pointer,
+        Value::Ptr self,
+        std::vector<Value::Ptr>&& args,
+        VMCallback vm_call
+      );
+    };
+
     Value(Type type);
     virtual bool isHashable() const { return false; }
     virtual bool isIterable() const { return false; }
     virtual bool isPrimitive() const { return false; }
+    virtual bool isCallable() const { return false; }
     virtual bool hasLength() const { return false; }
     virtual bool toBool() const { return true; }
+    virtual Value::Ptr call(CallableInfo& info);
     virtual std::size_t hash() const;
     virtual bool equal(const Value& other) const;
     virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;

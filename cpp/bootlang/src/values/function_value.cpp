@@ -1,10 +1,14 @@
 #include "values/function_value.hpp"
 
-  FunctionValue::FunctionValue(std::shared_ptr<CodeObject> code)
+FunctionValue::FunctionValue(std::shared_ptr<CodeObject> code)
 : Value(Value::Type::FUNCTION), code(code) {}
 
 void FunctionValue::setFreeVars(const std::vector<Value::Ptr>& freevars) {
   this->freevars = freevars;
+}
+
+Value::Ptr FunctionValue::call(Value::CallableInfo& info) {
+  return info.vm_call(info.func_pointer, info.self, std::move(info.args));
 }
 
 std::size_t FunctionValue::hash() const {

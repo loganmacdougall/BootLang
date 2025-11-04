@@ -15,6 +15,8 @@ public:
   FunctionValue(std::shared_ptr<CodeObject> code);
   void setFreeVars(const std::vector<Value::Ptr>& freevars);
 
+  virtual Value::Ptr call(Value::CallableInfo& info) override;
+  virtual bool isCallable() const { return true; }
   virtual std::size_t hash() const override;
   virtual bool equal(const Value& other) const override;
   virtual Value::Ptr clone() const override;

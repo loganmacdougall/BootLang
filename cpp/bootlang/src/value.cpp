@@ -1,7 +1,18 @@
 #include "value.hpp"
 
+Value::CallableInfo::CallableInfo(
+    Value::Ptr func_pointer,
+    Value::Ptr self,
+    std::vector<Value::Ptr>&& args,
+    VMCallback vm_call
+) : func_pointer(func_pointer), self(self), args(std::move(args)), vm_call(vm_call) {}
+
 Value::Value(Type type) : type(type) {}
 
+Value::Ptr Value::call(CallableInfo& info) {
+    (void)info;
+    throw std::runtime_error("call not implemented for this Value type");
+}
 
 size_t Value::hash() const {
     throw std::runtime_error("hash not implemented for this Value type");

@@ -37,18 +37,27 @@ std::shared_ptr<BuiltinFunctionValue> Environment::getAttribute(Value::Type type
 }
 
 void Environment::loadDefaults(std::ostream& print_stream) {
+  auto MSBF = [](std::function<Value::Ptr(Value::CallableInfo&)> fn) {
+    return std::make_shared<BuiltinFunctionValue>(std::move(fn));
+  };
+
   builtins.emplace("print",
-    std::make_shared<BuiltinFunctionValue>(
-      [&print_stream](Value::Ptr&, const std::vector<Value::Ptr>& args) mutable -> Value::Ptr {
-        print_stream << core_print(args);
+    MSBF(
+      [&print_stream](Value::CallableInfo& info) -> Value::Ptr {
+        print_stream << core_print(info.args);
         print_stream.flush();
 
         return NoneValue::NONE;
       }
   ));
 
-  builtins.emplace("range", std::make_shared<BuiltinFunctionValue>(core_range));
-  builtins.emplace("len", std::make_shared<BuiltinFunctionValue>(core_len));
+  builtins.emplace("range", MSBF(core_range));
+  builtins.emplace("len", MSBF(core_len));
+  builtins.emplace("map", MSBF(core_map));
+  builtins.emplace("sum", MSBF(core_sum));
 
-  dict_attributes.emplace("items", std::make_shared<BuiltinFunctionValue>(dict_items));
+  builtins.emplace("set", MSBF(to_set));
+  builtins.emplace("bool", MSBF(to_bool));
+
+  dict_attributes.emplace("items", MSBF(dict_items));
 }
