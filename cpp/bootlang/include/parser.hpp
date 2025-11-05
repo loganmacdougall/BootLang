@@ -11,6 +11,7 @@ class Parser {
     Tokens tokens;
     size_t pos;
     std::vector<size_t> poses;
+    std::vector<bool> is_generator_stack;
     bool ignore_whitespace;
 
     public:

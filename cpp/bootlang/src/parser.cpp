@@ -619,11 +619,14 @@ std::unique_ptr<FunctionDefinitionNode> Parser::parseDef() {
 
     pop();
 
+    is_generator_stack.push_back(false);
     BlockNodePtr block = parseBlock();
+    bool is_generator = is_generator_stack.back();
+    is_generator_stack.pop_back();
 
     return std::make_unique<FunctionDefinitionNode>(FunctionDefinitionNode(
         start_token.lineno, start_token.col,
-        std::move(name), std::move(args), std::move(block), std::move(doc)));
+        std::move(name), std::move(args), std::move(block), std::move(doc), is_generator));
 }
 
 std::unique_ptr<ReturnNode> Parser::parseReturn() {
@@ -642,6 +645,12 @@ std::unique_ptr<ReturnNode> Parser::parseReturn() {
 
 std::unique_ptr<YieldNode> Parser::parseYield() {
     TokenData start_token = consume(optType(Token::Type::YIELD));
+
+    if (is_generator_stack.empty()) {
+        throw std::runtime_error("Can't have yield in global scope");
+    }
+
+    is_generator_stack.back() = true;
 
     if (look().token == Token::Type::NEWLINE) {
         return std::make_unique<YieldNode>(YieldNode(start_token.lineno, start_token.col, std::nullopt));

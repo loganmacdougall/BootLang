@@ -1,7 +1,7 @@
 #include "nodes/functiondefinition_node.hpp"
 
-FunctionDefinitionNode::FunctionDefinitionNode(size_t lineno, size_t col, std::string name, std::vector<std::string>&& args, BlockNodePtr&& block, std::string doc)
-: Node(lineno, col, Node::Type::FUNCTION_DEFINITION), name(name), args(std::move(args)), block(std::move(block)), doc(doc) {}
+FunctionDefinitionNode::FunctionDefinitionNode(size_t lineno, size_t col, std::string name, std::vector<std::string>&& args, BlockNodePtr&& block, std::string doc, bool is_generator)
+: Node(lineno, col, Node::Type::FUNCTION_DEFINITION), name(name), args(std::move(args)), block(std::move(block)), doc(doc), is_generator(is_generator) {}
 
 std::string FunctionDefinitionNode::toCode(int indent) const {
     std::ostringstream out;
