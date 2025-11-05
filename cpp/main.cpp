@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <filesystem>
+#include <chrono>
 #include "token.hpp"
 #include "tokenizer.hpp"
 #include "parser.hpp"
@@ -21,12 +22,24 @@ int main() {
   for (const auto &entry : std::filesystem::directory_iterator(input_path)) {
     std::string filename = entry.path().stem().string();
     std::cout << "Running test " << filename << "... ";
-    if (!run_test(filename)) {
+
+    auto start = std::chrono::high_resolution_clock::now();
+    bool result = run_test(filename);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    if (!result) {
       std::cout << std::endl << "test " << filename << " failed!" << std::endl;
+      std::chrono::duration<double> elapsed = end - start;
+      std::cout << std::fixed << std::setprecision(3)
+        << "test " << filename << " failed!  "
+        << elapsed.count() << "s" << std::endl;
       all_passed = false;
       break;
     }
-    std::cout << "Passed!" << std::endl;
+  
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << std::fixed << std::setprecision(3)
+      << "Passed!  " << elapsed.count() << "s" << std::endl;
   }
 
   if (all_passed) {
