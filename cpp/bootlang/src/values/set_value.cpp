@@ -10,10 +10,6 @@ SetValue::SetValue(std::vector<Value::Ptr>&& elems)
 SetValue::SetValue() : Value(Value::SET) {}
 
 std::pair<size_t, size_t> SetValue::getKeyId(Value::Ptr key) {
-    if (!key->isHashable()) {
-        throw std::runtime_error("Attempted to use an unhashable value as set element");
-    }
-
     size_t key_h = key->hash();
 
     auto it = key_hashmap.find(key_h);
@@ -46,7 +42,7 @@ bool SetValue::hasKey(Value::Ptr key) {
     return getKeyId(key).second != static_cast<size_t>(-1);
 }
 
-Value::Ptr SetValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
+Value::Ptr SetValue::next(std::shared_ptr<Value::IteratorState> base_state) const {
     if (base_state->finished) {
         return NoneValue::NONE;
     }
@@ -63,7 +59,7 @@ Value::Ptr SetValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_sta
     return copy(elem);
 }
 
-std::shared_ptr<Value::IteratorState> SetValue::iterInitialState() const {
+std::shared_ptr<Value::IteratorState> SetValue::toIter() const {
     auto iter_state = std::make_shared<SetValue::IteratorState>(
         SetValue::IteratorState()
     );

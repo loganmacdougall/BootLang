@@ -1,10 +1,6 @@
 #include "operations/dict.hpp"
 
 Value::Ptr dict_items(Value::CallableInfo& info) {
-  if (info.self->type != Value::Type::DICT) {
-    throw std::runtime_error("Expected self to be of type Dict");
-  }
-
   return std::make_shared<BuiltinGeneratorValue>(
     dict_items_init, dict_items_next, std::move(info)
   );

@@ -1,7 +1,7 @@
 #include "values/builtin_function_value.hpp"
 
-BuiltinFunctionValue::BuiltinFunctionValue(Definition function, std::string doc)
-: Value(Value::Type::BUILTIN_FUNCTION), function(function), doc(doc) {}
+BuiltinFunctionValue::BuiltinFunctionValue(Definition function, std::string doc, std::optional<Value::Type> self_type, long min_args, long max_args)
+: Value(Value::Type::BUILTIN_FUNCTION), function(function), doc(doc), self_type(self_type), min_args(min_args), max_args(max_args) {}
 
 Value::Ptr BuiltinFunctionValue::call(Value::CallableInfo& info) {
   return function(info);

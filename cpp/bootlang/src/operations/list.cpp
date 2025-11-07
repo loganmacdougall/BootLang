@@ -124,23 +124,19 @@ void collection_index_assign(Value::Ptr a_base, Value::Ptr b_base, Value::Ptr va
 
   std::shared_ptr<SliceValue> b = Value::toDerived<SliceValue>(b_base);
 
-  if (!value->isIterable()) {
-    throw std::runtime_error("Slice assignment requires iterable value");
-  }
-
   size_t slice_length = b->sliceLength(a->elems.size());
   auto [start, end, step] = b->sliceValues(a->elems.size());
 
   if (step == 1) {
     if (slice_length == 0) return;
 
-    auto iter_state = value->iterInitialState();
+    auto iter_state = value->toIter();
   
     std::vector<Value::Ptr> elems;
 
     elems.insert(elems.end(), a->elems.begin(), a->elems.begin() + start);
     while (!iter_state->finished) {
-      auto elem = value->nextFromIter(iter_state);
+      auto elem = value->next(iter_state);
       elems.push_back(Value::copy(elem)); 
     }
     elems.insert(elems.end(), a->elems.begin() + end, a->elems.end());
@@ -149,43 +145,31 @@ void collection_index_assign(Value::Ptr a_base, Value::Ptr b_base, Value::Ptr va
     return;
   }
 
-  if (!value->hasLength() || value->len() != slice_length) {
-    throw std::runtime_error("Slice step assignment collection value with same length as slice");
-  }
-
   auto [slice_start, slice_end] = b->sliceRange(a->elems.size());
   if (static_cast<size_t>(slice_end) >= a->elems.size() || slice_start < 0) {
     throw std::runtime_error("Slice subscripts outside the range of the list");
   }
   
   auto slice_gen = b->sliceGenerator(a->elems.size());
-  auto iter_state = value->iterInitialState();
+  auto iter_state = value->toIter();
 
   for (size_t i = slice_gen(); i != static_cast<size_t>(-1); i = slice_gen()) {
-    a->elems[i] = value->nextFromIter(iter_state);
+    a->elems[i] = value->next(iter_state);
   }
 }
 
 Value::Ptr to_list(Value::CallableInfo& info) {
-  if (info.args.size() != 1) {
-    throw std::runtime_error("Function expects one argument");
-  }
-
-  if (!info.args.at(0)->isIterable()) {
-    throw std::runtime_error("Expected iterable");
-  }
-  
   Value::Ptr iterable = info.args.at(0);
 
   if (iterable->type == Value::Type::LIST) {
     return iterable;
   }
 
-  auto iter = iterable->iterInitialState();
+  auto iter = iterable->toIter();
   auto list = std::make_shared<ListValue>();
 
   while (!iter->finished) {
-    Value::Ptr value = iterable->nextFromIter(iter);
+    Value::Ptr value = iterable->next(iter);
     list->pushValue(value);
   }
 

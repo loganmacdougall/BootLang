@@ -5,7 +5,7 @@ ListValue::ListValue(std::vector<Value::Ptr>&& elems)
 
 ListValue::ListValue() : Value(Value::LIST) {}
 
-Value::Ptr ListValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
+Value::Ptr ListValue::next(std::shared_ptr<Value::IteratorState> base_state) const {
     if (base_state->finished) {
         return NoneValue::NONE;
     }
@@ -22,7 +22,7 @@ Value::Ptr ListValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_st
     return copy(elem);
 }
 
-std::shared_ptr<Value::IteratorState> ListValue::iterInitialState() const {
+std::shared_ptr<Value::IteratorState> ListValue::toIter() const {
     auto iter_state = std::make_shared<ListValue::IteratorState>(
         ListValue::IteratorState()
     );

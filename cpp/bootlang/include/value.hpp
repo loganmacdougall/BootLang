@@ -57,23 +57,17 @@ class Value {
     };
 
     Value(Type type);
-    virtual bool isHashable() const { return false; }
-    virtual bool isIterable() const { return false; }
-    virtual bool isPrimitive() const { return false; }
-    virtual bool isCallable() const { return false; }
-    virtual bool hasLength() const { return false; }
     virtual bool toBool() const { return true; }
     virtual Value::Ptr call(CallableInfo& info);
     virtual std::size_t hash() const;
     virtual bool equal(const Value& other) const;
-    virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
-    virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
+    virtual Value::Ptr next(std::shared_ptr<Value::IteratorState> base_state) const;
+    virtual std::shared_ptr<Value::IteratorState> toIter() const;
     virtual size_t len() const;
     virtual Value::Ptr clone() const;
     virtual std::string toString() const;
     const std::string& typeString() const;
-
-    static Value::Ptr copy(Value::Ptr);
+    static Value::Ptr copy(Value::Ptr value) { return value; }
 
     template<typename T>
     static inline std::shared_ptr<T> toDerived(Value::Ptr value) {

@@ -7,8 +7,6 @@ class FloatValue : public Value {
     double value;
 
     FloatValue(double value);
-    virtual bool isHashable() const override { return true; }
-    virtual bool isPrimitive() const override { return true; }
     virtual bool toBool() const override { return value != 0; }
     std::size_t hash() const override;
     bool equal(const Value& other) const override;

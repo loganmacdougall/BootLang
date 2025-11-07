@@ -15,17 +15,15 @@ class SetValue : public Value {
       std::map<size_t, Value::Ptr>::const_iterator it;
     };
 
-    SetValue(std::vector<Value::Ptr>&& elems);
     SetValue();
+    SetValue(std::vector<Value::Ptr>&& elems);
     std::pair<size_t, size_t> getKeyId(Value::Ptr key);
     void storeKey(Value::Ptr key);
     bool hasKey(Value::Ptr key);
 
-    virtual bool hasLength() const override { return true; }
-    bool isIterable() const override { return true; }
     virtual bool toBool() const { return !keys.empty(); }
-    virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const;
-    virtual std::shared_ptr<Value::IteratorState> iterInitialState() const;
+    virtual Value::Ptr next(std::shared_ptr<Value::IteratorState> base_state) const;
+    virtual std::shared_ptr<Value::IteratorState> toIter() const;
     virtual size_t len() const override { return keys.size(); };
     virtual Value::Ptr clone() const override;
     virtual std::string toString() const override;

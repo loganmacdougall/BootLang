@@ -13,27 +13,15 @@ Value::Ptr string_add_string(Value::Ptr a_base, Value::Ptr b_base) {
 }
 
 Value::Ptr to_string(Value::CallableInfo& info) {
-    if (info.args.size() != 1) {
-        throw std::runtime_error("Expected one argument");
-    }
-
     return std::make_shared<StringValue>(info.args.at(0)->toString());
 }
 
 Value::Ptr string_join(Value::CallableInfo& info) {
-    if (info.self->type != Value::Type::STRING) {
-        throw std::runtime_error("Expected self to be of type String");
-    }
-
-    if (!info.args.at(0)->isIterable()) {
-        throw std::runtime_error("Expected iterable");
-    }
-    
     std::string join_str = Value::toDerived<StringValue>(info.self)->value;
     
     Value::Ptr iterable = info.args.at(0);
 
-    auto iter = iterable->iterInitialState();
+    auto iter = iterable->toIter();
     std::string result = std::string("");
 
     while (!iter->finished) {
@@ -41,7 +29,7 @@ Value::Ptr string_join(Value::CallableInfo& info) {
             result += join_str;
         }
 
-        Value::Ptr value = iterable->nextFromIter(iter);
+        Value::Ptr value = iterable->next(iter);
 
         if (value->type != Value::Type::STRING) {
             throw std::runtime_error("Join exptected str instance");
@@ -54,14 +42,6 @@ Value::Ptr string_join(Value::CallableInfo& info) {
 }
 
 Value::Ptr string_upper(Value::CallableInfo& info) {
-    if (info.self->type != Value::Type::STRING) {
-        throw std::runtime_error("Expected self to be of type String");
-    }
-
-    if (!info.args.empty()) {
-        throw std::runtime_error("Expected zero arguments");
-    }
-
     std::string s = Value::toDerived<StringValue>(info.self)->value;
     std::transform(s.begin(), s.end(), s.begin(), ::toupper);
 
@@ -69,14 +49,6 @@ Value::Ptr string_upper(Value::CallableInfo& info) {
 }
 
 Value::Ptr string_lower(Value::CallableInfo& info) {
-    if (info.self->type != Value::Type::STRING) {
-        throw std::runtime_error("Expected self to be of type String");
-    }
-
-    if (!info.args.empty()) {
-        throw std::runtime_error("Expected zero arguments");
-    }
-
     std::string s = Value::toDerived<StringValue>(info.self)->value;
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 
@@ -84,14 +56,6 @@ Value::Ptr string_lower(Value::CallableInfo& info) {
 }
 
 Value::Ptr string_title(Value::CallableInfo& info) {
-    if (info.self->type != Value::Type::STRING) {
-        throw std::runtime_error("Expected self to be of type String");
-    }
-
-    if (!info.args.empty()) {
-        throw std::runtime_error("Expected zero arguments");
-    }
-
     std::string s = Value::toDerived<StringValue>(info.self)->value;
     std::string result = "";
     bool previous_was_letter = false;

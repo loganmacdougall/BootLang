@@ -11,49 +11,49 @@ Value::Value(Type type) : type(type) {}
 
 Value::Ptr Value::call(CallableInfo& info) {
     (void)info;
-    throw std::runtime_error("call not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("call not implemented for type \"" + ts + "\"");
 }
 
 size_t Value::hash() const {
-    throw std::runtime_error("hash not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("hash not implemented for type \"" + ts + "\"");
 }
 
 bool Value::equal(const Value& other) const {
     (void)other;
-    throw std::runtime_error("hash equal not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("hash implemented for type \"" + ts + "\"");
 }
 
-Value::Ptr Value::nextFromIter(std::shared_ptr<Value::IteratorState> state) const {
+Value::Ptr Value::next(std::shared_ptr<Value::IteratorState> state) const {
     (void)state;
-    throw std::runtime_error("iterators not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("next not implemented for type \"" + ts + "\"");
 }
 
-std::shared_ptr<Value::IteratorState> Value::iterInitialState() const {
-    throw std::runtime_error("iterators not implemented for this Value type");
+std::shared_ptr<Value::IteratorState> Value::toIter() const {
+    const std::string& ts = typeString();
+    throw std::runtime_error("iter not implemented for type \"" + ts + "\"");
 }
-
 
 size_t Value::len() const {
-    throw std::runtime_error("len not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("len not implemented for type \"" + ts + "\"");
 };
 
 Value::Ptr Value::clone() const {
-    throw std::runtime_error("clone not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("clone not implemented for type \"" + ts + "\"");
 }
 
 std::string Value::toString() const {
-    throw std::runtime_error("toCode not implemented for this Value type");
+    const std::string& ts = typeString();
+    throw std::runtime_error("str not implemented for type \"" + ts + "\"");
 }
 
 const std::string& Value::typeString() const {
     return ValueMetadata::GetInstance().GetValueName(type);
-}
-
-Value::Ptr Value::copy(Value::Ptr value) {
-    if (value->isPrimitive()) {
-        return value->clone();
-    }
-    return value;
 }
 
 const ValueMetadata& ValueMetadata::GetInstance() {

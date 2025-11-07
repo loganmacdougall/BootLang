@@ -15,8 +15,7 @@ public:
   const Value::CallableInfo info;
 
   BuiltinGeneratorValue(InitialDefintion init_function, NextDefinition next_function, Value::CallableInfo&& info);
-  virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> state) const override;
-  virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;
-  bool isIterable() const override { return true; }
+  virtual Value::Ptr next(std::shared_ptr<Value::IteratorState> state) const override;
+  virtual std::shared_ptr<Value::IteratorState> toIter() const override;
   virtual std::string toString() const override;
 };

@@ -8,11 +8,7 @@ TupleValue::TupleValue() : Value(Value::Type::TUPLE) {}
 std::size_t TupleValue::hash() const {
   size_t h = elems.size() ^ 0x5475706c65;
   for (const auto& elem : elems) {
-    if (elem->isHashable()) {
-      h ^= elem->hash() + 0x4d6f7265 + (h << 6) + (h >> 2);
-    } else {
-      throw std::runtime_error("Tuple contains non-hashable element");
-    }
+    h ^= elem->hash() + 0x4d6f7265 + (h << 6) + (h >> 2);
   }
   return h;
 }
@@ -42,7 +38,7 @@ bool TupleValue::equal(const Value& other) const {
   return true;
 }
 
-Value::Ptr TupleValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
+Value::Ptr TupleValue::next(std::shared_ptr<Value::IteratorState> base_state) const {
     if (base_state->finished) {
         return NoneValue::NONE;
     }
@@ -59,7 +55,7 @@ Value::Ptr TupleValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_s
     return copy(elem);
 }
 
-std::shared_ptr<Value::IteratorState> TupleValue::iterInitialState() const {
+std::shared_ptr<Value::IteratorState> TupleValue::toIter() const {
   auto iter_state = std::make_shared<TupleValue::IteratorState>(
       TupleValue::IteratorState()
   );

@@ -156,6 +156,26 @@ Value::Ptr VirtualMachine::run() {
 
 Value::Ptr VirtualMachine::runCallable(Value::Ptr func_value, Value::Ptr self, std::vector<Value::Ptr>&& args) {
   if (func_value->type == Value::Type::BUILTIN_FUNCTION) {
+    auto builtin_func = Value::toDerived<BuiltinFunctionValue>(func_value);
+
+    bool range_one = builtin_func->min_args == builtin_func->max_args;
+
+    if (builtin_func->min_args != -1 && (size_t)builtin_func->min_args > args.size()) {
+      std::stringstream err;
+      err << "Called function with " << args.size() << " arguments when expected " << builtin_func->min_args;
+      if (!range_one) err << " to " << (builtin_func->max_args == -1 ? "unlimited" : std::to_string(builtin_func->max_args));
+      err << " arguments";
+      throw std::runtime_error(err.str());
+    }
+
+    if (builtin_func->max_args != -1 && (size_t)builtin_func->max_args < args.size()) {
+      std::stringstream err;
+      err << "Called function with " << args.size() << " arguments when expected " << builtin_func->min_args;
+      if (!range_one) err << " to " << builtin_func->max_args;
+      err << " arguments";
+      throw std::runtime_error(err.str());
+    }
+    
     Value::CallableInfo info(
       func_value, self, std::move(args), [this](Value::Ptr func_value, Value::Ptr self, std::vector<Value::Ptr>&& args) {
         return this->runCallable(func_value, self, std::move(args));
@@ -171,6 +191,13 @@ Value::Ptr VirtualMachine::runCallable(Value::Ptr func_value, Value::Ptr self, s
 
   std::shared_ptr<FunctionValue> func = Value::toDerived<FunctionValue>(func_value);
   std::shared_ptr<CodeObject> code = func->code;
+
+  if (code->parameters.size() != args.size()) {
+      std::stringstream err;
+      err << "Called function with " << args.size() << " arguments when expected ";
+      err << code->parameters.size() << " arguments";
+      throw std::runtime_error(err.str());
+  }
 
   pushFrame(code->context);
   f->vars.resize(code->context->names.size());
@@ -307,12 +334,12 @@ void VirtualMachine::runLoadDeref(size_t arg) {
 
 void VirtualMachine::runStoreGlobal(size_t arg) {
   Value::Ptr value = popStack();
-  global->vars[arg] = value->isPrimitive() ? value->clone() : value;
+  global->vars[arg] = Value::copy(value);
 }
 
 void VirtualMachine::runStoreFast(size_t arg) {
   Value::Ptr value = popStack();
-  f->vars[arg] = value->isPrimitive() ? value->clone() : value;
+  f->vars[arg] = Value::copy(value);
 }
 
 void VirtualMachine::runStoreAttr(size_t arg) {
@@ -331,7 +358,7 @@ void VirtualMachine::runStoreIndex(size_t arg) {
 
 void VirtualMachine::runStoreDeref(size_t arg) {
   Value::Ptr value = popStack();
-  f->freevars[arg] = value->isPrimitive() ? value->clone() : value;
+  f->freevars[arg] = Value::copy(value);
 }
 
 void VirtualMachine::runBinaryOp(size_t arg) {
@@ -372,12 +399,6 @@ void VirtualMachine::runUnaryOp(size_t arg) {
 void VirtualMachine::runUnpackSequence(size_t arg) {
   Value::Ptr collection = popStack();
 
-  if (!collection->hasLength()) {
-    std::ostringstream out;
-    out << "Type " << collection->type << " isn't of type collectable.";
-    throw std::runtime_error(out.str());
-  }
-
   if (collection->len() != arg) {
     std::ostringstream out;
     out << "Attempted to unpack collection of length " << collection->len() << ". ";
@@ -387,9 +408,9 @@ void VirtualMachine::runUnpackSequence(size_t arg) {
 
   stack.resize(stack.size() + arg);
 
-  auto iter = collection->iterInitialState();
+  auto iter = collection->toIter();
   for (size_t i = 0; i < arg; i++) {
-    stack[stack.size() - i - 1] = collection->nextFromIter(iter);
+    stack[stack.size() - i - 1] = collection->next(iter);
   }
 }
 
@@ -428,13 +449,7 @@ void VirtualMachine::runToIter(size_t arg) {
   (void)arg;
   Value::Ptr value = popStack();
 
-  if (!value->isIterable()) {
-    std::ostringstream out;
-    out << "Type " << value->type << " isn't iterable";
-    throw std::runtime_error(out.str());
-  }
-
-  auto iter_state = value->iterInitialState();
+  auto iter_state = value->toIter();
   auto iter_value = std::make_shared<IterableValue>(value, iter_state);
 
   pushStack(iter_value);

@@ -17,18 +17,16 @@ class MapValue : public Value {
       std::map<size_t, Value::Ptr>::const_iterator it;
     };
 
-    MapValue(std::vector<std::pair<Value::Ptr, Value::Ptr>>&& map_pairs);
     MapValue();
+    MapValue(std::vector<std::pair<Value::Ptr, Value::Ptr>>&& map_pairs);
     std::pair<size_t, size_t> getKeyId(Value::Ptr key);
     void storeValue(Value::Ptr key, Value::Ptr value);
     bool hasValue(Value::Ptr key);
     Value::Ptr getValue(Value::Ptr key);
 
-    bool isIterable() const override { return true; }
-    virtual bool hasLength() const override { return true; }
     virtual bool toBool() const { return !keys.empty(); }
-    virtual Value::Ptr nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const override;
-    virtual std::shared_ptr<Value::IteratorState> iterInitialState() const override;
+    virtual Value::Ptr next(std::shared_ptr<Value::IteratorState> base_state) const override;
+    virtual std::shared_ptr<Value::IteratorState> toIter() const override;
     virtual size_t len() const override { return keys.size(); };
     virtual Value::Ptr clone() const override;
     virtual std::string toString() const override;

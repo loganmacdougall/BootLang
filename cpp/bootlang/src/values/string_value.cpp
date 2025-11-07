@@ -15,7 +15,7 @@ bool StringValue::equal(const Value& other) const {
     return value == other_string.value;
 }
 
-Value::Ptr StringValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
+Value::Ptr StringValue::next(std::shared_ptr<Value::IteratorState> base_state) const {
     auto state = std::static_pointer_cast<StringValue::IteratorState>(base_state);
 
     if (base_state->finished) {
@@ -33,7 +33,7 @@ Value::Ptr StringValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_
     return elem;
 }
 
-std::shared_ptr<Value::IteratorState> StringValue::iterInitialState() const {
+std::shared_ptr<Value::IteratorState> StringValue::toIter() const {
     auto iter_state = std::make_shared<StringValue::IteratorState>(
         StringValue::IteratorState()
     );

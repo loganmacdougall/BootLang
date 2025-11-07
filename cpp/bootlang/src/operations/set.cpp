@@ -11,15 +11,11 @@ Value::Ptr to_set(Value::CallableInfo& info) {
     return value;
   }
 
-  if (!value->isIterable()) {
-    throw std::runtime_error("Value must be iterable");
-  }
-
-  auto iter = value->iterInitialState();
+  auto iter = value->toIter();
   auto set_value = std::make_shared<SetValue>();
 
   while (!iter->finished) {
-    set_value->storeKey(value->nextFromIter(iter));
+    set_value->storeKey(value->next(iter));
   }
 
   return set_value;

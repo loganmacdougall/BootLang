@@ -16,7 +16,6 @@ class GeneratorValue : public Value {
     const CodeObject& code;
 
     GeneratorValue(const CodeObject& code);
-    bool isIterable() const override { return true; }
     virtual Value::Ptr clone() const override;
     virtual std::string toString() const override;
 };

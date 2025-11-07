@@ -20,10 +20,6 @@ std::string core_print(const std::vector<Value::Ptr>& args) {
 }
 
 Value::Ptr core_range(Value::CallableInfo& info) {
-  if (info.args.empty() || info.args.size() > 3) {
-    throw std::runtime_error("range expects 1-3 arguments");
-  }
-
   for (size_t i = 0; i < info.args.size(); i++) {
     if (info.args.at(i)->type != Value::Type::INT) {
       throw std::runtime_error("range only accept values of type int");
@@ -75,16 +71,7 @@ Value::Ptr core_range_next(std::shared_ptr<Value::IteratorState> base_state) {
 }
 
 Value::Ptr core_len(Value::CallableInfo& info) {
-  if (info.args.size() != 1) {
-    throw std::runtime_error("Function expects one argument");
-  }
-
   Value::Ptr collection = info.args.back();
-
-  if (!collection->hasLength()) {
-    throw std::runtime_error("Value isn't of type collection");
-  }
-
   return std::make_shared<IntValue>(collection->len());
 }
 
@@ -93,20 +80,6 @@ MapIterState::MapIterState(Value::Ptr function, std::vector<Value::Ptr> collecti
   : function(function), collections(collections), iters(iters), vm_call(vm_call) {}
 
 Value::Ptr core_map(Value::CallableInfo& info) {
-  if (info.args.size() < 2) {
-    throw std::runtime_error("Function expects at least two arguments");
-  }
-
-  if (!info.args.at(0)->isCallable()) {
-    throw std::runtime_error("Expected callable first argument");
-  }
-
-  for (size_t i = 1; i < info.args.size(); i++) {    
-    if (!info.args.at(i)->isIterable()) {
-      throw std::runtime_error("Expected iterable values");
-    }
-  }
-
   return std::make_shared<BuiltinGeneratorValue>(
     core_map_init, core_map_next, std::move(info)
   );
@@ -118,7 +91,7 @@ std::shared_ptr<Value::IteratorState> core_map_init(const Value::CallableInfo& i
 
   bool iter_has_finished = false;
   for (size_t i = 1; i < info.args.size(); i++) {
-    auto iter = info.args.at(i)->iterInitialState();
+    auto iter = info.args.at(i)->toIter();
     if (iter->finished) iter_has_finished = true;
     collections.push_back(info.args.at(i));
     iters.push_back(iter);
@@ -145,7 +118,7 @@ Value::Ptr core_map_next(std::shared_ptr<Value::IteratorState> base_state) {
   std::vector<Value::Ptr> func_args;
   for (size_t i = 0; i < state->collections.size(); i++) {
     auto iter = state->iters.at(i);
-    Value::Ptr func_arg = state->collections.at(i)->nextFromIter(iter);
+    Value::Ptr func_arg = state->collections.at(i)->next(iter);
     if (iter->finished) state->finished = true;
     func_args.push_back(func_arg);
   }
@@ -156,14 +129,6 @@ Value::Ptr core_map_next(std::shared_ptr<Value::IteratorState> base_state) {
 
 
 Value::Ptr core_sum(Value::CallableInfo& info) {
-  if (info.args.empty() || info.args.size() > 2) {
-    throw std::runtime_error("Function expects one or two arguments");
-  }
-
-  if (!info.args.at(0)->isIterable()) {
-    throw std::runtime_error("Expected iterable values");
-  }
-
   bool use_float = false;
   long isum = 0;
   double fsum = 0.0;
@@ -181,12 +146,12 @@ Value::Ptr core_sum(Value::CallableInfo& info) {
   }
   
   Value::Ptr iterable = info.args.at(0);
-  auto iter = iterable->iterInitialState();
+  auto iter = iterable->toIter();
 
   Value::Ptr toAdd = nullptr;
 
   while (!iter->finished && !use_float) {
-    toAdd = iterable->nextFromIter(iter);
+    toAdd = iterable->next(iter);
     if (toAdd->type == Value::Type::INT) {
       isum += Value::toDerived<IntValue>(toAdd)->value;
     } else {
@@ -209,7 +174,7 @@ Value::Ptr core_sum(Value::CallableInfo& info) {
   }
 
   while (!iter->finished) {
-    toAdd = iterable->nextFromIter(iter);
+    toAdd = iterable->next(iter);
     if (toAdd->type == Value::Type::INT) {
       fsum += Value::toDerived<IntValue>(toAdd)->value;
     } else if (toAdd->type == Value::Type::FLOAT) {

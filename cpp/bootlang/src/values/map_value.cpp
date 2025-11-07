@@ -10,10 +10,6 @@ MapValue::MapValue(std::vector<std::pair<Value::Ptr, Value::Ptr>>&& map_pairs)
 MapValue::MapValue() : Value(Value::DICT) {}
 
 std::pair<size_t, size_t> MapValue::getKeyId(Value::Ptr key) {
-    if (!key->isHashable()) {
-        throw std::runtime_error("Attempted to use an unhashable value as dict key");
-    }
-
     size_t key_h = key->hash();
 
     auto it = key_hashmap.find(key_h);
@@ -61,7 +57,7 @@ Value::Ptr MapValue::getValue(Value::Ptr key) {
 
 }
 
-Value::Ptr MapValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_state) const {
+Value::Ptr MapValue::next(std::shared_ptr<Value::IteratorState> base_state) const {
     if (base_state->finished) {
         return NoneValue::NONE;
     }
@@ -78,7 +74,7 @@ Value::Ptr MapValue::nextFromIter(std::shared_ptr<Value::IteratorState> base_sta
     return copy(elem);
 }
 
-std::shared_ptr<Value::IteratorState> MapValue::iterInitialState() const {
+std::shared_ptr<Value::IteratorState> MapValue::toIter() const {
     auto iter_state = std::make_shared<MapValue::IteratorState>(
         MapValue::IteratorState()
     );
