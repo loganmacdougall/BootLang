@@ -123,6 +123,8 @@ NodePtr Parser::parseStatement() {
             return parseFor();
         case Token::Type::DEF:
             return parseDef();
+        case Token::Type::CLASS:
+            return parseClass();
         default:
             return parseExpression();
     }
@@ -627,6 +629,38 @@ std::unique_ptr<FunctionDefinitionNode> Parser::parseDef() {
     return std::make_unique<FunctionDefinitionNode>(FunctionDefinitionNode(
         start_token.lineno, start_token.col,
         std::move(name), std::move(args), std::move(block), std::move(doc), is_generator));
+}
+
+std::unique_ptr<ClassNode> Parser::parseClass() {
+    TokenData start_token = consume(optType(Token::Type::CLASS));
+    std::string name = consume(optType(Token::Type::IDENT)).text;
+    consume(optType(Token::Type::LPAREN));
+    consume(optType(Token::Type::RPAREN));
+    consume(optType(Token::Type::COLON));
+
+    push();
+    
+    std::string doc = std::string("");
+    ignoreWhitespace(true);
+    if (look().token == Token::Type::STRING) {
+        doc = unescapeString(look().text.substr(1, look().text.size() - 2));
+    }
+    ignoreWhitespace(false);
+
+    pop();
+
+    is_generator_stack.push_back(false);
+    BlockNodePtr block = parseBlock();
+    bool is_generator = is_generator_stack.back();
+    is_generator_stack.pop_back();
+
+    if (is_generator) {
+        throw std::runtime_error("Can't yield outside a function");
+    }
+
+    return std::make_unique<ClassNode>(ClassNode(
+        start_token.lineno, start_token.col,
+        std::move(name), std::move(block), std::move(doc)));
 }
 
 std::unique_ptr<ReturnNode> Parser::parseReturn() {

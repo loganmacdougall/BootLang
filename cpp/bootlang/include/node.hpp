@@ -31,6 +31,7 @@ enum Type {
     YIELD,
     VAR,
     FUNCTION_DEFINITION,
+    CLASS,
     IF,
     WHILE,
     FOR,
@@ -91,7 +92,7 @@ class NodeMetadata {
         "ASSIGN", "TUPLE_LITERAL", "LIST_LITERAL", "DICT_LITERAL", "SET_LITERAL",
         "TERNARY", "BINARY_OP", "UNARY_OP", "CALL",
         "BREAK", "CONTINUE", "RETURN", "YIELD",
-        "VAR", "FUNCTION_DEFINITION",
+        "VAR", "FUNCTION_DEFINITION", "CLASS",
         "IF", "WHILE", "FOR", "INDEX", "SLICE", "PROPERTY_ACCESS", "LITERAL"
     };
     

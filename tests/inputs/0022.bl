@@ -1,0 +1,21 @@
+class LL():
+    def __init__(self, value):
+        self.value = value
+        self.right = None
+
+    def append(self, right):
+        self.right = right
+        return right
+
+
+start = LL(1)
+end = start.append(LL(2))
+end = end.append(LL(3))
+end = end.append(LL(4))
+end = end.append(LL(5))
+
+node = start
+
+while node != None:
+    print(node.value)
+    node = node.right

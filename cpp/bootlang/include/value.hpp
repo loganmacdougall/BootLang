@@ -23,6 +23,8 @@ class Value {
         FUNCTION,
         BUILTIN_FUNCTION,
         BUILTIN_GENERATOR,
+        CLASS,
+        OBJECT,
         LIST,
         SLICE,
         DICT,
@@ -106,6 +108,7 @@ class ValueMetadata {
     const std::array<std::string, Value::VALUE_COUNT> value_names{
         "NONE", "INT", "FLOAT", "CHAR", "STRING", "BOOL",
         "FUNCTION", "BUILTIN_FUNCTION", "BUILTIN_GENERATOR",
+        "CLASS", "OBJECT",
         "LIST", "SLICE", "DICT", "SET", "TUPLE",
         "GENERATOR", "ITERATOR"
     };

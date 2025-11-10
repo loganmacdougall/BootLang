@@ -23,6 +23,7 @@ namespace Token {
     FOR,
     IN,
     DEF,
+    CLASS,
     BREAK,
     CONTINUE,
     RETURN,
@@ -85,7 +86,7 @@ class TokenMetadata {
       "INVALID_TOKEN",
       "", "", "",     // IDENT, NUMBER, STRING
       "\t", "", "\n", "", "", // INDENT, DEDENT, NEWLINE, END_OF_FILE, WHITESPACE
-      "if", "else", "elif", "while", "for", "in", "def", "break",
+      "if", "else", "elif", "while", "for", "in", "def", "class", "break",
       "continue", "return", "yield", "and", "or", "not ", "True", "False",
       "(", ")", "[", "]", "{", "}", ":", ",", ".", "#",
       "+", "-", "*", "/", "//", "%", "==", "!=", "<=", ">=", "<", ">", 
@@ -97,7 +98,7 @@ class TokenMetadata {
       "IDENT", "NUMBER", "STRING",
       "INDENT", "DEDENT", "NEWLINE", "END_OF_FILE", "WHITESPACE",
       "IF", "ELSE", "ELIF", "WHILE", "FOR",
-      "IN", "DEF", "BREAK", "CONTINUE", "RETURN", "YIELD",
+      "IN", "DEF", "CLASS", "BREAK", "CONTINUE", "RETURN", "YIELD",
       "AND", "OR", "NOT", "TRUE", "FALSE",
       "LPAREN", "RPAREN", "LBRACK", "RBRACK", "LBRACE", "RBRACE",
       "COLON", "COMMA", "DOT", "COMMENT",
@@ -123,6 +124,7 @@ class TokenMetadata {
       {"FOR", Token::Type::FOR},
       {"IN", Token::Type::IN},
       {"DEF", Token::Type::DEF},
+      {"CLASS", Token::Type::CLASS},
       {"BREAK", Token::Type::BREAK},
       {"CONTINUE", Token::Type::CONTINUE},
       {"RETURN", Token::Type::RETURN},
@@ -166,6 +168,7 @@ class TokenMetadata {
     const std::vector<RegexPair> token_regexes{
       RegexPair{Token::Type::NUMBER,          R"(\d+(?:\.\d+)?)"},
       RegexPair{Token::Type::DEF,             R"(\bdef\b)"},
+      RegexPair{Token::Type::CLASS,           R"(\bclass\b)"},
       RegexPair{Token::Type::IF,              R"(\bif\b)"},
       RegexPair{Token::Type::ELSE,            R"(\belse\b)"},
       RegexPair{Token::Type::ELIF,            R"(\belif\b)"},

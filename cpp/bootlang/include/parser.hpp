@@ -68,6 +68,7 @@ class Parser {
         std::unique_ptr<ForNode> parseFor();
 
         std::unique_ptr<FunctionDefinitionNode> parseDef();
+        std::unique_ptr<ClassNode> parseClass();
         std::unique_ptr<ReturnNode> parseReturn();
         std::unique_ptr<YieldNode> parseYield();
 

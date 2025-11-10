@@ -6,6 +6,7 @@
 #include "nodes/bool_node.hpp"
 #include "nodes/break_node.hpp"
 #include "nodes/call_node.hpp"
+#include "nodes/class_node.hpp"
 #include "nodes/continue_node.hpp"
 #include "nodes/dictliteral_node.hpp"
 #include "nodes/float_node.hpp"

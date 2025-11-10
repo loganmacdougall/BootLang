@@ -87,7 +87,7 @@ bool run_test(std::string filename) {
     vm.setInstructionLimit(100000);
     vm.runProgram();
   } catch (std::exception &e) {
-    std::cout << debug.str() << std::endl;
+    std::cout << std::endl << debug.str() << std::endl;
     std::cout << out.str() << std::endl;
     std::cout << e.what() << std::endl;
     return false;
